@@ -1,3 +1,5 @@
+"use client";
+
 import { AppBar, Toolbar, Typography, Button, Box, IconButton, useMediaQuery, useTheme, Menu, MenuItem } from '@mui/material';
 import { Menu as MenuIcon, NoteAlt } from '@mui/icons-material';
 import Link from 'next/link';

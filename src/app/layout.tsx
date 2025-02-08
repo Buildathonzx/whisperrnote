@@ -3,10 +3,32 @@ import { Geist } from "next/font/google";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
-import Header from '../components/Header';  // Changed from @/components/Header
+import Header from '../components/Header';
 import "../globals.css";
 
-// ...existing font and theme configuration...
+const geist = Geist({
+  subsets: ["latin"],
+});
+
+const theme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#2196f3',
+    },
+    secondary: {
+      main: '#f50057',
+    },
+  },
+  typography: {
+    fontFamily: geist.style.fontFamily,
+  },
+});
+
+export const metadata: Metadata = {
+  title: "WhisperNote",
+  description: "A modern note-taking app",
+};
 
 export default function RootLayout({
   children,

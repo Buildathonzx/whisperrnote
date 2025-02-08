@@ -1,6 +1,7 @@
 import { Box, Container, Typography, Button, Stack, Paper, Grid } from '@mui/material';
 import { Security, Speed, Create } from '@mui/icons-material';
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -14,13 +15,21 @@ export default function Home() {
         <Container maxWidth="md">
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
-              <Typography variant="h2" component="h1" gutterBottom>
+              <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <Image 
+                  src="/logo/whisperrnote.png" 
+                  alt="WhisperNote Logo" 
+                  width={150} 
+                  height={150} 
+                />
+              </Box>
+              <Typography variant="h2" component="h1" gutterBottom align="center">
                 WhisperNote
               </Typography>
-              <Typography variant="h5" paragraph>
+              <Typography variant="h5" paragraph align="center">
                 A modern, secure note-taking application for your thoughts and ideas.
               </Typography>
-              <Stack direction="row" spacing={2}>
+              <Stack direction="row" spacing={2} justifyContent="center">
                 <Button
                   component={Link}
                   href="/login"
