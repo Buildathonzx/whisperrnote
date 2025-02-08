@@ -1,20 +1,32 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { Geist } from "next/font/google";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import Box from '@mui/material/Box';
+import "../globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const geist = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const theme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#2196f3',
+    },
+    secondary: {
+      main: '#f50057',
+    },
+  },
+  typography: {
+    fontFamily: geist.style.fontFamily,
+  },
 });
 
 export const metadata: Metadata = {
   title: "WhisperNote",
-  description: "A simple note-taking app",
+  description: "A modern note-taking app",
 };
 
 export default function RootLayout({
@@ -24,8 +36,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
+      <body className={geist.className}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Box sx={{ minHeight: '100vh' }}>
+            {children}
+          </Box>
+        </ThemeProvider>
       </body>
     </html>
   );
