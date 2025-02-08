@@ -1,28 +1,12 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Header from '../components/Header';
+import ClientThemeProvider from '../components/ClientThemeProvider';
 import "../globals.css";
 
 const geist = Geist({
   subsets: ["latin"],
-});
-
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#2196f3',
-    },
-    secondary: {
-      main: '#f50057',
-    },
-  },
-  typography: {
-    fontFamily: geist.style.fontFamily,
-  },
 });
 
 export const metadata: Metadata = {
@@ -38,8 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={geist.className}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
+        <ClientThemeProvider>
           <Header />
           <Box 
             component="main" 
@@ -50,7 +33,7 @@ export default function RootLayout({
           >
             {children}
           </Box>
-        </ThemeProvider>
+        </ClientThemeProvider>
       </body>
     </html>
   );
