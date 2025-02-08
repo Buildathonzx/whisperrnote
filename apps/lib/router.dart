@@ -137,3 +137,12 @@ class AppShell extends StatelessWidget {
     return 0;
   }
 }
+
+// Add extension to provide current location
+extension RouterLocationExt on GoRouter {
+  String get location => routerDelegate.currentConfiguration.location ?? '';
+}
+
+extension on RouteMatchList {
+  get location => null;
+}
