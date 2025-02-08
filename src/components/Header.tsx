@@ -3,9 +3,8 @@
 import { AppBar, Toolbar, Typography, Button, Box, IconButton, useMediaQuery, useTheme, Menu, MenuItem, Switch } from '@mui/material';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu as MenuIcon, Brightness4, Brightness7, CloudDownload as CloudDownloadIcon } from '@mui/icons-material';
-import { useState, useContext } from 'react';
-import { ColorModeContext } from './ClientThemeProvider';
+import { Menu as MenuIcon, CloudDownload as CloudDownloadIcon } from '@mui/icons-material';
+import { useState } from 'react';
 
 interface HeaderProps {
   toggleTheme: () => void;
@@ -16,7 +15,6 @@ const Header: React.FC<HeaderProps> = ({ toggleTheme, isDarkMode }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const colorMode = useContext(ColorModeContext);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
