@@ -1,18 +1,62 @@
 "use client";
 
-import { Container, Paper, TextField, Button, Box, IconButton } from '@mui/material';
-import { ArrowBack, Save } from '@mui/icons-material';
+import { Container, Paper, TextField, Button, Box, IconButton, Stack, Chip, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { ArrowBack, Save, Share, Delete, Label as TagIcon } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 const MotionPaper = motion(Paper);
 
 export default function NotePage({ params }: { params: { noteId: string } }) {
   const router = useRouter();
+  const [note, setNote] = useState({
+    title: '',
+    content: '',
+    tags: [] as string[],
+    isPublic: false
+  });
+  const [newTag, setNewTag] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    // TODO: Implement save functionality
+    setIsSaving(false);
+  };
+
+  const handleDelete = async () => {
+    // TODO: Implement delete functionality
+    setIsDeleteDialogOpen(false);
+    router.push('/notes');
+  };
+
+  const addTag = () => {
+    if (newTag && !note.tags.includes(newTag)) {
+      setNote(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag]
+      }));
+      setNewTag('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setNote(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ 
+        mb: 3, 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center' 
+      }}>
         <IconButton 
           onClick={() => router.back()}
           component={motion.button}
@@ -21,6 +65,33 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
         >
           <ArrowBack />
         </IconButton>
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            startIcon={<Delete />}
+          >
+            Delete
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<Share />}
+          >
+            Share
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<Save />}
+            onClick={handleSave}
+            disabled={isSaving}
+            component={motion.button}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </Stack>
       </Box>
 
       <MotionPaper
@@ -34,6 +105,8 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
           fullWidth
           variant="standard"
           placeholder="Title"
+          value={note.title}
+          onChange={(e) => setNote(prev => ({ ...prev, title: e.target.value }))}
           sx={{ 
             mb: 3,
             '& .MuiInputBase-input': {
@@ -43,11 +116,46 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
           }}
         />
         
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+            Tags
+          </Typography>
+          <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
+            {note.tags.map((tag) => (
+              <Chip
+                key={tag}
+                label={tag}
+                onDelete={() => removeTag(tag)}
+                sx={{ m: 0.5 }}
+              />
+            ))}
+          </Stack>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <TextField
+              size="small"
+              placeholder="Add a tag"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && addTag()}
+            />
+            <Button
+              startIcon={<TagIcon />}
+              onClick={addTag}
+              variant="outlined"
+              size="small"
+            >
+              Add Tag
+            </Button>
+          </Box>
+        </Box>
+        
         <TextField
           fullWidth
           multiline
           variant="standard"
           placeholder="Start writing your note..."
+          value={note.content}
+          onChange={(e) => setNote(prev => ({ ...prev, content: e.target.value }))}
           minRows={12}
           sx={{
             '& .MuiInputBase-input': {
@@ -56,19 +164,25 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
             }
           }}
         />
-
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button
-            variant="contained"
-            startIcon={<Save />}
-            component={motion.button}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Save Changes
-          </Button>
-        </Box>
       </MotionPaper>
+
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete Note</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this note? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
