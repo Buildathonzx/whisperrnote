@@ -43,14 +43,6 @@ export default function LoginPage() {
             >
               Sign In
             </Button>
-            <Button
-              component={Link}
-              href="/signup"
-              fullWidth
-              variant="text"
-            >
-              Don't have an account? Sign Up
-            </Button>
           </Box>
         </Paper>
       </Box>

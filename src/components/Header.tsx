@@ -1,20 +1,26 @@
 "use client";
 
-import { AppBar, Toolbar, Typography, Button, Box, IconButton, useMediaQuery, useTheme, Menu, MenuItem } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, IconButton, useMediaQuery, useTheme, Menu, MenuItem, Switch } from '@mui/material';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu as MenuIcon } from '@mui/icons-material';
-import { useState } from 'react';
+import { Menu as MenuIcon, Brightness4, Brightness7, CloudDownload as CloudDownloadIcon } from '@mui/icons-material';
+import { useState, useContext } from 'react';
+import { ColorModeContext } from './ClientThemeProvider';
 
-export default function Header() {
+interface HeaderProps {
+  toggleTheme: () => void;
+  isDarkMode: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ toggleTheme, isDarkMode }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const colorMode = useContext(ColorModeContext);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -23,7 +29,6 @@ export default function Header() {
     <AppBar position="fixed" color="default" elevation={1}>
       <Toolbar>
         <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-          {/* Replace the note icon with a small logo */}
           <Box sx={{ mr: 2 }}>
             <Image 
               src="/logo/whisperrnote.png" 
@@ -74,25 +79,28 @@ export default function Header() {
             </Menu>
           </>
         ) : (
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button component={Link} href="/notes" color="inherit">
-              My Notes
-            </Button>
-            <Button component={Link} href="/login" variant="text">
-              Login
-            </Button>
-            <Button 
-              component={Link} 
-              href="/signup" 
-              variant="contained" 
-              color="primary"
-              sx={{ color: 'white' }}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Button
+              color="inherit"
+              startIcon={<CloudDownloadIcon />}
+              sx={{ mr: 2 }}
             >
-              Sign Up
+              Download
+            </Button>
+            <Switch
+              checked={isDarkMode}
+              onChange={toggleTheme}
+              name="darkMode"
+              inputProps={{ 'aria-label': 'toggle dark mode' }}
+            />
+            <Button color="inherit" component={Link} href="/notes">
+              My Notes
             </Button>
           </Box>
         )}
       </Toolbar>
     </AppBar>
   );
-}
+};
+
+export default Header;
