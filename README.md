@@ -2,7 +2,7 @@
 
 ![WhisperNote Logo](public/logo/whisperrnote.png)
 
-Welcome to WhisperNote, the ultimate note-taking application designed with **your privacy and productivity** in mind! 📝✨ Whether you're jotting down brilliant ideas, organizing your thoughts, or keeping track of important information, WhisperNote provides a seamless and secure experience across all your devices.
+Welcome to WhisperNote, the ultimate note-taking application designed with **your privacy, accessibility and productivity** in mind! 📝✨ Whether you're jotting down brilliant ideas, organizing your thoughts, or keeping track of important information, WhisperNote provides a seamless and secure experience across all your devices.
 
 ## 🛡️ Unbreakable Security & Robustness
 
