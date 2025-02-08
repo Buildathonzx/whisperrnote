@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+'use client';
+
 import { Geist } from "next/font/google";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -10,11 +11,6 @@ import "../globals.css";
 const geist = Geist({
   subsets: ["latin"],
 });
-
-export const metadata: Metadata = {
-  title: "WhisperNote",
-  description: "A modern note-taking app",
-};
 
 export default function RootLayout({
   children,
@@ -33,14 +29,71 @@ export default function RootLayout({
         palette: {
           mode,
           primary: {
-            main: '#2196f3',
+            main: '#3B82F6',
+            light: '#60A5FA',
+            dark: '#2563EB',
           },
           secondary: {
-            main: '#f50057',
+            main: '#EC4899',
+            light: '#F472B6',
+            dark: '#DB2777',
+          },
+          background: {
+            default: mode === 'light' ? '#F8FAFC' : '#0F172A',
+            paper: mode === 'light' ? '#FFFFFF' : '#1E293B',
+          },
+          text: {
+            primary: mode === 'light' ? '#1E293B' : '#F8FAFC',
+            secondary: mode === 'light' ? '#475569' : '#CBD5E1',
           },
         },
         typography: {
           fontFamily: geist.style.fontFamily,
+          h1: {
+            fontSize: '2.5rem',
+            fontWeight: 700,
+          },
+          h2: {
+            fontSize: '2rem',
+            fontWeight: 600,
+          },
+          h3: {
+            fontSize: '1.75rem',
+            fontWeight: 600,
+          },
+          body1: {
+            fontSize: '1rem',
+            lineHeight: 1.7,
+          },
+        },
+        components: {
+          MuiButton: {
+            styleOverrides: {
+              root: {
+                textTransform: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontWeight: 500,
+              },
+            },
+          },
+          MuiCard: {
+            styleOverrides: {
+              root: {
+                borderRadius: '12px',
+                boxShadow: mode === 'light' 
+                  ? '0 1px 3px rgba(0,0,0,0.1)'
+                  : '0 1px 3px rgba(0,0,0,0.3)',
+              },
+            },
+          },
+          MuiPaper: {
+            styleOverrides: {
+              root: {
+                borderRadius: '12px',
+              },
+            },
+          },
         },
       }),
     [mode],
@@ -56,7 +109,8 @@ export default function RootLayout({
             component="main"
             sx={{
               minHeight: '100vh',
-              pt: '64px', // Height of AppBar
+              pt: '64px',
+              backgroundColor: 'background.default',
             }}
           >
             {children}
