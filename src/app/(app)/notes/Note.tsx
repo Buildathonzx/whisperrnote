@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, Typography, CardActions, IconButton, Stack, Chip } from '@mui/material';
 import { Edit, Delete, Share, AccessTime } from '@mui/icons-material';
 import { Note } from "../../../types/notes";

@@ -1,4 +1,6 @@
-import { Container, Typography, Fab, Box, Grid, Paper } from '@mui/material';
+"use client";
+
+import { Container, Typography, Fab, Box, Grid } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { Note } from "../../../types/notes";
 import NoteComponent from "./Note";

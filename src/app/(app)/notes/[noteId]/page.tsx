@@ -1,3 +1,5 @@
+"use client";
+
 import { Container, Paper, TextField, Button, Box, IconButton } from '@mui/material';
 import { ArrowBack, Save } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
