@@ -1,8 +1,8 @@
 "use client";
 
-import { Box, Container, Typography, Button, Stack, Paper, Grid, Divider, Avatar, Card, CardContent } from '@mui/material';
+import { Box, Container, Typography, Button, Stack, Paper, Grid, Divider, Avatar, Card, CardContent, Chip, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { Security, Speed, Create, Cloud, Code, Group, LockOutlined, Timeline, DevicesOther, 
-  SmartToy, Psychology, AutoAwesome, Storage, Keyboard, Extension, Article, ExpandMore } from '@mui/icons-material';
+  SmartToy, Psychology, AutoAwesome, Storage, Keyboard, Extension, Article, ExpandMore, Check, ArrowForward } from '@mui/icons-material';
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from 'framer-motion';
@@ -15,8 +15,8 @@ const MotionCard = motion(Card);
 const features = [
   {
     icon: <Security sx={{ fontSize: 40, color: 'primary.main' }} />,
-    title: 'End-to-End Encryption',
-    description: 'Your notes are encrypted and secure from end to end'
+    title: 'End-to-End Encryption & Decentralized Infrastructure',
+    description: 'Your notes are secured with robust, decentralized encryption protocols ensuring ultimate privacy.'
   },
   {
     icon: <Speed sx={{ fontSize: 40, color: 'primary.main' }} />,
@@ -90,10 +90,10 @@ const pricingPlans = [
     price: '$0',
     period: 'forever',
     features: [
-      'Up to 100 notes',
-      '5 MB storage',
-      'Basic encryption',
-      'Web access only'
+      'Unlimited notes',
+      '20 GB storage',
+      'Advanced encryption',
+      'Access across web, desktop, and mobile'
     ],
     isPopular: false
   },
@@ -103,10 +103,12 @@ const pricingPlans = [
     period: 'per month',
     features: [
       'Unlimited notes',
-      '50 GB storage',
-      'End-to-end encryption',
-      'All platform access',
+      '200 GB storage',
+      'Decentralized & end-to-end encryption',
+      'Access to all platforms',
       'Priority support',
+      'Custom setup spaces',
+      'Enhanced AI integrations',
       'API access'
     ],
     isPopular: true
@@ -121,7 +123,8 @@ const pricingPlans = [
       'Advanced admin controls',
       'SSO integration',
       'Dedicated support',
-      'Custom API limits'
+      'Custom AI and Web3 integrations',
+      'Setup custom collaborative spaces'
     ],
     isPopular: false
   }
@@ -242,13 +245,13 @@ export default function Home() {
                     fontSize: { xs: '2.5rem', md: '3.5rem' }
                   }}
                 >
-                  Secure Your Thoughts
+                  Empower Your Mind: Modern, Encrypted, AI-Powered, Web3-Enabled Note-Taking
                 </Typography>
                 <Typography 
                   variant="h5" 
                   sx={{ mb: 4, fontWeight: 300 }}
                 >
-                  A modern, encrypted note-taking platform for individuals and teams
+                  Experience decentralized, private infrastructure fused with cutting-edge AI integrations for seamless note management.
                 </Typography>
                 <Stack 
                   direction={{ xs: 'column', sm: 'row' }} 
