@@ -7,6 +7,8 @@ import Box from '@mui/material/Box';
 import Header from '../components/Header';
 import { useState, useMemo } from 'react';
 import "../globals.css";
+import { AccessTokenWrapper } from '@calimero-network/calimero-client';
+import { getNodeUrl } from '../../lib/calimero/config';
 
 const geist = Geist({
   subsets: ["latin"],
@@ -102,20 +104,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={geist.className}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <Header toggleTheme={toggleTheme} isDarkMode={mode === 'dark'} />
-          <Box
-            component="main"
-            sx={{
-              minHeight: '100vh',
-              pt: '64px',
-              backgroundColor: 'background.default',
-            }}
-          >
-            {children}
-          </Box>
-        </ThemeProvider>
+        <AccessTokenWrapper getNodeUrl={getNodeUrl}>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Header toggleTheme={toggleTheme} isDarkMode={mode === 'dark'} />
+            <Box
+              component="main"
+              sx={{
+                minHeight: '100vh',
+                pt: '64px',
+                backgroundColor: 'background.default',
+              }}
+            >
+              {children}
+            </Box>
+          </ThemeProvider>
+        </AccessTokenWrapper>
       </body>
     </html>
   );
