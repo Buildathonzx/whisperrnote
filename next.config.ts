@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/',
-        destination: '/(auth)/login', // Route auth subdomain to login page
+        destination: '/login', // Route auth subdomain to login page
         has: [
           {
             type: 'host',
