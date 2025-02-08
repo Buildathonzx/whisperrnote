@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
+import Header from '@/components/Header';
 import "../globals.css";
 
 const geist = Geist({
@@ -39,7 +40,11 @@ export default function RootLayout({
       <body className={geist.className}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <Box sx={{ minHeight: '100vh' }}>
+          <Header />
+          <Box component="main" sx={{ 
+            minHeight: '100vh',
+            pt: '64px', // Height of AppBar
+          }}>
             {children}
           </Box>
         </ThemeProvider>
