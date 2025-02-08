@@ -1,6 +1,6 @@
 import { Container, Typography, Fab, Box } from '@mui/material';
 import { Add } from '@mui/icons-material';
-import { Note } from "../../../../types/notes";
+import { Note } from "../../../types/notes";
 import NoteComponent from "./Note";
 
 const dummyNotes: Note[] = [

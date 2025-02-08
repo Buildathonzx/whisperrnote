@@ -3,7 +3,7 @@ import { Geist } from "next/font/google";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
-import Header from '@/components/Header';
+import Header from '@/components/NoteCard';
 import "../globals.css";
 
 const geist = Geist({

@@ -1,6 +1,6 @@
 import { Card, CardContent, Typography, CardActions, IconButton } from '@mui/material';
 import { Edit, Delete, Share } from '@mui/icons-material';
-import { Note } from "../../../../types/notes";
+import { Note } from "../../../types/notes";
 
 export default function NoteComponent({ note }: { note: Note }) {
   return (
