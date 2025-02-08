@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'router.dart';
+import 'package:whisperrnote_app/router.dart';
 
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
   return ThemeNotifier();
@@ -47,7 +47,8 @@ class WhisperNoteApp extends ConsumerWidget {
           seedColor: const Color(0xFF3B82F6),
           secondary: const Color(0xFFEC4899),
         ),
-        textTheme: GoogleFonts.geistTextTheme(),
+        textTheme:
+            GoogleFonts.getTextTheme('Roboto', ThemeData.light().textTheme),
         appBarTheme: const AppBarTheme(
           centerTitle: false,
           elevation: 0,
@@ -60,7 +61,8 @@ class WhisperNoteApp extends ConsumerWidget {
           secondary: const Color(0xFFEC4899),
           brightness: Brightness.dark,
         ),
-        textTheme: GoogleFonts.geistTextTheme(ThemeData.dark().textTheme),
+        textTheme:
+            GoogleFonts.getTextTheme('Roboto', ThemeData.dark().textTheme),
         appBarTheme: const AppBarTheme(
           centerTitle: false,
           elevation: 0,

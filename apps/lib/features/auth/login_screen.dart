@@ -25,16 +25,16 @@ class LoginScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ).animate().fadeIn().slideY(begin: -0.2),
                   const SizedBox(height: 32),
-                  TextField(
-                    decoration: const InputDecoration(
+                  const TextField(
+                    decoration: InputDecoration(
                       labelText: 'Email',
                       prefixIcon: Icon(Icons.email),
                     ),
                   ).animate().fadeIn().slideX(begin: -0.2, delay: 200.ms),
                   const SizedBox(height: 16),
-                  TextField(
+                  const TextField(
                     obscureText: true,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Password',
                       prefixIcon: Icon(Icons.lock),
                     ),
