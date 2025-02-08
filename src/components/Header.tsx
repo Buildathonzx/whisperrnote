@@ -1,8 +1,9 @@
 "use client";
 
 import { AppBar, Toolbar, Typography, Button, Box, IconButton, useMediaQuery, useTheme, Menu, MenuItem } from '@mui/material';
-import { Menu as MenuIcon, NoteAlt } from '@mui/icons-material';
 import Link from 'next/link';
+import Image from 'next/image';
+import { Menu as MenuIcon } from '@mui/icons-material';
 import { useState } from 'react';
 
 export default function Header() {
@@ -22,7 +23,16 @@ export default function Header() {
     <AppBar position="fixed" color="default" elevation={1}>
       <Toolbar>
         <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-          <NoteAlt sx={{ mr: 2, color: 'primary.main' }} />
+          {/* Replace the note icon with a small logo */}
+          <Box sx={{ mr: 2 }}>
+            <Image 
+              src="/logo/whisperrnote.png" 
+              alt="WhisperNote Logo" 
+              width={40} 
+              height={40} 
+              style={{ borderRadius: '4px' }}
+            />
+          </Box>
           <Typography
             variant="h6"
             component={Link}
@@ -36,7 +46,6 @@ export default function Header() {
             WhisperNote
           </Typography>
         </Box>
-
         {isMobile ? (
           <>
             <IconButton

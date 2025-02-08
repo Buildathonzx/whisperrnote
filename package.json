@@ -14,8 +14,6 @@
     "@mui/icons-material": "^6.4.3",
     "@mui/material": "^6.4.3",
     "next": "15.1.6",
-    "nextra": "^4.2.4",
-    "nextra-theme-docs": "^4.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
