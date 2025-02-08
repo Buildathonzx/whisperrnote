@@ -17,6 +17,7 @@
     "bcryptjs": "^2.4.3",
     "framer-motion": "^12.4.1",
     "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
     "next": "15.1.6",
     "prisma": "^6.3.1",
     "react": "^19.0.0",

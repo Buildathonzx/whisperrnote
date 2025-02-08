@@ -170,11 +170,11 @@ const faqs = [
   },
   {
     question: 'Can I access my notes offline?',
-    answer: 'Yes! Our desktop and mobile apps support offline access. Your notes sync automatically when you're back online.'
+    answer: 'Yes! Our desktop and mobile apps support offline access. Your notes sync automatically when you are back online.'
   },
   {
     question: 'What happens if I exceed my storage limit?',
-    answer: 'You'll receive a notification when approaching your limit. You can either upgrade your plan or manage your storage by archiving or deleting unused notes.'
+    answer: 'You will receive a notification when approaching your limit. You can either upgrade your plan or manage your storage by archiving or deleting unused notes.'
   },
   {
     question: 'How does the AI summarization work?',
@@ -215,7 +215,7 @@ const blogPosts = [
 
 export default function Home() {
   return (
-    <Box>
+    <Box suppressHydrationWarning>
       {/* Hero Section */}
       <Box sx={{ 
         background: 'linear-gradient(135deg, #3B82F6 0%, #EC4899 100%)',
