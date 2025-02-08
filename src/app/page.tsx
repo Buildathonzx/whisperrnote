@@ -73,7 +73,7 @@ const testimonials = [
   {
     name: 'Michael Chen',
     role: 'Product Manager',
-    content: 'The collaboration features are game-changing. Our team's productivity has increased significantly.',
+    content: "The collaboration features are game-changing. Our team's productivity has increased significantly.",
     avatar: 'MC'
   },
   {
