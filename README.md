@@ -143,7 +143,7 @@ Here are some screenshots showcasing the WhisperNote experience:
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! If you're interested in helping us improve WhisperNote, please check out our [contribution guidelines](https://example.com/contributing). 🧑‍💻
+We welcome contributions from the community! If you're interested in helping us improve WhisperNote, please check out our [contribution guidelines](https://whisperrnote.space/contributing). 🧑‍💻
 
 ## 📜 License
 
@@ -153,8 +153,7 @@ WhisperNote is licensed under the [MIT License](LICENSE).
 
 Stay up-to-date with the latest news and developments by following us on:
 
-*   [Twitter](https://twitter.com/example) 🐦
-*   [Discord](https://discord.gg/example) 💬
+*   [Discord](https://discord.gg/YDcm6FzN) 💬
 
 Thank you for choosing WhisperNote! We're confident that you'll love the peace of mind and productivity it brings to your note-taking experience. 😊
 ````
