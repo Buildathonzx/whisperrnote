@@ -5,6 +5,25 @@ import './App.css';
 
 function App() {
   const [count, setCount] = useState(0);
+  const [noteContent, setNoteContent] = useState('');
+
+  const createNote = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: noteContent })
+      });
+      
+      if (response.ok) {
+        setNoteContent('');
+        alert('Note created successfully!');
+      }
+    } catch (error) {
+      console.error('Error creating note:', error);
+      alert('Failed to create note');
+    }
+  };
 
   return (
     <>
@@ -28,6 +47,15 @@ function App() {
       <p className="read-the-docs">
         Click on the WXT and React logos to learn more
       </p>
+      <div className="container">
+        <h1>WhisperrNote</h1>
+        <textarea
+          value={noteContent}
+          onChange={(e) => setNoteContent(e.target.value)}
+          placeholder="Enter note content..."
+        />
+        <button onClick={createNote}>Create Note</button>
+      </div>
     </>
   );
 }
