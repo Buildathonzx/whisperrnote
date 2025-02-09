@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client/edge';
 import { withAccelerate } from '@prisma/extension-accelerate';
 
 declare global {
-  var prisma: PrismaClient | undefined;
+  var prisma: ReturnType<typeof PrismaClient.prototype.$extends> | undefined;
 }
 
 export const prisma = global.prisma || new PrismaClient().$extends(withAccelerate());

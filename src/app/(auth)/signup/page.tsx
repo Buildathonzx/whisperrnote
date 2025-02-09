@@ -15,7 +15,6 @@ declare global {
 export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -47,8 +46,7 @@ export default function SignupPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: formData.email,
-          password: formData.password,
-          name: formData.name
+          password: formData.password
         })
       });
 
@@ -156,22 +154,12 @@ export default function SignupPage() {
               margin="normal"
               required
               fullWidth
-              name="name"
-              label="Full Name"
-              autoComplete="name"
-              value={formData.name}
-              onChange={handleChange}
-              autoFocus
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
               name="email"
               label="Email Address"
               autoComplete="email"
               value={formData.email}
               onChange={handleChange}
+              autoFocus
             />
             <TextField
               margin="normal"
