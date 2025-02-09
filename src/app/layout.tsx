@@ -8,7 +8,7 @@ import Header from '../components/Header';
 import { useState, useMemo } from 'react';
 import "../globals.css";
 import { AccessTokenWrapper } from '@calimero-network/calimero-client';
-import { getNodeUrl } from '../../lib/calimero/config';
+import { getNodeUrl } from '@/lib/calimero/config';
 
 const geist = Geist({
   subsets: ["latin"],
