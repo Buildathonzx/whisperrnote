@@ -7,6 +7,14 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
+# Check required tools
+echo -e "${YELLOW}Checking required tools...${NC}"
+command -v dfx >/dev/null 2>&1 || { echo -e "${RED}dfx is required but not installed.${NC}" >&2; exit 1; }
+command -v pnpm >/dev/null 2>&1 || { echo -e "${RED}pnpm is required but not installed.${NC}" >&2; exit 1; }
+
+# Run predeploy script first
+./predeploy.sh
+
 # Run the node setup first
 ./setup-nodes.sh &
 NODE_SETUP_PID=$!

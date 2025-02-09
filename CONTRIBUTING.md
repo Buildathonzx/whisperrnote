@@ -13,13 +13,14 @@ Thank you for your interest in contributing to WhisperNote! This document provid
 
 ## System Requirements
 
-- Node.js (v18+)
-- Rust (latest stable)
-- DFX (v0.24.3)
-- Calimero SDK
+- Node.js (v20+)
+- Rust (1.75 or later)
+- DFX (v0.15.0 or later)
+- Calimero SDK (latest)
+- IC Wasm Tools
 - Candid Extractor
-- pnpm
-- Flutter (for mobile/desktop apps)
+- pnpm (v8+)
+- Flutter (3.19+ for mobile/desktop apps)
 
 ## Node Architecture
 
@@ -60,25 +61,25 @@ merod --node-name sharing-coordinator init --server-port 2429 --swarm-port 2529
    cd whisperrnote
    ```
 
-2. **Initialize Development Environment:**
+2. **Install Required Tools:**
    ```bash
+   # Install IC Wasm tools
+   cargo install ic-wasm
+   
+   # Install Candid extractor
+   cargo install candid-extractor
+
    # Install dependencies
    pnpm install
-
-   # Initialize local devnet
-   ./contracts/deploy_devnet_fresh.sh
    ```
 
-3. **Set Up Node Infrastructure:**
+3. **Build and Deploy:**
    ```bash
-   # Start Primary Node
-   merod --node-name notes-primary run
-
-   # Start Sync Node
-   merod --node-name sync-mediator run
-
-   # Start Sharing Node
-   merod --node-name sharing-coordinator run
+   # Build WASM modules
+   ./predeploy.sh
+   
+   # Deploy to local network
+   ./deploy.sh local
    ```
 
 ## Node Configuration
@@ -232,8 +233,9 @@ When contributing new features, follow these architectural principles:
 
 ## Need Help?
 
-- Join our [Discord](https://discord.gg/example)
-- Check our [Documentation](https://docs.example.com)
+- Join our [Discord](https://discord.gg/whisperrnote)
+- Check our [Documentation](https://docs.whisperrnote.space)
+- Visit our [Application](https://whisperrnote.space)
 - Create an issue on GitHub
 
 Thank you for contributing to WhisperNote! 🚀
