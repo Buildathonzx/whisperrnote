@@ -63,3 +63,7 @@ Stay up-to-date with the latest news and developments by following us on:
 *   [Discord](https://discord.gg/example) 💬
 
 Thank you for choosing WhisperNote! We're confident that you'll love the peace of mind and productivity it brings to your note-taking experience. 😊
+
+
+
+
