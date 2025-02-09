@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "src/contracts_backend"
+]
+resolver = "2"
