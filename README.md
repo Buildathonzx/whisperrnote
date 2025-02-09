@@ -20,6 +20,7 @@ Experience the freedom of accessing your notes anytime, anywhere, on virtually a
 *   **Android & iOS:** Native mobile apps for on-the-go note-taking. 📱
 *   **macOS, Linux, & Windows:** Dedicated desktop applications for a native experience. 🖥️
 *   **CLI Client:** Power users can leverage the command-line interface for advanced note management. 💻
+*   **Browser Extension:** Save content directly from your browser. 🧩
 
 ## ✨ Key Features
 
@@ -34,6 +35,17 @@ Experience the freedom of accessing your notes anytime, anywhere, on virtually a
 1.  **Download & Install:** Choose the appropriate client for your platform from our [website](https://example.com). ⬇️
 2.  **Create an Account:** Sign up for a free account to start securely storing your notes. ✍️
 3.  **Start Notetaking:** Begin capturing your thoughts and ideas with WhisperNote! 💡
+
+## 📸 Screenshots
+
+Here are some screenshots showcasing the WhisperNote experience:
+
+![Screenshot 1](public/demo/1.png)
+![Screenshot 2](public/demo/2.png)
+![Screenshot 3](public/demo/3.png)
+![Screenshot 4](public/demo/4.png)
+![Screenshot 5](public/demo/5.png)
+![Screenshot 6](public/demo/6.png)
 
 ## 🤝 Contributing
 
