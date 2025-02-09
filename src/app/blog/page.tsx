@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Container, Typography, Grid, Card, CardContent, CardMedia, Box } from '@mui/material';
+import { Container, Typography, Grid, Card, CardContent, CardMedia, Box, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 
 const MotionCard = motion(Card);
@@ -17,15 +17,25 @@ interface BlogPost {
 
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await fetch('/api/blog');
       const data = await res.json();
       setPosts(data);
+      setLoading(false);
     };
     fetchPosts();
   }, []);
+
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
