@@ -112,6 +112,15 @@ impl AppState {
         }
     }
 
+    // Add this helper function
+    fn get_timestamp() -> u64 {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs()
+    }
+
     pub fn create_new_proposal(
         &mut self,
         request: CreateProposalRequest,
@@ -314,7 +323,7 @@ impl AppState {
         let mut note = self.notes.get(&id)?.ok_or(Error::msg("note not found"))?;
         let mut versions = self.version_history.get(&id)?.unwrap_or_default();
 
-        let timestamp = env::block_timestamp();
+        let timestamp = Self::get_timestamp();
         
         // Create version from current state
         let version = NoteVersion {
@@ -382,6 +391,7 @@ impl AppState {
 
     pub fn get_note_versions(&self, id: String) -> Result<Vec<NoteVersion>, Error> {
         let versions = self.version_history.get(&id)?.ok_or(Error::msg("note not found"))?;
-        Ok(versions.entries()?.collect())
+        let entries = versions.entries()?;
+        Ok(entries.collect())
     }
 }
