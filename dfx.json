@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "canisters": {
+    "notes_storage": {
+      "type": "rust",
+      "package": "notes_storage",
+      "candid": "contracts/notes_storage.did",
+      "build": "cargo build --target wasm32-unknown-unknown --release",
+      "wasm": "target/wasm32-unknown-unknown/release/notes_storage.wasm"
+    },
+    "private_contexts": {
+      "type": "custom",
+      "build": "logic/build.sh",
+      "candid": "logic/private_contexts.did",
+      "wasm": "logic/res/private_contexts.wasm"
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "",
+      "args": ""
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000"
+    }
+  }
+}
