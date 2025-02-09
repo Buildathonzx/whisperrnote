@@ -36,6 +36,88 @@ Experience the freedom of accessing your notes anytime, anywhere, on virtually a
 2.  **Create an Account:** Sign up for a free account to start securely storing your notes. ✍️
 3.  **Start Notetaking:** Begin capturing your thoughts and ideas with WhisperNote! 💡
 
+## 📥 Download & Build Instructions
+
+The easiest way to get started is to use the web app at [whisperrnote.space](https://whisperrnote.space).
+
+For other platforms, follow the instructions below:
+
+### Web
+
+1. **Navigate to the root directory:**
+    ```sh
+    cd /path/to/whisperrnote
+    ```
+2. **Install dependencies and start the development server:**
+    ```sh
+    pnpm install
+    pnpm dev
+    ```
+
+### macOS, Windows, Linux
+
+1. **Navigate to the apps directory:**
+    ```sh
+    cd /path/to/whisperrnote/apps
+    ```
+2. **Ensure Flutter is installed.**
+3. **Run the necessary commands to build for your platform:**
+    - **macOS:**
+        ```sh
+        flutter build macos
+        ```
+    - **Windows:**
+        ```sh
+        flutter build windows
+        ```
+    - **Linux:**
+        ```sh
+        flutter build linux
+        ```
+
+### Android & iOS
+
+1. **Navigate to the apps directory:**
+    ```sh
+    cd /path/to/whisperrnote/apps
+    ```
+2. **Ensure Flutter is installed.**
+3. **Run the necessary commands to build for your platform:**
+    - **Android:**
+        ```sh
+        flutter build apk
+        ```
+    - **iOS:**
+        ```sh
+        flutter build ios
+        ```
+
+### Browser Extension
+
+1. **Navigate to the extension directory:**
+    ```sh
+    cd /path/to/whisperrnote/extension
+    ```
+2. **Run the necessary commands to build the extension:**
+    ```sh
+    pnpm install
+    pnpm build
+    ```
+
+### VSCode Extension
+
+1. **Navigate to the framework directory:**
+    ```sh
+    cd /path/to/whisperrnote/framework
+    ```
+2. **Run the necessary commands to build the VSCode extension:**
+    ```sh
+    pnpm install
+    pnpm build
+    ```
+
+Note: Some platforms are still under development.
+
 ## 📸 Screenshots
 
 Here are some screenshots showcasing the WhisperNote experience:
