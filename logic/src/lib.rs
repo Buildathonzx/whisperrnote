@@ -10,6 +10,9 @@ use calimero_storage::collections::{UnorderedMap, Vector};
 #[borsh(crate = "calimero_sdk::borsh")]
 pub struct AppState {
     messages: UnorderedMap<ProposalId, Vector<Message>>,
+    notes: UnorderedMap<String, EncryptedNote>,
+    user_permissions: UnorderedMap<String, Vec<String>>,
+    version_history: UnorderedMap<String, Vector<NoteVersion>>,
 }
 
 #[derive(
@@ -25,10 +28,44 @@ pub struct Message {
     created_at: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(crate = "calimero_sdk::serde")]
+pub struct EncryptedNote {
+    id: String,
+    encrypted_content: Vec<u8>,
+    metadata: NoteMetadata,
+    owner: String,
+    shared_with: Vec<String>,
+    created_at: u64,
+    updated_at: u64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(crate = "calimero_sdk::serde")]
+pub struct NoteMetadata {
+    title: String,
+    tags: Vec<String>,
+    is_pinned: bool,
+    encryption_version: u32,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(crate = "calimero_sdk::serde")]
+pub struct NoteVersion {
+    version_id: String,
+    encrypted_content: Vec<u8>,
+    metadata: NoteMetadata,
+    timestamp: u64,
+}
+
 #[app::event]
 pub enum Event {
     ProposalCreated { id: ProposalId },
     ApprovedProposal { id: ProposalId },
+    NoteCreated { id: String },
+    NoteUpdated { id: String },
+    NoteShared { id: String, with: String },
+    NoteDeleted { id: String },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -38,12 +75,36 @@ pub struct CreateProposalRequest {
     pub params: serde_json::Value,
 }
 
+impl CreateProposalRequest {
+    pub fn new_note_action(note: EncryptedNote) -> Self {
+        CreateProposalRequest {
+            action_type: "CreateNote".to_string(),
+            params: serde_json::json!({
+                "note": note
+            })
+        }
+    }
+
+    pub fn new_share_action(note_id: String, recipient: String) -> Self {
+        CreateProposalRequest {
+            action_type: "ShareNote".to_string(),
+            params: serde_json::json!({
+                "note_id": note_id,
+                "recipient": recipient
+            })
+        }
+    }
+}
+
 #[app::logic]
 impl AppState {
     #[app::init]
     pub fn init() -> AppState {
         AppState {
             messages: UnorderedMap::new(),
+            notes: UnorderedMap::new(),
+            user_permissions: UnorderedMap::new(),
+            version_history: UnorderedMap::new(),
         }
     }
 
@@ -150,6 +211,39 @@ impl AppState {
                     .map_err(|_| Error::msg("Invalid proposal ID length"))?,
                 ))
                 .send(),
+            "CreateNote" => {
+                let note: EncryptedNote = serde_json::from_value(request.params["note"].clone())
+                    .map_err(|_| Error::msg("invalid note data"))?;
+                
+                Self::external()
+                    .propose()
+                    .external_function_call(
+                        "note_storage".to_string(),
+                        "store_note".to_string(),
+                        serde_json::to_string(&note).unwrap(),
+                        0,
+                    )
+                    .send()
+            },
+            
+            "ShareNote" => {
+                let note_id = request.params["note_id"]
+                    .as_str()
+                    .ok_or_else(|| Error::msg("note_id is required"))?;
+                let recipient = request.params["recipient"]
+                    .as_str()
+                    .ok_or_else(|| Error::msg("recipient is required"))?;
+
+                Self::external()
+                    .propose()
+                    .external_function_call(
+                        "note_storage".to_string(),
+                        "share_note".to_string(),
+                        serde_json::to_string(&(note_id, recipient)).unwrap(),
+                        0,
+                    )
+                    .send()
+            },
             _ => return Err(Error::msg("Invalid action type")),
         };
 
@@ -198,5 +292,90 @@ impl AppState {
         self.messages.insert(proposal_id, messages)?;
 
         Ok(())
+    }
+
+    pub fn create_note(&mut self, note: EncryptedNote) -> Result<(), Error> {
+        if self.notes.get(&note.id)?.is_some() {
+            return Err(Error::msg("note already exists"));
+        }
+
+        self.notes.insert(note.id.clone(), note.clone())?;
+        self.version_history.insert(note.id.clone(), Vector::new())?;
+        
+        env::emit(&Event::NoteCreated { id: note.id });
+        Ok(())
+    }
+
+    pub fn update_note(&mut self, id: String, content: Vec<u8>, metadata: Option<NoteMetadata>) -> Result<(), Error> {
+        let mut note = self.notes.get(&id)?.ok_or(Error::msg("note not found"))?;
+        let mut versions = self.version_history.get(&id)?.unwrap_or_default();
+
+        // Create version from current state
+        let version = NoteVersion {
+            version_id: format!("{}_{}", id, env::block_timestamp()),
+            encrypted_content: note.encrypted_content.clone(),
+            metadata: note.metadata.clone(),
+            timestamp: env::block_timestamp(),
+        };
+        versions.push(version)?;
+
+        // Update note
+        note.encrypted_content = content;
+        if let Some(meta) = metadata {
+            note.metadata = meta;
+        }
+        note.updated_at = env::block_timestamp();
+
+        self.notes.insert(id.clone(), note)?;
+        self.version_history.insert(id.clone(), versions)?;
+
+        env::emit(&Event::NoteUpdated { id });
+        Ok(())
+    }
+
+    pub fn share_note(&mut self, id: String, with_account: String) -> Result<(), Error> {
+        let mut note = self.notes.get(&id)?.ok_or(Error::msg("note not found"))?;
+        
+        if note.shared_with.contains(&with_account) {
+            return Err(Error::msg("note already shared with this account"));
+        }
+
+        note.shared_with.push(with_account.clone());
+        self.notes.insert(id.clone(), note)?;
+
+        // Update permissions
+        let mut permissions = self.user_permissions.get(&with_account)?.unwrap_or_default();
+        permissions.push(id.clone());
+        self.user_permissions.insert(with_account.clone(), permissions)?;
+
+        env::emit(&Event::NoteShared { id, with: with_account });
+        Ok(())
+    }
+
+    pub fn delete_note(&mut self, id: String) -> Result<(), Error> {
+        let note = self.notes.get(&id)?.ok_or(Error::msg("note not found"))?;
+        
+        // Remove from all shared users' permissions
+        for user in note.shared_with.iter() {
+            if let Some(mut permissions) = self.user_permissions.get(user)? {
+                permissions.retain(|x| x != &id);
+                self.user_permissions.insert(user.to_string(), permissions)?;
+            }
+        }
+
+        self.notes.remove(&id)?;
+        self.version_history.remove(&id)?;
+
+        env::emit(&Event::NoteDeleted { id });
+        Ok(())
+    }
+
+    pub fn list_user_notes(&self, user: String) -> Result<Vec<String>, Error> {
+        Ok(self.user_permissions.get(&user)?.unwrap_or_default())
+    }
+
+    pub fn get_note_versions(&self, id: String) -> Result<Vec<NoteVersion>, Error> {
+        let versions = self.version_history.get(&id)?.ok_or(Error::msg("note not found"))?;
+        Ok(versions.entries()?.collect())
     }
 }
