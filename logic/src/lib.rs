@@ -314,7 +314,7 @@ impl AppState {
         let mut note = self.notes.get(&id)?.ok_or(Error::msg("note not found"))?;
         let mut versions = self.version_history.get(&id)?.unwrap_or_default();
 
-        let timestamp = env::timestamp_millis();
+        let timestamp = env::block_timestamp();
         
         // Create version from current state
         let version = NoteVersion {
