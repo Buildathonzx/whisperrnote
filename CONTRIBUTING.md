@@ -66,7 +66,7 @@ merod --node-name sharing-coordinator init --server-port 2429 --swarm-port 2529
    pnpm install
 
    # Initialize local devnet
-   ./deploy_devnet_fresh.sh
+   ./contracts/deploy_devnet_fresh.sh
    ```
 
 3. **Set Up Node Infrastructure:**
