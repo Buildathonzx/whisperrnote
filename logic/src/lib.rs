@@ -4,6 +4,7 @@ use calimero_sdk::serde::{Deserialize, Serialize};
 use calimero_sdk::types::Error;
 use calimero_sdk::{app, env};
 use calimero_storage::collections::{UnorderedMap, Vector};
+use std::cmp::Ordering;
 
 #[app::state(emits = Event)]
 #[derive(Debug, PartialEq, PartialOrd, BorshSerialize, BorshDeserialize)]
@@ -28,7 +29,8 @@ pub struct Message {
     created_at: String,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[borsh(crate = "calimero_sdk::borsh")]
 #[serde(crate = "calimero_sdk::serde")]
 pub struct EncryptedNote {
     id: String,
@@ -40,7 +42,8 @@ pub struct EncryptedNote {
     updated_at: u64,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[borsh(crate = "calimero_sdk::borsh")]
 #[serde(crate = "calimero_sdk::serde")]
 pub struct NoteMetadata {
     title: String,
@@ -49,7 +52,8 @@ pub struct NoteMetadata {
     encryption_version: u32,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, BorshSerialize, BorshDeserialize, Serialize, Deserialize)]
+#[borsh(crate = "calimero_sdk::borsh")]
 #[serde(crate = "calimero_sdk::serde")]
 pub struct NoteVersion {
     version_id: String,
@@ -310,12 +314,14 @@ impl AppState {
         let mut note = self.notes.get(&id)?.ok_or(Error::msg("note not found"))?;
         let mut versions = self.version_history.get(&id)?.unwrap_or_default();
 
+        let timestamp = env::block_timestamp_millis();
+        
         // Create version from current state
         let version = NoteVersion {
-            version_id: format!("{}_{}", id, env::block_timestamp()),
+            version_id: format!("{}_{}", id, timestamp),
             encrypted_content: note.encrypted_content.clone(),
             metadata: note.metadata.clone(),
-            timestamp: env::block_timestamp(),
+            timestamp,
         };
         versions.push(version)?;
 
@@ -324,7 +330,7 @@ impl AppState {
         if let Some(meta) = metadata {
             note.metadata = meta;
         }
-        note.updated_at = env::block_timestamp();
+        note.updated_at = timestamp;
 
         self.notes.insert(id.clone(), note)?;
         self.version_history.insert(id.clone(), versions)?;
