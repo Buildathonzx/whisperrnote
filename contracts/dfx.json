@@ -1,32 +1,14 @@
 {
   "canisters": {
-    "contracts_backend": {
-      "candid": "src/contracts_backend/contracts_backend.did",
-      "package": "contracts_backend",
-      "type": "rust"
-    },
-    "internet_identity": {
-      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
-      "frontend": {},
-      "remote": {
-        "id": {
-          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
-        }
-      },
+    "context_contract": {
       "type": "custom",
-      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz"
+      "candid": "./context-config/calimero_context_config_icp.did",
+      "wasm": "./context-config/calimero_context_config_icp.wasm"
     },
-
     "ledger": {
       "type": "custom",
       "wasm": "https://download.dfinity.systems/ic/aba60ffbc46acfc8990bf4d5685c1360bd7026b9/canisters/ledger-canister.wasm.gz",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/aba60ffbc46acfc8990bf4d5685c1360bd7026b9/rs/ledger_suite/icp/ledger.did"
-    },
-
-    "context_contract": {
-      "candid": "src/contracts_backend/contracts_backend.did",
-      "package": "contracts_backend",
-      "type": "rust"
     },
     "mock_external": {
       "type": "custom",
@@ -41,15 +23,12 @@
       "packtool": ""
     }
   },
-
   "networks": {
     "local": {
       "bind": "127.0.0.1:4943",
       "type": "persistent"
     }
   },
-
-  
   "output_env_file": ".env",
   "version": 1
 }
