@@ -2,6 +2,9 @@
   "context_contract": {
     "local": "bkyz2-fmaaa-aaaaa-qaaaq-cai"
   },
+  "contracts_backend": {
+    "local": "br5f7-7uaaa-aaaaa-qaaca-cai"
+  },
   "ledger": {
     "local": "bd3sg-teaaa-aaaaa-qaaba-cai"
   },
