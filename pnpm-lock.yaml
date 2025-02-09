@@ -17,6 +17,9 @@ importers:
       '@dfinity/auth-client':
         specifier: ^2.3.0
         version: 2.3.0(@dfinity/agent@2.3.0(@dfinity/candid@2.3.0(@dfinity/principal@2.3.0))(@dfinity/principal@2.3.0))(@dfinity/identity@2.3.0(@dfinity/agent@2.3.0(@dfinity/candid@2.3.0(@dfinity/principal@2.3.0))(@dfinity/principal@2.3.0))(@dfinity/principal@2.3.0))(@dfinity/principal@2.3.0)
+      '@dfinity/candid':
+        specifier: ^2.3.0
+        version: 2.3.0(@dfinity/principal@2.3.0)
       '@dfinity/principal':
         specifier: ^2.3.0
         version: 2.3.0
