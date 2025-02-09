@@ -1,6 +1,5 @@
-import { IDL } from '@dfinity/candid';
 
-export const idlFactory = ({ IDL }: { IDL: typeof IDL }) => {
+export const idlFactory = ({ IDL }: { IDL: typeof import('@dfinity/candid').IDL }) => {
   const Note = IDL.Record({
     id: IDL.Text,
     owner: IDL.Text,
