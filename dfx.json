@@ -8,17 +8,49 @@
         "node_compatibility": true
       }
     },
+    "blockchain": {
+      "candid": "contracts/src/contracts_backend/contracts_backend.did",
+      "package": "contracts_backend",
+      "type": "rust"
+    },
+    "notes": {
+      "candid": "contracts/notes/notes.did",
+      "package": "notes",
+      "type": "rust"
+    },
+    "internet_identity": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      }
+    },
     "frontend": {
       "dependencies": [
-        "hello"
+        "blockchain",
+        "notes",
+        "internet_identity"
       ],
       "frontend": {
-        "entrypoint": "out/index.html"
+        "entrypoint": "src/index.tsx"
       },
-      "source": [
-        "out"
-      ],
+      "source": ["src", "public"],
       "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
     }
   },
   "output_env_file": ".env.local",

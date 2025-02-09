@@ -1,3 +1,29 @@
+type ProposalAction = record {
+    scope: text;
+    params: ProposalParams;
+};
+
+type ProposalParams = record {
+    receiver_id: opt text;
+    method_name: opt text;
+    args: opt text;
+    amount: opt text;
+    deposit: opt text;
+};
+
+type Proposal = record {
+    id: text;
+    author: text;
+    actions: vec ProposalAction;
+    approvals: vec text;
+    min_approvals: nat32;
+};
+
 service : {
-    "greet": (text) -> (text) query;
+    get_proposal: (text) -> (Proposal) query;
+    create_proposal: (ProposalAction) -> (text);
+    approve_proposal: (text) -> ();
+    execute_proposal: (text) -> ();
+    share_note: (text, text, vec nat8) -> ();
+    get_shared_context: (text) -> (vec text) query;
 }

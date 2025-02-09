@@ -9,6 +9,7 @@ import { useState, useMemo } from 'react';
 import "../globals.css";
 import { AccessTokenWrapper } from '@calimero-network/calimero-client';
 import { getNodeUrl } from '@/lib/calimero/config';
+import { BlockchainProvider } from '@/components/providers/BlockchainProvider';
 
 const geist = Geist({
   subsets: ["latin"],
@@ -108,16 +109,18 @@ export default function RootLayout({
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <Header toggleTheme={toggleTheme} isDarkMode={mode === 'dark'} />
-            <Box
-              component="main"
-              sx={{
-                minHeight: '100vh',
-                pt: '64px',
-                backgroundColor: 'background.default',
-              }}
-            >
-              {children}
-            </Box>
+            <BlockchainProvider>
+              <Box
+                component="main"
+                sx={{
+                  minHeight: '100vh',
+                  pt: '64px',
+                  backgroundColor: 'background.default',
+                }}
+              >
+                {children}
+              </Box>
+            </BlockchainProvider>
           </ThemeProvider>
         </AccessTokenWrapper>
       </body>
