@@ -1,4 +1,5 @@
 import { ApiResponse } from '@calimero-is-near/calimero-p2p-sdk';
+import { Principal } from '@dfinity/principal';
 
 export interface ProposalAction {
   scope: string;
@@ -37,4 +38,47 @@ export interface BlockchainService {
 export interface NoteSharing {
   shareNote(noteId: string, recipient: string, encryptedKey: Uint8Array): Promise<void>;
   getSharedContext(noteId: string): Promise<string[]>;
+}
+
+export interface BlockchainConfig {
+  icpHost: string;
+  calimeroEndpoint: string;
+  calimeroWsEndpoint: string;
+  notesCanisterId: string;
+}
+
+export interface ICProposal {
+  id: string;
+  actions: ICProposalAction[];
+  authorId: string;
+}
+
+export interface ICProposalAction {
+  type: 'SetNoteContent' | 'ShareNote' | 'DeleteNote';
+  params: {
+    noteId?: string;
+    content?: string;
+    recipientId?: string;
+    encryptedKeyShare?: string;
+  };
+}
+
+export interface NoteState {
+  noteId: string;
+  version: number;
+  lastSync: number;
+  conflictResolution?: 'local' | 'remote';
+}
+
+export interface NoteKeyShare {
+  noteId: string;
+  shareId: string;
+  recipientId: string;
+  encryptedShare: string;
+}
+
+export interface SyncStatus {
+  inProgress: boolean;
+  lastSyncTime: number;
+  pendingChanges: number;
 }

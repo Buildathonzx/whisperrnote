@@ -1,57 +1,128 @@
-import React, { useState } from 'react';
-import { Note } from '@/types/note';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardActions, Typography, IconButton, Box, Chip, Menu, MenuItem } from '@mui/material';
+import { Share, MoreVert, Lock, LockOpen, Edit, Delete } from '@mui/icons-material';
 import { useBlockchain } from './providers/BlockchainProvider';
+import { decryptNote } from '@/lib/encryption/crypto';
+import { format } from 'date-fns';
+import Link from 'next/link';
 
 interface NoteCardProps {
-  note: Note;
-  onShare?: (noteId: string, recipient: string) => void;
+  id: string;
+  title: string;
+  updatedAt: Date;
+  isEncrypted: boolean;
+  sharedWith: string[];
+  onDelete?: () => Promise<void>;
+  onShare?: () => void;
 }
 
-const NoteCard: React.FC<NoteCardProps> = ({ note, onShare, ...props }) => {
-  const { sharing } = useBlockchain();
-  const [isSharing, setIsSharing] = useState(false);
-  const [recipient, setRecipient] = useState('');
+export default function NoteCard({
+  id,
+  title,
+  updatedAt,
+  isEncrypted,
+  sharedWith,
+  onDelete,
+  onShare
+}: NoteCardProps) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  const handleShare = async () => {
-    if (!recipient) return;
-    setIsSharing(true);
-    try {
-      await sharing.shareNote(
-        note.id,
-        recipient,
-        new TextEncoder().encode(note.encryptionKey)
-      );
-      onShare?.(note.id, recipient);
-    } catch (error) {
-      console.error('Failed to share note:', error);
-    } finally {
-      setIsSharing(false);
-      setRecipient('');
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDelete = async () => {
+    if (onDelete) {
+      setIsDeleting(true);
+      try {
+        await onDelete();
+      } finally {
+        setIsDeleting(false);
+        handleMenuClose();
+      }
+    }
+  };
+
+  const handleShare = () => {
+    if (onShare) {
+      onShare();
+      handleMenuClose();
     }
   };
 
   return (
-    <div className="border rounded p-4" {...props}>
-      <h3>{note.title}</h3>
-      <p>{note.content.substring(0, 50)}...</p>
-      <div className="mt-4">
-        <input
-          type="text"
-          value={recipient}
-          onChange={(e) => setRecipient(e.target.value)}
-          placeholder="Enter recipient's address"
-          className="w-full p-2 border rounded"
-        />
-        <button
-          onClick={handleShare}
-          disabled={isSharing || !recipient}
-          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
-        >
-          {isSharing ? 'Sharing...' : 'Share Note'}
-        </button>
-      </div>
-    </div>
-  );
-};
+    <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Typography variant="h6" component="h2" noWrap>
+            {title}
+          </Typography>
+          {isEncrypted ? <Lock color="primary" /> : <LockOpen color="action" />}
+        </Box>
 
-export default NoteCard;
+        <Typography variant="body2" color="text.secondary">
+          Last updated: {format(updatedAt, 'PPP')}
+        </Typography>
+
+        {sharedWith.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="caption" display="block" gutterBottom>
+              Shared with:
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {sharedWith.map((user) => (
+                <Chip
+                  key={user}
+                  label={user}
+                  size="small"
+                  variant="outlined"
+                />
+              ))}
+            </Box>
+          </Box>
+        )}
+      </CardContent>
+
+      <CardActions disableSpacing>
+        <IconButton 
+          component={Link} 
+          href={`/notes/${id}`}
+          aria-label="edit note"
+        >
+          <Edit />
+        </IconButton>
+        
+        <IconButton 
+          aria-label="share note"
+          onClick={handleShare}
+          disabled={!isEncrypted}
+        >
+          <Share />
+        </IconButton>
+
+        <IconButton
+          aria-label="note options"
+          onClick={handleMenuOpen}
+          sx={{ marginLeft: 'auto' }}
+        >
+          <MoreVert />
+        </IconButton>
+
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={handleDelete} disabled={isDeleting}>
+            <Delete sx={{ mr: 1 }} /> Delete
+          </MenuItem>
+        </Menu>
+      </CardActions>
+    </Card>
+  );
+}
