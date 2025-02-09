@@ -1,25 +1,43 @@
+import { ethers } from 'ethers';
 import bcrypt from 'bcryptjs';
-import { sign, verify } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const SALT_ROUNDS = 10;
 
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, SALT_ROUNDS);
-}
+export const hashPassword = async (password: string) => {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+};
 
-export async function comparePasswords(password: string, hash: string): Promise<boolean> {
+export const comparePasswords = async (password: string, hash: string) => {
   return bcrypt.compare(password, hash);
-}
+};
 
-export function generateToken(userId: string): string {
-  return sign({ userId }, JWT_SECRET, { expiresIn: '30d' });
-}
+export const generateToken = (userId: string) => {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
+};
 
-export function verifyToken(token: string): { userId: string } | null {
+export const verifyToken = (token: string) => {
   try {
-    return verify(token, JWT_SECRET) as { userId: string };
-  } catch (error) {
+    return jwt.verify(token, JWT_SECRET) as { userId: string };
+  } catch {
     return null;
   }
-}
+};
+
+export const getWalletMessage = (nonce: string) => {
+  return `Sign this message to verify your wallet ownership. Nonce: ${nonce}`;
+};
+
+export const verifyWalletSignature = (message: string, signature: string, address: string) => {
+  try {
+    const recoveredAddress = ethers.verifyMessage(message, signature);
+    return recoveredAddress.toLowerCase() === address.toLowerCase();
+  } catch {
+    return false;
+  }
+};
+
+export const generateNonce = () => {
+  return Math.random().toString(36).substring(2, 15);
+};

@@ -1,41 +1,45 @@
 import { prisma } from './prisma';
+import { verifyToken } from './auth-utils';
 import { NextRequest } from 'next/server';
-import { verify } from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+export const verifyAuth = async (req: NextRequest) => {
+  const token = req.headers.get('Authorization')?.replace('Bearer ', '') || 
+                cookies().get('token')?.value;
 
-export async function verifyAuth(req: NextRequest) {
-  // Check for JWT token
-  const authHeader = req.headers.get('authorization');
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.substring(7);
-    try {
-      const decoded = verify(token, JWT_SECRET) as { userId: string };
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-      });
-      return user;
-    } catch (error) {
-      return null;
-    }
+  if (!token) {
+    return null;
   }
 
-  // Check for API key
-  const apiKey = req.headers.get('x-api-key');
-  if (apiKey) {
-    const key = await prisma.apiKey.findUnique({
-      where: { key: apiKey },
-      include: { user: true }
-    });
-    
-    if (key && (!key.expiresAt || key.expiresAt > new Date())) {
-      await prisma.apiKey.update({
-        where: { id: key.id },
-        data: { lastUsed: new Date() }
-      });
-      return key.user;
-    }
+  const payload = verifyToken(token);
+  if (!payload) {
+    return null;
   }
 
-  return null;
-}
+  const user = await prisma.user.findUnique({
+    where: { id: payload.userId }
+  });
+
+  return user;
+};
+
+export const getAuthUser = async (token: string) => {
+  const payload = verifyToken(token);
+  if (!payload) {
+    return null;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: payload.userId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      walletAddress: true,
+      createdAt: true,
+      updatedAt: true,
+    }
+  });
+
+  return user;
+};
