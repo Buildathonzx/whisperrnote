@@ -1,7 +1,7 @@
 import { Actor, HttpAgent } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
-import { idlFactory } from '../declarations/notes';
-import { decryptNote, encryptNote } from '../encryption/crypto';
+import { idlFactory } from '@/lib/declarations/notes';
+import { decryptNote, encryptNote } from '@/lib/encryption/crypto';
 
 interface NoteActor {
   create_note: (note: any) => Promise<string>;
