@@ -15,6 +15,24 @@
       },
       "type": "custom",
       "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz"
+    },
+
+    "ledger": {
+      "type": "custom",
+      "wasm": "https://download.dfinity.systems/ic/aba60ffbc46acfc8990bf4d5685c1360bd7026b9/canisters/ledger-canister.wasm.gz",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/aba60ffbc46acfc8990bf4d5685c1360bd7026b9/rs/ledger_suite/icp/ledger.did"
+    },
+
+    "context_contract": {
+      "candid": "src/contracts_backend/contracts_backend.did",
+      "package": "contracts_backend",
+      "type": "rust"
+    },
+    "mock_external": {
+      "type": "custom",
+      "package": "calimero-mock-external",
+      "candid": "./context-proxy/mock/external/calimero_mock_external_icp.did",
+      "wasm": "./context-proxy/mock/external/calimero_mock_external_icp.wasm"
     }
   },
   "defaults": {
@@ -23,6 +41,15 @@
       "packtool": ""
     }
   },
+
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:4943",
+      "type": "persistent"
+    }
+  },
+
+  
   "output_env_file": ".env",
   "version": 1
 }
