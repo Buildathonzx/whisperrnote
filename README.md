@@ -32,7 +32,7 @@ Experience the freedom of accessing your notes anytime, anywhere, on virtually a
 
 ## 🚀 Getting Started
 
-1.  **Download & Install:** Choose the appropriate client for your platform from our [website](https://example.com). ⬇️
+1.  **Download & Install:** Choose the appropriate client for your platform from our [website](https://whisperrnote.space). ⬇️
 2.  **Create an Account:** Sign up for a free account to start securely storing your notes. ✍️
 3.  **Start Notetaking:** Begin capturing your thoughts and ideas with WhisperNote! 💡
 
