@@ -6,49 +6,45 @@ import { motion } from 'framer-motion';
 
 const StyledButton = styled(MuiButton)(({ theme }) => ({
   borderRadius: '12px',
-  textTransform: 'none',
-  fontWeight: 500,
-  boxShadow: theme.palette.mode === 'light' 
-    ? '0 4px 14px rgba(0, 0, 0, 0.08)' 
-    : '0 4px 14px rgba(0, 0, 0, 0.25)',
+  padding: '12px 24px',
+  fontWeight: 600,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
   '&::after': {
     content: '""',
     position: 'absolute',
-    width: '100%',
-    height: '100%',
-    top: 0,
-    left: 0,
-    pointerEvents: 'none',
-    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%)',
-    transform: 'scale(5)',
+    width: '200%',
+    height: '200%',
+    top: '-50%',
+    left: '-50%',
+    background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 50%)',
     opacity: 0,
-    transition: 'transform 0.5s, opacity 0.6s',
+    transition: 'opacity 0.3s',
   },
   '&:hover::after': {
-    opacity: 0.4,
-    transform: 'scale(0)',
-    transition: 'transform 0.3s, opacity 0.3s',
+    opacity: 1,
+  },
+  '&.variant-gradient': {
+    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+    boxShadow: '0 4px 14px rgba(59, 130, 246, 0.3)',
+    '&:hover': {
+      transform: 'translateY(-4px)',
+      boxShadow: '0 8px 20px rgba(59, 130, 246, 0.4)',
+    },
+  },
+  '&.variant-glass': {
+    background: 'rgba(255,255,255,0.1)',
+    backdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255,255,255,0.2)',
+    '&:hover': {
+      background: 'rgba(255,255,255,0.2)',
+      transform: 'translateY(-4px)',
+    },
   },
   '&.size-large': {
     padding: '14px 30px',
     fontSize: '1.1rem',
-  },
-  '&.variant-gradient': {
-    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-    color: 'white',
-    border: 'none',
-    '&:hover': {
-      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
-      boxShadow: '0 7px 20px rgba(59, 130, 246, 0.4), 0 5px 12px rgba(236, 72, 153, 0.3)',
-      transform: 'translateY(-3px)',
-    },
-    '&:active': {
-      transform: 'translateY(-1px)',
-      boxShadow: '0 3px 10px rgba(59, 130, 246, 0.3), 0 2px 5px rgba(236, 72, 153, 0.2)',
-    }
   },
   '&.variant-outline-gradient': {
     background: 'transparent',
@@ -59,17 +55,6 @@ const StyledButton = styled(MuiButton)(({ theme }) => ({
     '&:hover': {
       backgroundImage: `linear-gradient(${theme.palette.background.paper}, ${theme.palette.background.paper}), linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
       boxShadow: '0 7px 14px rgba(0, 0, 0, 0.1)',
-      transform: 'translateY(-3px)',
-    },
-  },
-  '&.variant-glass': {
-    background: 'rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    color: theme.palette.text.primary,
-    '&:hover': {
-      background: 'rgba(255, 255, 255, 0.25)',
-      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)',
       transform: 'translateY(-3px)',
     },
   },

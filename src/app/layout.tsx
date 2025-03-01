@@ -75,21 +75,24 @@ export default function RootLayout({
               root: {
                 textTransform: 'none',
                 borderRadius: '12px',
-                padding: '10px 20px',
+                padding: '12px 24px',
                 fontWeight: 500,
-                transition: 'all 0.3s ease',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 boxShadow: mode === 'light' 
-                  ? '0 4px 10px rgba(59, 130, 246, 0.15)' 
-                  : '0 4px 10px rgba(59, 130, 246, 0.3)',
+                  ? '0 4px 14px rgba(59, 130, 246, 0.2)' 
+                  : '0 4px 14px rgba(59, 130, 246, 0.4)',
                 '&:hover': {
-                  transform: 'translateY(-3px)',
+                  transform: 'translateY(-4px)',
                   boxShadow: mode === 'light'
-                    ? '0 6px 15px rgba(59, 130, 246, 0.25)'
-                    : '0 6px 15px rgba(59, 130, 246, 0.4)',
+                    ? '0 8px 20px rgba(59, 130, 246, 0.3)'
+                    : '0 8px 20px rgba(59, 130, 246, 0.5)',
                 },
               },
               contained: {
                 background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                },
               },
               outlined: {
                 borderWidth: '2px',
@@ -99,16 +102,22 @@ export default function RootLayout({
           MuiCard: {
             styleOverrides: {
               root: {
-                borderRadius: '16px',
+                borderRadius: '20px',
+                background: mode === 'light'
+                  ? 'rgba(255, 255, 255, 0.9)'
+                  : 'rgba(30, 41, 59, 0.9)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 boxShadow: mode === 'light' 
-                  ? '0 10px 25px rgba(0,0,0,0.08), 0 5px 10px rgba(0,0,0,0.05)'
-                  : '0 10px 25px rgba(0,0,0,0.3), 0 5px 10px rgba(0,0,0,0.2)',
+                  ? '0 20px 40px rgba(0, 0, 0, 0.1)'
+                  : '0 20px 40px rgba(0, 0, 0, 0.3)',
                 overflow: 'hidden',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
+                  transform: 'translateY(-8px)',
                   boxShadow: mode === 'light'
-                    ? '0 15px 30px rgba(0,0,0,0.12), 0 8px 15px rgba(0,0,0,0.08)'
-                    : '0 15px 30px rgba(0,0,0,0.4), 0 8px 15px rgba(0,0,0,0.25)',
+                    ? '0 30px 60px rgba(0, 0, 0, 0.12)'
+                    : '0 30px 60px rgba(0, 0, 0, 0.4)',
                 },
               },
             },
@@ -116,11 +125,11 @@ export default function RootLayout({
           MuiPaper: {
             styleOverrides: {
               root: {
-                borderRadius: '16px',
+                borderRadius: '20px',
                 backgroundImage: mode === 'light'
-                  ? 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,1) 100%)'
-                  : 'linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(30,41,59,1) 100%)',
-                backdropFilter: 'blur(10px)',
+                  ? 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)'
+                  : 'linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(30,41,59,0.7) 100%)',
+                backdropFilter: 'blur(12px)',
               },
               elevation1: {
                 boxShadow: mode === 'light'
