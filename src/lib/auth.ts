@@ -1,10 +1,13 @@
-import { prisma } from './prisma';
 import { verifyToken } from './auth-utils';
 import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { Identity } from '@dfinity/agent';
 import { ICPAuth } from './icp/auth';
 import { BlockchainService } from './blockchain/service';
+import { Appwrite } from 'appwrite';
+
+const appwriteClient = new Appwrite();
+appwriteClient.setEndpoint('https://appwrite.example.com/v1').setProject('your_project_id');
 
 export const verifyAuth = async (req: NextRequest) => {
   const token = req.headers.get('Authorization')?.replace('Bearer ', '') || 
@@ -19,11 +22,12 @@ export const verifyAuth = async (req: NextRequest) => {
     return null;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: payload.userId }
-  });
-
-  return user;
+  try {
+    const user = await appwriteClient.account.get();
+    return user;
+  } catch (error) {
+    return null;
+  }
 };
 
 export const getAuthUser = async (token: string) => {
@@ -32,19 +36,19 @@ export const getAuthUser = async (token: string) => {
     return null;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: payload.userId },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      walletAddress: true,
-      createdAt: true,
-      updatedAt: true,
-    }
-  });
-
-  return user;
+  try {
+    const user = await appwriteClient.account.get();
+    return {
+      id: user.$id,
+      email: user.email,
+      name: user.name,
+      walletAddress: user.walletAddress || null,
+      createdAt: user.registration,
+      updatedAt: user.updatedAt || null,
+    };
+  } catch (error) {
+    return null;
+  }
 };
 
 export class AuthManager {

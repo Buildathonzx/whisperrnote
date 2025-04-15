@@ -1,6 +1,14 @@
 import { verifyAuth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { AppwriteClient, Databases } from 'node-appwrite';
+
+const client = new AppwriteClient();
+client
+  .setEndpoint(process.env.APPWRITE_ENDPOINT || '')
+  .setProject(process.env.APPWRITE_PROJECT_ID || '')
+  .setKey(process.env.APPWRITE_API_KEY || '');
+
+const database = new Databases(client);
 
 export async function GET(req: NextRequest) {
   const user = await verifyAuth(req);
@@ -8,13 +16,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const notes = await prisma.note.findMany({
-    where: { userId: user.id },
-    include: { tags: true },
-    orderBy: { updatedAt: 'desc' }
-  });
+  try {
+    const notes = await database.listDocuments(
+      process.env.APPWRITE_DATABASE_ID || '',
+      process.env.APPWRITE_COLLECTION_ID || '',
+      [`equal("userId", "${user.id}")`]
+    );
 
-  return NextResponse.json(notes);
+    return NextResponse.json(notes.documents);
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to fetch notes' },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -25,22 +40,19 @@ export async function POST(req: NextRequest) {
 
   try {
     const { title, content, tags = [], isPublic = false } = await req.json();
-    
-    const note = await prisma.note.create({
-      data: {
+
+    const note = await database.createDocument(
+      process.env.APPWRITE_DATABASE_ID || '',
+      process.env.APPWRITE_COLLECTION_ID || '',
+      'unique()',
+      {
         title,
         content,
         isPublic,
         userId: user.id,
-        tags: {
-          connectOrCreate: tags.map((tag: string) => ({
-            where: { name: tag },
-            create: { name: tag }
-          }))
-        }
-      },
-      include: { tags: true }
-    });
+        tags
+      }
+    );
 
     return NextResponse.json(note);
   } catch (error) {

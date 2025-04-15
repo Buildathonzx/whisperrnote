@@ -1,7 +1,10 @@
 import { verifyAuth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { hashPassword, comparePasswords } from '@/lib/auth-utils';
+import { AppwriteClient, Users } from '@/lib/appwrite';
+
+const client = new AppwriteClient();
+const users = new Users(client);
 
 export async function GET(req: NextRequest) {
   const user = await verifyAuth(req);
@@ -21,9 +24,9 @@ export async function PUT(req: NextRequest) {
 
   try {
     const { name, currentPassword, newPassword } = await req.json();
-    
+
     const updateData: any = {};
-    
+
     if (name) {
       updateData.name = name;
     }
@@ -39,17 +42,7 @@ export async function PUT(req: NextRequest) {
       updateData.passwordHash = await hashPassword(newPassword);
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    });
+    const updatedUser = await users.update(user.id, updateData);
 
     return NextResponse.json(updatedUser);
   } catch (error) {
