@@ -15,6 +15,59 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
+const glassTheme = createTheme({
+  palette: {
+    mode: 'light',
+    background: {
+      default: 'rgba(245, 247, 250, 0.85)',
+      paper: 'rgba(255,255,255,0.18)',
+    },
+    primary: { main: '#3B82F6' },
+    secondary: { main: '#EC4899' },
+  },
+  shape: {
+    borderRadius: 18,
+  },
+  components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          background: 'rgba(255,255,255,0.18)',
+          backdropFilter: 'blur(16px) saturate(180%)',
+          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
+          border: '1px solid rgba(255,255,255,0.24)',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          background: 'rgba(255,255,255,0.12)',
+          boxShadow: '0 10px 30px 0 rgba(31, 38, 135, 0.18)',
+          borderRadius: 18,
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          background: 'rgba(255,255,255,0.22)',
+          border: '1px solid rgba(255,255,255,0.32)',
+          boxShadow: '0 2px 8px rgba(31,38,135,0.10)',
+          borderRadius: 12,
+          backdropFilter: 'blur(8px)',
+          transition: 'background 0.2s, box-shadow 0.2s, transform 0.2s',
+          '&:hover': {
+            background: 'rgba(255,255,255,0.32)',
+            boxShadow: '0 6px 18px rgba(31,38,135,0.18)',
+            transform: 'translateY(-2px) scale(1.04)',
+          },
+        },
+      },
+    },
+  },
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -226,7 +279,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={geist.className}>
         <AccessTokenWrapper getNodeUrl={getNodeUrl}>
-          <ThemeProvider theme={theme}>
+          <ThemeProvider theme={glassTheme}>
             <CssBaseline />
             <Header toggleTheme={toggleTheme} isDarkMode={mode === 'dark'} />
             <BlockchainProvider>
