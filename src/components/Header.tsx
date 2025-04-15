@@ -203,3 +203,50 @@ const Header: React.FC<HeaderProps> = ({ toggleTheme, isDarkMode }) => {
                 <Keyboard />
               </IconButton>
               <Switch
+                checked={isDarkMode}
+                onChange={toggleTheme}
+                name="darkMode"
+                inputProps={{ 'aria-label': 'toggle dark mode' }}
+              />
+              <IconButton
+                color="inherit"
+                component={Link}
+                href="/settings"
+                size="small"
+                sx={{
+                  background: 'rgba(255,255,255,0.22)',
+                  borderRadius: '12px',
+                  boxShadow: 1,
+                  '&:hover': { background: 'rgba(255,255,255,0.32)' }
+                }}
+              >
+                <Settings />
+              </IconButton>
+              <IconButton
+                color="inherit"
+                component={Link}
+                href="/profile"
+                size="small"
+                sx={{
+                  background: 'rgba(255,255,255,0.22)',
+                  borderRadius: '12px',
+                  boxShadow: 1,
+                  '&:hover': { background: 'rgba(255,255,255,0.32)' }
+                }}
+              >
+                <AccountCircle />
+              </IconButton>
+            </Stack>
+          )}
+        </Toolbar>
+      </MotionAppBar>
+
+      <KeyboardShortcuts 
+        open={showKeyboardShortcuts}
+        onClose={() => setShowKeyboardShortcuts(false)}
+      />
+    </>
+  );
+};
+
+export default Header;
