@@ -18,6 +18,7 @@ export default function NotesPage() {
   const [open, setOpen] = useState(false);
   const [newNote, setNewNote] = useState({ title: '', content: '' });
   const [userId, setUserId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     // Get current user and fetch notes
@@ -27,7 +28,7 @@ export default function NotesPage() {
         setUserId(user.$id);
         const res = await fetch(`/api/notes?userId=${user.$id}`);
         const data = await res.json();
-        setNotes(data.notes?.documents || []);
+        setNotes(data.notes?.documents || data.notes || []);
       } finally {
         setLoading(false);
       }
@@ -36,23 +37,28 @@ export default function NotesPage() {
   }, []);
 
   const handleCreate = async () => {
-    if (!userId) return;
-    const res = await fetch('/api/notes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title: newNote.title,
-        content: newNote.content,
-        userId,
-        isPublic: false,
-        tags: []
-      })
-    });
-    const data = await res.json();
-    if (data.note) {
-      setNotes((prev) => [data.note, ...prev]);
-      setOpen(false);
-      setNewNote({ title: '', content: '' });
+    if (!userId || !newNote.title.trim()) return;
+    setCreating(true);
+    try {
+      const res = await fetch('/api/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newNote.title,
+          content: newNote.content,
+          userId,
+          isPublic: false,
+          tags: []
+        })
+      });
+      const data = await res.json();
+      if (data.note) {
+        setNotes((prev) => [data.note, ...prev]);
+        setOpen(false);
+        setNewNote({ title: '', content: '' });
+      }
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -141,8 +147,8 @@ export default function NotesPage() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleCreate} variant="contained">Create</Button>
+          <Button onClick={() => setOpen(false)} disabled={creating}>Cancel</Button>
+          <Button onClick={handleCreate} variant="contained" disabled={creating || !newNote.title.trim()}>{creating ? 'Creating...' : 'Create'}</Button>
         </DialogActions>
       </Dialog>
     </MotionContainer>
