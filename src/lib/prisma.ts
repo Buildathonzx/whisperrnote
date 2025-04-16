@@ -1,1 +1,0 @@
-// File removed: Prisma client is no longer used. Use src/lib/appwrite.ts instead.

@@ -10,6 +10,7 @@ const MotionPaper = motion(Paper);
 
 export default function NotePage({ params }: { params: { noteId: string } }) {
   const router = useRouter();
+  const { noteId } = params;
   const [note, setNote] = useState({
     title: '',
     content: '',
@@ -19,15 +20,45 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
   const [newTag, setNewTag] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch note from API
+    const fetchNote = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/notes/${noteId}`);
+        const data = await res.json();
+        if (data.note) {
+          setNote({
+            title: data.note.title,
+            content: data.note.content,
+            tags: data.note.tags || [],
+            isPublic: data.note.isPublic || false
+          });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchNote();
+  }, [noteId]);
 
   const handleSave = async () => {
     setIsSaving(true);
-    // TODO: Implement save functionality
-    setIsSaving(false);
+    try {
+      await fetch(`/api/notes/${noteId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(note)
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDelete = async () => {
-    // TODO: Implement delete functionality
+    await fetch(`/api/notes/${noteId}`, { method: 'DELETE' });
     setIsDeleteDialogOpen(false);
     router.push('/notes');
   };
