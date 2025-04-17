@@ -1,5 +1,6 @@
 import { databases, ID } from './appwrite';
 import { account } from '@/lib/appwrite';
+import { Permission, Role } from 'appwrite';
 
 const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 const notesCollectionId = process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!;
@@ -17,8 +18,18 @@ export interface Note {
 }
 
 export async function createNote(note: Omit<Note, 'id' | '$id' | 'createdAt' | 'updatedAt'>) {
-  // Appwrite will auto-generate id, createdAt, updatedAt
-  return databases.createDocument(databaseId, notesCollectionId, ID.unique(), note);
+  const user = await account.get();
+  return databases.createDocument(
+    databaseId,
+    notesCollectionId,
+    ID.unique(),
+    note,
+    [
+      Permission.read(Role.user(user.$id)),
+      Permission.update(Role.user(user.$id)),
+      Permission.delete(Role.user(user.$id))
+    ]
+  );
 }
 
 export async function getNote(noteId: string) {
