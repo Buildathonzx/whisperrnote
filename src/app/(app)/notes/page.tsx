@@ -5,26 +5,87 @@ import { Add } from '@mui/icons-material';
 import { Note } from "../../../types/notes";
 import NoteComponent from "./Note";
 import { motion } from "framer-motion";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from '@mui/material';
+import { account } from '@/lib/appwrite';
+import { createNoteClient, listNotesClient } from '@/lib/notes';
 
 const MotionContainer = motion(Container);
 const MotionGrid = motion(Grid);
 
-const dummyNotes: Note[] = [
-  {
-    id: "1",
-    title: "First Note",
-    content: "This is the content of the first note.",
-    createdAt: new Date(),
-  },
-  {
-    id: "2",
-    title: "Second Note",
-    content: "This is the content of the second note.",
-    createdAt: new Date(),
-  },
-];
-
 export default function NotesPage() {
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [newNote, setNewNote] = useState({ title: '', content: '' });
+  const [userId, setUserId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    account.get().catch(() => {
+      router.replace('/login');
+    });
+  }, [router]);
+
+  useEffect(() => {
+    // Get current user and fetch notes using Appwrite client SDK
+    const fetchUserAndNotes = async () => {
+      try {
+        const user = await account.get();
+        setUserId(user.$id);
+        const data = await listNotesClient(user.$id);
+        // Map Appwrite documents to Note type
+        setNotes((data.documents || []).map((doc: any) => ({
+          id: doc.id || doc.$id,
+          title: doc.title,
+          content: doc.content,
+          userId: doc.userId,
+          isPublic: doc.isPublic,
+          tags: doc.tags || [],
+          createdAt: doc.createdAt,
+          updatedAt: doc.updatedAt
+        })));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserAndNotes();
+  }, []);
+
+  const handleCreate = async () => {
+    if (!userId || !newNote.title.trim()) return;
+    setCreating(true);
+    try {
+      const doc = await createNoteClient({
+        title: newNote.title,
+        content: newNote.content,
+        userId,
+        isPublic: false,
+        tags: []
+      });
+      if (doc) {
+        const note = {
+          id: doc.id || doc.$id,
+          title: doc.title,
+          content: doc.content,
+          userId: doc.userId,
+          isPublic: doc.isPublic,
+          tags: doc.tags || [],
+          createdAt: doc.createdAt,
+          updatedAt: doc.updatedAt
+        };
+        setNotes((prev) => [note, ...prev]);
+        setOpen(false);
+        setNewNote({ title: '', content: '' });
+      }
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <MotionContainer 
       maxWidth="lg" 
@@ -55,7 +116,7 @@ export default function NotesPage() {
       </Box>
 
       <Grid container spacing={3}>
-        {dummyNotes.map((note, index) => (
+        {notes.map((note, index) => (
           <MotionGrid 
             item 
             xs={12} 
@@ -83,9 +144,37 @@ export default function NotesPage() {
         component={motion.button}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
+        onClick={() => setOpen(true)}
       >
         <Add />
       </Fab>
+
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle>New Note</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Title"
+            fullWidth
+            value={newNote.title}
+            onChange={e => setNewNote(n => ({ ...n, title: e.target.value }))}
+          />
+          <TextField
+            margin="dense"
+            label="Content"
+            fullWidth
+            multiline
+            minRows={4}
+            value={newNote.content}
+            onChange={e => setNewNote(n => ({ ...n, content: e.target.value }))}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)} disabled={creating}>Cancel</Button>
+          <Button onClick={handleCreate} variant="contained" disabled={creating || !newNote.title.trim()}>{creating ? 'Creating...' : 'Create'}</Button>
+        </DialogActions>
+      </Dialog>
     </MotionContainer>
   );
 }

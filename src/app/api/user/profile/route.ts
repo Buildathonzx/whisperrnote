@@ -1,61 +1,32 @@
 import { verifyAuth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
-import { hashPassword, comparePasswords } from '@/lib/auth-utils';
+import { account } from '@/lib/appwrite';
 
 export async function GET(req: NextRequest) {
-  const user = await verifyAuth(req);
-  if (!user) {
+  // This endpoint should only be used for server-side admin actions or debugging.
+  // For client-side profile, use the Appwrite account API directly in the browser.
+  try {
+    const user = await account.get();
+    return NextResponse.json(user);
+  } catch (err) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const { passwordHash, ...userWithoutPassword } = user;
-  return NextResponse.json(userWithoutPassword);
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await verifyAuth(req);
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
-    const { name, currentPassword, newPassword } = await req.json();
-    
-    const updateData: any = {};
-    
+    const { name, newPassword, currentPassword } = await req.json();
+    let updatedUser = null;
     if (name) {
-      updateData.name = name;
+      updatedUser = await account.updateName(name);
     }
-
     if (currentPassword && newPassword) {
-      const isValidPassword = await comparePasswords(currentPassword, user.passwordHash);
-      if (!isValidPassword) {
-        return NextResponse.json(
-          { error: 'Current password is incorrect' },
-          { status: 400 }
-        );
-      }
-      updateData.passwordHash = await hashPassword(newPassword);
+      await account.updatePassword(newPassword, currentPassword);
+      // Optionally, you can fetch the updated user again
+      updatedUser = await account.get();
     }
-
-    const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    });
-
-    return NextResponse.json(updatedUser);
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to update profile' },
-      { status: 400 }
-    );
+    return NextResponse.json(updatedUser || { success: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || 'Failed to update profile' }, { status: 400 });
   }
 }

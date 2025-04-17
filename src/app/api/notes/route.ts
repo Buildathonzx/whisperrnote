@@ -1,52 +1,26 @@
-import { verifyAuth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { createNote, listNotes } from '@/lib/notes';
 
-export async function GET(req: NextRequest) {
-  const user = await verifyAuth(req);
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+// POST /api/notes - Create a new note
+export async function POST(req: NextRequest) {
+  try {
+    const { title, content, userId, isPublic = false, tags = [] } = await req.json();
+    const note = await createNote({ title, content, userId, isPublic, tags });
+    return NextResponse.json({ note });
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || 'Failed to create note' }, { status: 400 });
   }
-
-  const notes = await prisma.note.findMany({
-    where: { userId: user.id },
-    include: { tags: true },
-    orderBy: { updatedAt: 'desc' }
-  });
-
-  return NextResponse.json(notes);
 }
 
-export async function POST(req: NextRequest) {
-  const user = await verifyAuth(req);
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+// GET /api/notes?userId=... - List notes for a user
+export async function GET(req: NextRequest) {
   try {
-    const { title, content, tags = [], isPublic = false } = await req.json();
-    
-    const note = await prisma.note.create({
-      data: {
-        title,
-        content,
-        isPublic,
-        userId: user.id,
-        tags: {
-          connectOrCreate: tags.map((tag: string) => ({
-            where: { name: tag },
-            create: { name: tag }
-          }))
-        }
-      },
-      include: { tags: true }
-    });
-
-    return NextResponse.json(note);
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create note' },
-      { status: 400 }
-    );
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+    if (!userId) return NextResponse.json({ error: 'userId is required' }, { status: 400 });
+    const notes = await listNotes(userId);
+    return NextResponse.json({ notes });
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || 'Failed to fetch notes' }, { status: 400 });
   }
 }

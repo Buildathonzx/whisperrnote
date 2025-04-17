@@ -1,214 +1,64 @@
-'use client';
-
-import { useState } from 'react';
-import { Container, Box, Typography, TextField, Button, Paper, Divider } from '@mui/material';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { account, ID } from "@/lib/appwrite";
 
 export default function SignupPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleEmailSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
-
+  const register = async () => {
+    setError("");
     try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Signup failed');
-      }
-
-      localStorage.setItem('token', data.token);
-      router.push('/dashboard');
+      await account.create(ID.unique(), email, password, name);
+      await account.createEmailPasswordSession(email, password);
+      router.push("/notes");
     } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      setError('Please install MetaMask to continue');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const accounts = await window.ethereum.request({ 
-        method: 'eth_requestAccounts' 
-      });
-      
-      const address = accounts[0];
-      
-      // Get nonce
-      const nonceRes = await fetch('/api/auth/wallet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address, action: 'getNonce' })
-      });
-      
-      const { nonce } = await nonceRes.json();
-      
-      // Sign message
-      const message = `Sign this message to verify your wallet ownership. Nonce: ${nonce}`;
-      const signature = await window.ethereum.request({
-        method: 'personal_sign',
-        params: [message, address]
-      });
-
-      // Verify signature and create/login user
-      const res = await fetch('/api/auth/wallet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address, signature })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Wallet authentication failed');
-      }
-
-      localStorage.setItem('token', data.token);
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      setError(err?.message || "Registration failed");
     }
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-      }}>
-        <Paper 
-          elevation={3} 
-          component={motion.div}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          sx={{ p: 4 }}
-        >
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Create your account
-          </Typography>
-          
-          <Button
-            fullWidth
-            variant="outlined"
-            sx={{ mt: 3, mb: 2 }}
-            onClick={connectWallet}
-            disabled={loading}
-          >
-            Connect with MetaMask
-          </Button>
-
-          <Divider sx={{ my: 2 }}>Or</Divider>
-
-          <Box component="form" onSubmit={handleEmailSignup}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="email"
-              label="Email Address"
-              autoComplete="email"
-              value={formData.email}
-              onChange={handleChange}
-              autoFocus
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              autoComplete="new-password"
-              value={formData.password}
-              onChange={handleChange}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="confirmPassword"
-              label="Confirm Password"
-              type="password"
-              autoComplete="new-password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
-
-            {error && (
-              <Typography color="error" align="center" sx={{ mt: 2 }}>
-                {error}
-              </Typography>
-            )}
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
-            >
-              Sign Up with Email
-            </Button>
-            
-            <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-              Already have an account?{' '}
-              <Link href="/login" style={{ color: 'primary.main' }}>
-                Sign in
-              </Link>
-            </Typography>
-          </Box>
-        </Paper>
-      </Box>
-    </Container>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
+      <div className="backdrop-blur-lg bg-white/70 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-purple-100 animate-fade-in">
+        <img src="/logo/whisperrnote.png" alt="WhisperrNote Logo" className="mx-auto mb-6 w-20 h-20 rounded-full shadow-lg" />
+        <h2 className="text-3xl font-extrabold mb-2 text-center text-purple-700 tracking-tight">Create Account</h2>
+        <p className="mb-6 text-center text-gray-500">Sign up to get started</p>
+        {error && <p className="mb-4 text-red-500 text-center animate-shake">{error}</p>}
+        <form onSubmit={e => e.preventDefault()} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/80 placeholder-gray-400 transition"
+            autoComplete="email"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/80 placeholder-gray-400 transition"
+            autoComplete="new-password"
+          />
+          <input
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/80 placeholder-gray-400 transition"
+            autoComplete="name"
+          />
+          <button type="button" onClick={register} className="w-full py-3 px-4 bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl font-bold shadow transition-all duration-200">Register</button>
+        </form>
+        <p className="mt-6 text-center text-gray-600">
+          Already have an account? <a href="/login" className="text-purple-600 hover:underline">Login</a>
+        </p>
+      </div>
+    </div>
   );
 }
