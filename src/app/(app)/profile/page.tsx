@@ -3,10 +3,33 @@
 import { Container, Typography, Paper, Avatar, Box, Button, Grid, Stack, Chip, Divider } from '@mui/material';
 import { Edit, AccessTime, NoteAdd, Folder } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { account } from '@/lib/appwrite';
 
 const MotionPaper = motion(Paper);
 
 export default function ProfilePage() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    account.get()
+      .then(setUser)
+      .catch(() => setError('Failed to load user info'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const getInitials = (name: string, email: string) => {
+    if (name) {
+      return name.split(' ').map((n) => n[0]).join('').toUpperCase();
+    }
+    if (email) {
+      return email[0].toUpperCase();
+    }
+    return '?';
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Grid container spacing={4}>
@@ -19,28 +42,36 @@ export default function ProfilePage() {
             transition={{ duration: 0.5 }}
             sx={{ p: 3, textAlign: 'center' }}
           >
-            <Avatar
-              sx={{
-                width: 120,
-                height: 120,
-                margin: '0 auto 1rem',
-                bgcolor: 'primary.main',
-                fontSize: '3rem'
-              }}
-            >
-              JD
-            </Avatar>
-            <Typography variant="h5" gutterBottom>John Doe</Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              john.doe@example.com
-            </Typography>
-            <Button
-              variant="outlined"
-              startIcon={<Edit />}
-              sx={{ mt: 2 }}
-            >
-              Edit Profile
-            </Button>
+            {loading ? (
+              <Typography>Loading...</Typography>
+            ) : error ? (
+              <Typography color="error">{error}</Typography>
+            ) : (
+              <>
+                <Avatar
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    margin: '0 auto 1rem',
+                    bgcolor: 'primary.main',
+                    fontSize: '3rem'
+                  }}
+                >
+                  {getInitials(user?.name, user?.email)}
+                </Avatar>
+                <Typography variant="h5" gutterBottom>{user?.name || 'No Name'}</Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  {user?.email || 'No Email'}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<Edit />}
+                  sx={{ mt: 2 }}
+                >
+                  Edit Profile
+                </Button>
+              </>
+            )}
           </MotionPaper>
         </Grid>
 
