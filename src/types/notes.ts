@@ -2,16 +2,11 @@ export interface Note {
   id: string;
   title: string;
   content: string;
-  encryptedContent?: string;
-  isEncrypted: boolean;
-  ownerId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  userId: string;
   isPublic: boolean;
-  tags: string[];
-  sharedWith: string[];
-  collectionId?: string;
-  version: number;
+  tags?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface NoteCollection {

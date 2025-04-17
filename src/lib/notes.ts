@@ -1,4 +1,5 @@
 import { databases, ID } from './appwrite';
+import { account } from '@/lib/appwrite';
 
 const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 const notesCollectionId = process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!;
@@ -36,6 +37,19 @@ export async function listNotes(userId: string) {
   // Only return notes for the given user
   // Query.equal is available from 'appwrite' as Query
   // To avoid import issues, use string query
+  return databases.listDocuments(databaseId, notesCollectionId, [
+    // @ts-ignore
+    { attribute: 'userId', operator: 'equal', value: [userId] }
+  ]);
+}
+
+export async function createNoteClient(note: Omit<Note, 'id' | '$id' | 'createdAt' | 'updatedAt'>) {
+  // Use Appwrite client SDK directly in the browser
+  return databases.createDocument(databaseId, notesCollectionId, ID.unique(), note);
+}
+
+export async function listNotesClient(userId: string) {
+  // Use Appwrite client SDK directly in the browser
   return databases.listDocuments(databaseId, notesCollectionId, [
     // @ts-ignore
     { attribute: 'userId', operator: 'equal', value: [userId] }

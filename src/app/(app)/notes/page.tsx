@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from '@mui/material';
 import { account } from '@/lib/appwrite';
+import { createNoteClient, listNotesClient } from '@/lib/notes';
 
 const MotionContainer = motion(Container);
 const MotionGrid = motion(Grid);
@@ -21,14 +22,23 @@ export default function NotesPage() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    // Get current user and fetch notes
+    // Get current user and fetch notes using Appwrite client SDK
     const fetchUserAndNotes = async () => {
       try {
         const user = await account.get();
         setUserId(user.$id);
-        const res = await fetch(`/api/notes?userId=${user.$id}`);
-        const data = await res.json();
-        setNotes(data.notes?.documents || data.notes || []);
+        const data = await listNotesClient(user.$id);
+        // Map Appwrite documents to Note type
+        setNotes((data.documents || []).map((doc: any) => ({
+          id: doc.id || doc.$id,
+          title: doc.title,
+          content: doc.content,
+          userId: doc.userId,
+          isPublic: doc.isPublic,
+          tags: doc.tags || [],
+          createdAt: doc.createdAt,
+          updatedAt: doc.updatedAt
+        })));
       } finally {
         setLoading(false);
       }
@@ -40,20 +50,25 @@ export default function NotesPage() {
     if (!userId || !newNote.title.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch('/api/notes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: newNote.title,
-          content: newNote.content,
-          userId,
-          isPublic: false,
-          tags: []
-        })
+      const doc = await createNoteClient({
+        title: newNote.title,
+        content: newNote.content,
+        userId,
+        isPublic: false,
+        tags: []
       });
-      const data = await res.json();
-      if (data.note) {
-        setNotes((prev) => [data.note, ...prev]);
+      if (doc) {
+        const note = {
+          id: doc.id || doc.$id,
+          title: doc.title,
+          content: doc.content,
+          userId: doc.userId,
+          isPublic: doc.isPublic,
+          tags: doc.tags || [],
+          createdAt: doc.createdAt,
+          updatedAt: doc.updatedAt
+        };
+        setNotes((prev) => [note, ...prev]);
         setOpen(false);
         setNewNote({ title: '', content: '' });
       }
