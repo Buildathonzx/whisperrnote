@@ -6,6 +6,7 @@ import { Note } from "../../../types/notes";
 import NoteComponent from "./Note";
 import { motion } from "framer-motion";
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from '@mui/material';
 import { account } from '@/lib/appwrite';
 import { createNoteClient, listNotesClient } from '@/lib/notes';
@@ -20,6 +21,14 @@ export default function NotesPage() {
   const [newNote, setNewNote] = useState({ title: '', content: '' });
   const [userId, setUserId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    account.get().catch(() => {
+      router.replace('/login');
+    });
+  }, [router]);
 
   useEffect(() => {
     // Get current user and fetch notes using Appwrite client SDK
