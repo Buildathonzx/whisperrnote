@@ -31,3 +31,5 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: error?.message || 'Failed to delete note' }, { status: 400 });
   }
 }
+
+export const runtime = 'nodejs';

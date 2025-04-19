@@ -30,3 +30,6 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: err?.message || 'Failed to update profile' }, { status: 400 });
   }
 }
+
+
+export const runtime = 'nodejs';
