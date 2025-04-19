@@ -1,6 +1,5 @@
 import { account, ID } from './appwrite';
 import { NextRequest } from 'next/server';
-import { cookies } from 'next/headers';
 import { Identity } from '@dfinity/agent';
 import { ICPAuth } from './icp/auth';
 import { BlockchainService } from './blockchain/service';
@@ -50,8 +49,7 @@ export const completeRecovery = async (userId: string, secret: string, password:
 };
 
 export const verifyAuth = async (req: NextRequest) => {
-  const token = req.headers.get('Authorization')?.replace('Bearer ', '') || 
-                cookies().get('token')?.value;
+  const token = req.headers.get('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
     return null;
