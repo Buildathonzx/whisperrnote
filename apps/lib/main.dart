@@ -110,19 +110,18 @@ class _HomeScaffoldState extends State<HomeScaffold> {
       appBar: AppBar(
         title: const Text('WhisperNote'),
       ),
-      body: Row(
+      body: ResizableContainer(
+        direction: Axis.horizontal,
         children: [
-          ResizableContainer(
-            direction: Axis.horizontal,
-            minWidth: 64,
-            maxWidth: 320,
-            initialWidth: 220,
+          ResizableChild(
+            size: const ResizableSize.pixels(220, min: 64, max: 320),
             child: ModernSidebar(
               selectedIndex: _selectedIndex,
               onItemSelected: _onSidebarItemSelected,
             ),
           ),
-          Expanded(
+          ResizableChild(
+            size: const ResizableSize.expand(),
             child: Center(
               child: Text(
                 'Selected tab: $_selectedIndex',
