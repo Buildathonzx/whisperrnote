@@ -9,9 +9,11 @@ import 'package:whisperrnote_app/features/shared/shared_notes_screen.dart';
 import 'package:whisperrnote_app/features/profile/profile_screen.dart';
 import 'package:whisperrnote_app/features/settings/settings_screen.dart';
 import 'package:whisperrnote_app/features/dashboard/dashboard_screen.dart';
+import 'package:whisperrnote_app/features/tags/tags_screen.dart';
 import 'modern_sidebar.dart';
 import 'modern_bottom_bar.dart';
 import 'package:flutter_resizable_container/flutter_resizable_container.dart';
+import 'widgets/universal_search_bar.dart';
 
 final router = GoRouter(
   initialLocation: '/notes',
@@ -59,6 +61,10 @@ final router = GoRouter(
             ),
           ],
         ),
+        GoRoute(
+          path: '/tags',
+          builder: (context, state) => const TagsScreen(),
+        ),
       ],
     ),
   ],
@@ -99,6 +105,17 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final isLargeScreen = MediaQuery.of(context).size.width >= 800;
+    Widget contentWithSearch = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        UniversalSearchBar(
+          onSearch: (query, pageContext) {
+            // TODO: Implement universal search logic for notes, todos, tags, shared, settings, etc.
+          },
+        ),
+        Expanded(child: widget.child),
+      ],
+    );
     return Scaffold(
       body: isLargeScreen
           ? ResizableContainer(
@@ -115,11 +132,11 @@ class _AppShellState extends State<AppShell> {
                 ),
                 ResizableChild(
                   size: const ResizableSize.expand(),
-                  child: widget.child,
+                  child: contentWithSearch,
                 ),
               ],
             )
-          : widget.child,
+          : contentWithSearch,
       bottomNavigationBar: isLargeScreen
           ? null
           : ModernBottomBar(
