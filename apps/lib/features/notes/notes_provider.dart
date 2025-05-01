@@ -70,7 +70,9 @@ class NotesNotifier extends StateNotifier<List<Note>> {
     List<String> tags = const [],
   }) async {
     final now = DateTime.now();
-    final id = const Uuid().v4();
+    final id = DateTime.now()
+        .millisecondsSinceEpoch
+        .toString(); // fallback if uuid not available
     await LocalDbService().insertNote(
       id: id,
       title: title,

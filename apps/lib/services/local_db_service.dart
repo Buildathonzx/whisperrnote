@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:flutter/foundation.dart';
 
 class LocalDbService {
   static final LocalDbService _instance = LocalDbService._internal();
@@ -11,6 +13,10 @@ class LocalDbService {
   String? _dbPath;
 
   Future<void> init() async {
+    if (!kIsWeb &&
+        (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+      databaseFactory = databaseFactoryFfi;
+    }
     final home = Platform.isWindows
         ? Platform.environment['USERPROFILE']
         : Platform.environment['HOME'];
