@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_resizable_container/flutter_resizable_container.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class ModernSidebar extends StatefulWidget {
   final int selectedIndex;
@@ -19,15 +22,70 @@ class ModernSidebar extends StatefulWidget {
 }
 
 class _ModernSidebarState extends State<ModernSidebar> {
-  void _toggleSidebar(double currentWidth) {
+  double _lastExpandedWidth = 220;
+  String _username = 'guest';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastExpandedWidth();
+  }
+
+  Future<String> _getConfigPath() async {
+    final home = Platform.isWindows
+        ? Platform.environment['USERPROFILE']
+        : Platform.environment['HOME'];
+    final configDir = Directory('$home/.whisperrnote/user/$_username');
+    if (!await configDir.exists()) {
+      await configDir.create(recursive: true);
+    }
+    return '${configDir.path}/config.json';
+  }
+
+  Future<void> _loadLastExpandedWidth() async {
+    try {
+      final configPath = await _getConfigPath();
+      final file = File(configPath);
+      if (await file.exists()) {
+        final jsonData = jsonDecode(await file.readAsString());
+        setState(() {
+          _lastExpandedWidth =
+              (jsonData['sidebarWidth'] as num?)?.toDouble() ?? 220;
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveLastExpandedWidth(double width) async {
+    try {
+      final configPath = await _getConfigPath();
+      final file = File(configPath);
+      Map<String, dynamic> jsonData = {};
+      if (await file.exists()) {
+        jsonData = jsonDecode(await file.readAsString());
+      }
+      jsonData['sidebarWidth'] = width;
+      await file.writeAsString(jsonEncode(jsonData));
+    } catch (_) {}
+  }
+
+  void _toggleSidebar(double currentWidth) async {
     if (widget.resizableController != null) {
       final isMin = currentWidth <= 64;
-      widget.resizableController!.setSizes([
-        isMin
-            ? const ResizableSize.pixels(320, min: 64, max: 320)
-            : const ResizableSize.pixels(64, min: 64, max: 320),
-        const ResizableSize.expand(),
-      ]);
+      if (isMin) {
+        // Expand to last expanded width
+        widget.resizableController!.setSizes([
+          ResizableSize.pixels(_lastExpandedWidth, min: 64, max: 320),
+          const ResizableSize.expand(),
+        ]);
+      } else {
+        // Save current width before collapsing
+        await _saveLastExpandedWidth(currentWidth);
+        widget.resizableController!.setSizes([
+          const ResizableSize.pixels(64, min: 64, max: 320),
+          const ResizableSize.expand(),
+        ]);
+      }
     }
   }
 
@@ -81,6 +139,11 @@ class _ModernSidebarState extends State<ModernSidebar> {
           builder: (context, constraints) {
             final currentWidth = constraints.maxWidth;
             final isCollapsed = currentWidth <= 120;
+            // Save width on manual resize (if not collapsed)
+            if (!isCollapsed && (currentWidth - _lastExpandedWidth).abs() > 1) {
+              _lastExpandedWidth = currentWidth;
+              _saveLastExpandedWidth(currentWidth);
+            }
             return Column(
               children: [
                 Padding(

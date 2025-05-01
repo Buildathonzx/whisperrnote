@@ -29,22 +29,38 @@ class _SharedNotesScreenState extends State<SharedNotesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Shared Notes'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Shared with me'),
-            Tab(text: 'Shared by me'),
+      // Removed AppBar
+      body: SafeArea(
+        // Added SafeArea for better layout without AppBar
+        child: Column(
+          children: [
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Shared with me'),
+                Tab(text: 'Shared by me'),
+              ],
+              // Ensure labels are visible in the current theme
+              labelColor: Theme.of(context).textTheme.bodyLarge?.color,
+              unselectedLabelColor: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.color
+                  ?.withOpacity(0.7),
+              indicatorColor: Theme.of(context).colorScheme.primary,
+            ),
+            Expanded(
+              // Make TabBarView fill remaining space
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _SharedWithMeTab(),
+                  _SharedByMeTab(),
+                ],
+              ),
+            ),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _SharedWithMeTab(),
-          _SharedByMeTab(),
-        ],
       ),
     );
   }

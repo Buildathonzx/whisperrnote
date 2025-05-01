@@ -11,16 +11,6 @@ class SettingsScreen extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: const Color(0xFFF6FFF6),
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: const Color(0xFF22C55E),
-        elevation: 8,
-        shadowColor: Colors.green.withOpacity(0.4),
-        centerTitle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
-        ),
-      ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
