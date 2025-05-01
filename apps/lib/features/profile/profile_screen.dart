@@ -6,178 +6,81 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildProfileHeader(context),
-          const SizedBox(height: 24),
-          _buildQuickStats(context),
-          const SizedBox(height: 24),
-          _buildRecentActivity(context),
-          const SizedBox(height: 24),
-          _buildMostUsedTags(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileHeader(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              child: const Text(
-                'JD',
-                style: TextStyle(fontSize: 36),
-              ),
-            ).animate().scale(),
-            const SizedBox(height: 16),
-            Text(
-              'John Doe',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ).animate().fadeIn().slideY(begin: 0.2),
-            Text(
-              'john.doe@example.com',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).textTheme.bodySmall?.color,
-                  ),
-            ).animate().fadeIn().slideY(begin: 0.2),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              icon: const Icon(Icons.edit),
-              label: const Text('Edit Profile'),
-              onPressed: () {
-                // TODO: Implement edit profile
-              },
-            ).animate().fadeIn().slideY(begin: 0.2),
-          ],
+      backgroundColor: const Color(0xFFF6FFF6),
+      appBar: AppBar(
+        title: const Text('Profile'),
+        backgroundColor: const Color(0xFF22C55E),
+        elevation: 8,
+        shadowColor: Colors.green.withOpacity(0.4),
+        centerTitle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
         ),
       ),
-    );
-  }
-
-  Widget _buildQuickStats(BuildContext context) {
-    final stats = [
-      {'value': '42', 'label': 'Total Notes'},
-      {'value': '7', 'label': 'Collections'},
-      {'value': '15', 'label': 'Shared Notes'},
-    ];
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: stats.map((stat) {
-            final index = stats.indexOf(stat);
-            return Expanded(
-              child: Column(
-                children: [
-                  Text(
-                    stat['value']!,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                  ),
-                  Text(
-                    stat['label']!,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    textAlign: TextAlign.center,
+      body: Center(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+          margin: const EdgeInsets.all(24),
+          child: Material(
+            elevation: 16,
+            shadowColor: Colors.greenAccent.withOpacity(0.25),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: 400,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [Colors.white, Colors.green.shade50],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.green.shade200.withOpacity(0.25),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
                   ),
                 ],
-              ).animate().fadeIn().slideY(
-                    begin: 0.2,
-                    delay: Duration(milliseconds: 100 * index),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 48,
+                    backgroundColor: Colors.green.shade100,
+                    child: const Icon(Icons.person,
+                        size: 56, color: Color(0xFF22C55E)),
                   ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecentActivity(BuildContext context) {
-    final activities = [
-      {
-        'icon': Icons.note_add,
-        'title': 'Created new note "Project Ideas"',
-        'time': '2 hours ago',
-      },
-      {
-        'icon': Icons.folder,
-        'title': 'Created new collection "Work"',
-        'time': 'Yesterday',
-      },
-    ];
-
-    return Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Recent Activity',
-              style: Theme.of(context).textTheme.titleLarge,
+                  const SizedBox(height: 18),
+                  Text('Your Name',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                          color: Colors.green.shade800,
+                          fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text('your.email@example.com',
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: Colors.green.shade700)),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF22C55E),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      elevation: 6,
+                    ),
+                    onPressed: () {},
+                    icon: const Icon(Icons.edit, color: Colors.white),
+                    label: const Text('Edit Profile',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
             ),
           ),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: activities.length,
-            separatorBuilder: (context, index) => const Divider(),
-            itemBuilder: (context, index) {
-              final activity = activities[index];
-              return ListTile(
-                leading: Icon(
-                  activity['icon'] as IconData,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                title: Text(activity['title'] as String),
-                subtitle: Text(activity['time'] as String),
-              ).animate().fadeIn().slideX(
-                    begin: -0.2,
-                    delay: Duration(milliseconds: 100 * index),
-                  );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMostUsedTags(BuildContext context) {
-    final tags = ['work', 'ideas', 'personal', 'todo', 'projects'];
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Most Used Tags',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: tags.asMap().entries.map((entry) {
-                return Chip(
-                  label: Text(entry.value),
-                  backgroundColor:
-                      Theme.of(context).colorScheme.primaryContainer,
-                ).animate().fadeIn().scale(
-                      delay: Duration(milliseconds: 100 * entry.key),
-                    );
-              }).toList(),
-            ),
-          ],
         ),
       ),
     );

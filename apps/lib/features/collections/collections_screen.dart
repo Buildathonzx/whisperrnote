@@ -23,6 +23,7 @@ class CollectionsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     // Temporary data
     final collections = [
       Collection(
@@ -49,8 +50,16 @@ class CollectionsScreen extends StatelessWidget {
     ];
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF6FFF6),
       appBar: AppBar(
         title: const Text('Collections'),
+        backgroundColor: const Color(0xFF22C55E),
+        elevation: 8,
+        shadowColor: Colors.green.withOpacity(0.4),
+        centerTitle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -60,35 +69,94 @@ class CollectionsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final crossAxisCount = switch (constraints.maxWidth) {
-              > 1200 => 4,
-              > 800 => 3,
-              > 600 => 2,
-              _ => 1,
-            };
-
-            return GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.2,
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: collections.map((collection) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
+            margin: const EdgeInsets.only(bottom: 20),
+            child: Material(
+              elevation: 16,
+              shadowColor: Colors.greenAccent.withOpacity(0.25),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    colors: [Colors.white, Colors.green.shade50],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.shade200.withOpacity(0.25),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(collection.icon,
+                            size: 32,
+                            color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            collection.name,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                                color: Colors.green.shade800,
+                                fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        PopupMenuButton(
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'rename',
+                              child: Text('Rename'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'share',
+                              child: Text('Share'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Delete'),
+                              textStyle: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                          onSelected: (value) {
+                            // TODO: Handle menu actions
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '${collection.noteCount} notes',
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: Colors.green.shade700),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Last updated: ${_formatDate(collection.lastUpdated)}',
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: Colors.green.shade700),
+                    ),
+                  ],
+                ),
               ),
-              itemCount: collections.length,
-              itemBuilder: (context, index) {
-                final collection = collections[index];
-                return CollectionCard(collection: collection)
-                    .animate()
-                    .fadeIn(delay: (100 * index).ms)
-                    .slideY(begin: 0.2);
-              },
-            );
-          },
-        ),
+            ),
+          );
+        }).toList(),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCreateCollectionDialog(context),
@@ -124,6 +192,22 @@ class CollectionsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        return '${difference.inMinutes} minutes ago';
+      }
+      return '${difference.inHours} hours ago';
+    }
+    if (difference.inDays == 1) {
+      return 'Yesterday';
+    }
+    return '${date.day}/${date.month}/${date.year}';
   }
 }
 
@@ -193,21 +277,5 @@ class CollectionCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      if (difference.inHours == 0) {
-        return '${difference.inMinutes} minutes ago';
-      }
-      return '${difference.inHours} hours ago';
-    }
-    if (difference.inDays == 1) {
-      return 'Yesterday';
-    }
-    return '${date.day}/${date.month}/${date.year}';
   }
 }

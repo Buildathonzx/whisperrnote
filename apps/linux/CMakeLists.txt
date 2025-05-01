@@ -7,7 +7,7 @@ project(runner LANGUAGES CXX)
 set(BINARY_NAME "whisperrnote_app")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
-set(APPLICATION_ID "com.example.whisperrnote_app")
+set(APPLICATION_ID "space.whisperrnote.whisperrnote_app")
 add_compile_definitions(APPLICATION_ID="${APPLICATION_ID}")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent

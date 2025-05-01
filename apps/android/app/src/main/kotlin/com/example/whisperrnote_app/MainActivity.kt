@@ -1,4 +1,4 @@
-package com.example.whisperrnote_app
+package space.whisperrnote.whisperrnote_app
 
 import io.flutter.embedding.android.FlutterActivity
 
