@@ -1,12 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whisperrnote_app/services/local_db_service.dart';
+import 'package:uuid/uuid.dart';
 
 class Note {
-  final int id;
+  final String id;
   final String title;
   final String content;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? userId;
+  final bool isPublic;
+  final List<String> tags;
 
   Note({
     required this.id,
@@ -14,16 +18,37 @@ class Note {
     required this.content,
     required this.createdAt,
     required this.updatedAt,
+    this.userId,
+    this.isPublic = false,
+    this.tags = const [],
   });
 
   factory Note.fromMap(Map<String, dynamic> map) {
     return Note(
-      id: map['id'] as int,
+      id: map['id'] as String,
       title: map['title'] ?? '',
       content: map['content'] ?? '',
-      createdAt: DateTime.parse(map['created_at']),
-      updatedAt: DateTime.parse(map['updated_at']),
+      createdAt: DateTime.parse(map['createdAt']),
+      updatedAt: DateTime.parse(map['updatedAt']),
+      userId: map['userId'],
+      isPublic: (map['isPublic'] ?? 0) == 1,
+      tags: map['tags'] != null && map['tags'] != ''
+          ? (map['tags'] as String).split(',')
+          : [],
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'content': content,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'userId': userId,
+      'isPublic': isPublic ? 1 : 0,
+      'tags': tags.join(','),
+    };
   }
 }
 
@@ -37,34 +62,59 @@ class NotesNotifier extends StateNotifier<List<Note>> {
     state = notesData.map((e) => Note.fromMap(e)).toList();
   }
 
-  Future<void> addNote(String title, String content) async {
-    await LocalDbService().insertNote(title, content);
-    await loadNotes();
-  }
-
-  Future<void> updateNote(int id, String title, String content) async {
-    final db = LocalDbService().db;
-    await db.update(
-      'notes',
-      {
-        'title': title,
-        'content': content,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
-      where: 'id = ?',
-      whereArgs: [id],
+  Future<void> addNote({
+    required String title,
+    required String content,
+    String? userId,
+    bool isPublic = false,
+    List<String> tags = const [],
+  }) async {
+    final now = DateTime.now();
+    final id = const Uuid().v4();
+    await LocalDbService().insertNote(
+      id: id,
+      title: title,
+      content: content,
+      createdAt: now.toIso8601String(),
+      updatedAt: now.toIso8601String(),
+      userId: userId,
+      isPublic: isPublic,
+      tags: tags,
     );
     await loadNotes();
   }
 
-  Future<void> deleteNote(int id) async {
-    final db = LocalDbService().db;
-    await db.delete('notes', where: 'id = ?', whereArgs: [id]);
+  Future<void> updateNote({
+    required String id,
+    required String title,
+    required String content,
+    String? userId,
+    bool? isPublic,
+    List<String>? tags,
+  }) async {
+    await LocalDbService().updateNote(
+      id: id,
+      title: title,
+      content: content,
+      updatedAt: DateTime.now().toIso8601String(),
+      userId: userId,
+      isPublic: isPublic,
+      tags: tags,
+    );
     await loadNotes();
   }
 
-  Note? getNoteById(int id) {
-    return state.firstWhere((note) => note.id == id, orElse: () => null);
+  Future<void> deleteNote(String id) async {
+    await LocalDbService().deleteNote(id);
+    await loadNotes();
+  }
+
+  Note? getNoteById(String id) {
+    try {
+      return state.firstWhere((note) => note.id == id);
+    } catch (_) {
+      return null;
+    }
   }
 }
 

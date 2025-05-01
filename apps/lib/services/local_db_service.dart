@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 class LocalDbService {
@@ -22,18 +21,23 @@ class LocalDbService {
     _dbPath = p.join(whisperrDir.path, 'whisperrnote.db');
     _db = await openDatabase(
       _dbPath!,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE notes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT,
-            content TEXT,
-            created_at TEXT,
-            updated_at TEXT
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            createdAt TEXT NOT NULL,
+            updatedAt TEXT NOT NULL,
+            userId TEXT,
+            isPublic INTEGER NOT NULL DEFAULT 0,
+            tags TEXT
           )
         ''');
-        // Add more tables as needed
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        // Handle migrations if needed
       },
     );
   }
@@ -45,18 +49,63 @@ class LocalDbService {
     return _db!;
   }
 
-  // Example: insert a note
-  Future<int> insertNote(String title, String content) async {
+  Future<int> insertNote({
+    required String id,
+    required String title,
+    required String content,
+    required String createdAt,
+    required String updatedAt,
+    String? userId,
+    bool isPublic = false,
+    List<String>? tags,
+  }) async {
     return await db.insert('notes', {
+      'id': id,
       'title': title,
       'content': content,
-      'created_at': DateTime.now().toIso8601String(),
-      'updated_at': DateTime.now().toIso8601String(),
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+      'userId': userId,
+      'isPublic': isPublic ? 1 : 0,
+      'tags': tags != null ? tags.join(',') : null,
     });
   }
 
-  // Example: fetch all notes
   Future<List<Map<String, dynamic>>> getNotes() async {
-    return await db.query('notes', orderBy: 'updated_at DESC');
+    return await db.query('notes', orderBy: 'updatedAt DESC');
+  }
+
+  Future<int> updateNote({
+    required String id,
+    required String title,
+    required String content,
+    required String updatedAt,
+    String? userId,
+    bool? isPublic,
+    List<String>? tags,
+  }) async {
+    return await db.update(
+      'notes',
+      {
+        'title': title,
+        'content': content,
+        'updatedAt': updatedAt,
+        if (userId != null) 'userId': userId,
+        if (isPublic != null) 'isPublic': isPublic ? 1 : 0,
+        if (tags != null) 'tags': tags.join(','),
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> deleteNote(String id) async {
+    return await db.delete('notes', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<Map<String, dynamic>?> getNoteById(String id) async {
+    final result = await db.query('notes', where: 'id = ?', whereArgs: [id]);
+    if (result.isNotEmpty) return result.first;
+    return null;
   }
 }
