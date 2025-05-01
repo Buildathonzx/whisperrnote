@@ -22,7 +22,7 @@ class ModernSidebar extends StatefulWidget {
 }
 
 class _ModernSidebarState extends State<ModernSidebar> {
-  double _lastExpandedWidth = 220;
+  double _lastExpandedWidth = 127;
   String _username = 'guest';
 
   @override
@@ -50,7 +50,7 @@ class _ModernSidebarState extends State<ModernSidebar> {
         final jsonData = jsonDecode(await file.readAsString());
         setState(() {
           _lastExpandedWidth =
-              (jsonData['sidebarWidth'] as num?)?.toDouble() ?? 220;
+              (jsonData['sidebarWidth'] as num?)?.toDouble() ?? 127;
         });
       }
     } catch (_) {}

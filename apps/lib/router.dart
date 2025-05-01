@@ -123,7 +123,7 @@ class _AppShellState extends State<AppShell> {
               direction: Axis.horizontal,
               children: [
                 ResizableChild(
-                  size: const ResizableSize.pixels(220, min: 64, max: 320),
+                  size: const ResizableSize.pixels(127, min: 64, max: 320),
                   child: ModernSidebar(
                     selectedIndex: _selectedIndex,
                     onItemSelected: _onSidebarItemSelected,
