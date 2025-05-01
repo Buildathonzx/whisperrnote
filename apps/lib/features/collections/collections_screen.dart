@@ -216,6 +216,10 @@ class CollectionCard extends StatelessWidget {
 
   const CollectionCard({super.key, required this.collection});
 
+  String _formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
