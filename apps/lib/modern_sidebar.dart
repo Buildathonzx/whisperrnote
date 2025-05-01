@@ -19,15 +19,11 @@ class ModernSidebar extends StatefulWidget {
 }
 
 class _ModernSidebarState extends State<ModernSidebar> {
-  bool _expanded = true;
-
-  void _toggleSidebar() {
-    setState(() {
-      _expanded = !_expanded;
-    });
+  void _toggleSidebar(double currentWidth) {
     if (widget.resizableController != null) {
+      final isMin = currentWidth <= 64;
       widget.resizableController!.setSizes([
-        _expanded
+        isMin
             ? const ResizableSize.pixels(320, min: 64, max: 320)
             : const ResizableSize.pixels(64, min: 64, max: 320),
         const ResizableSize.expand(),
@@ -83,7 +79,8 @@ class _ModernSidebarState extends State<ModernSidebar> {
       child: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final isCollapsed = constraints.maxWidth < 120;
+            final currentWidth = constraints.maxWidth;
+            final isCollapsed = currentWidth <= 120;
             return Column(
               children: [
                 Padding(
@@ -104,10 +101,11 @@ class _ModernSidebarState extends State<ModernSidebar> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(
-                      _expanded ? Icons.chevron_left : Icons.chevron_right),
-                  onPressed: _toggleSidebar,
-                  tooltip: _expanded ? 'Collapse' : 'Expand',
+                  icon: Icon(currentWidth <= 64
+                      ? Icons.chevron_right
+                      : Icons.chevron_left),
+                  onPressed: () => _toggleSidebar(currentWidth),
+                  tooltip: currentWidth <= 64 ? 'Expand' : 'Collapse',
                 ),
                 const SizedBox(height: 8),
                 for (int i = 0; i < items.length; i++)
