@@ -26,11 +26,11 @@ class _ModernSidebarState extends State<ModernSidebar> {
   @override
   Widget build(BuildContext context) {
     final items = [
-      const _SidebarItem(icon: Icons.home_rounded, label: 'Home'),
       const _SidebarItem(icon: Icons.note_rounded, label: 'Notes'),
       const _SidebarItem(
           icon: Icons.check_circle_outline_rounded, label: 'Todos'),
       const _SidebarItem(icon: Icons.tag_rounded, label: 'Tags'),
+      const _SidebarItem(icon: Icons.share, label: 'Shared'),
       const _SidebarItem(icon: Icons.settings_rounded, label: 'Settings'),
     ];
     // Remove any fixed width or AnimatedContainer, let parent control width

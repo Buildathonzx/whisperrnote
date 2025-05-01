@@ -39,10 +39,6 @@ class ModernBottomBar extends StatelessWidget {
         showUnselectedLabels: false,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.note_rounded),
             label: 'Notes',
           ),
@@ -55,8 +51,12 @@ class ModernBottomBar extends StatelessWidget {
             label: 'Tags',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_rounded),
-            label: 'Profile',
+            icon: Icon(Icons.share),
+            label: 'Shared',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings_rounded),
+            label: 'Settings',
           ),
         ],
       ),
