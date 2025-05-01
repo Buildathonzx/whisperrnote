@@ -11,6 +11,7 @@ import 'package:whisperrnote_app/features/settings/settings_screen.dart';
 import 'package:whisperrnote_app/features/dashboard/dashboard_screen.dart';
 import 'modern_sidebar.dart';
 import 'modern_bottom_bar.dart';
+import 'package:flutter_resizable_container/flutter_resizable_container.dart';
 
 final router = GoRouter(
   initialLocation: '/notes',
@@ -73,19 +74,26 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
+  final ResizableController _sidebarController = ResizableController();
+
+  @override
+  void dispose() {
+    _sidebarController.dispose();
+    super.dispose();
+  }
 
   void _onSidebarItemSelected(int index) {
     setState(() {
       _selectedIndex = index;
     });
-    // TODO: Add navigation logic for sidebar
+    // Navigation handled in ModernSidebar
   }
 
   void _onBottomBarTap(int index) {
     setState(() {
       _selectedIndex = index;
     });
-    // TODO: Add navigation logic for bottom bar
+    // Navigation handled in ModernBottomBar
   }
 
   @override
@@ -93,13 +101,22 @@ class _AppShellState extends State<AppShell> {
     final isLargeScreen = MediaQuery.of(context).size.width >= 800;
     return Scaffold(
       body: isLargeScreen
-          ? Row(
+          ? ResizableContainer(
+              controller: _sidebarController,
+              direction: Axis.horizontal,
               children: [
-                ModernSidebar(
-                  selectedIndex: _selectedIndex,
-                  onItemSelected: _onSidebarItemSelected,
+                ResizableChild(
+                  size: const ResizableSize.pixels(220, min: 64, max: 320),
+                  child: ModernSidebar(
+                    selectedIndex: _selectedIndex,
+                    onItemSelected: _onSidebarItemSelected,
+                    resizableController: _sidebarController,
+                  ),
                 ),
-                Expanded(child: widget.child),
+                ResizableChild(
+                  size: const ResizableSize.expand(),
+                  child: widget.child,
+                ),
               ],
             )
           : widget.child,

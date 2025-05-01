@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_resizable_container/flutter_resizable_container.dart';
+import 'package:go_router/go_router.dart';
 
 class ModernSidebar extends StatefulWidget {
   final int selectedIndex;
   final ValueChanged<int> onItemSelected;
+  final ResizableController? resizableController;
 
   const ModernSidebar({
     Key? key,
     required this.selectedIndex,
     required this.onItemSelected,
+    this.resizableController,
   }) : super(key: key);
 
   @override
@@ -21,19 +25,46 @@ class _ModernSidebarState extends State<ModernSidebar> {
     setState(() {
       _expanded = !_expanded;
     });
+    if (widget.resizableController != null) {
+      widget.resizableController!.setSizes([
+        _expanded
+            ? const ResizableSize.pixels(320, min: 64, max: 320)
+            : const ResizableSize.pixels(64, min: 64, max: 320),
+        const ResizableSize.expand(),
+      ]);
+    }
+  }
+
+  void _onNavTap(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        context.go('/notes');
+        break;
+      case 1:
+        context.go('/todos');
+        break;
+      case 2:
+        context.go('/tags');
+        break;
+      case 3:
+        context.go('/shared');
+        break;
+      case 4:
+        context.go('/settings');
+        break;
+    }
+    widget.onItemSelected(index);
   }
 
   @override
   Widget build(BuildContext context) {
     final items = [
-      const _SidebarItem(icon: Icons.note_rounded, label: 'Notes'),
-      const _SidebarItem(
-          icon: Icons.check_circle_outline_rounded, label: 'Todos'),
-      const _SidebarItem(icon: Icons.tag_rounded, label: 'Tags'),
-      const _SidebarItem(icon: Icons.share, label: 'Shared'),
-      const _SidebarItem(icon: Icons.settings_rounded, label: 'Settings'),
+      _SidebarItem(icon: Icons.note_rounded, label: 'Notes'),
+      _SidebarItem(icon: Icons.check_circle_outline_rounded, label: 'Todos'),
+      _SidebarItem(icon: Icons.tag_rounded, label: 'Tags'),
+      _SidebarItem(icon: Icons.share, label: 'Shared'),
+      _SidebarItem(icon: Icons.settings_rounded, label: 'Settings'),
     ];
-    // Remove any fixed width or AnimatedContainer, let parent control width
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -59,6 +90,9 @@ class _ModernSidebarState extends State<ModernSidebar> {
                   padding: const EdgeInsets.symmetric(
                       vertical: 24.0, horizontal: 12),
                   child: Row(
+                    mainAxisAlignment: isCollapsed
+                        ? MainAxisAlignment.center
+                        : MainAxisAlignment.start,
                     children: [
                       CircleAvatar(
                         radius: 24,
@@ -66,13 +100,6 @@ class _ModernSidebarState extends State<ModernSidebar> {
                         child: const Icon(Icons.person,
                             size: 28, color: Colors.white),
                       ),
-                      if (!isCollapsed) ...[
-                        const SizedBox(width: 12),
-                        Text(
-                          'WhisperNote',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ]
                     ],
                   ),
                 ),
@@ -89,7 +116,7 @@ class _ModernSidebarState extends State<ModernSidebar> {
                     label: items[i].label,
                     selected: widget.selectedIndex == i,
                     expanded: !isCollapsed,
-                    onTap: () => widget.onItemSelected(i),
+                    onTap: () => _onNavTap(context, i),
                   ),
                 const Spacer(),
                 _SidebarTile(
@@ -141,7 +168,7 @@ class _SidebarTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Row(
             children: [
               Icon(icon,
