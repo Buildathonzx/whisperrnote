@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'notes_provider.dart';
+import '../../providers/search_query_provider.dart';
 
 class Note {
   final String id;
@@ -25,13 +26,22 @@ class NotesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notes = ref.watch(notesProvider);
+    final searchQuery = ref.watch(searchQueryProvider);
+    final allNotes = ref.watch(notesProvider);
+    final filteredNotes = searchQuery.isEmpty
+        ? allNotes
+        : allNotes
+            .where((note) =>
+                note.title.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                note.content.toLowerCase().contains(searchQuery.toLowerCase()))
+            .toList();
+
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: const Color(0xFFF6FFF6),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 400),
-        child: notes.isEmpty
+        child: filteredNotes.isEmpty
             ? Center(
                 key: const ValueKey('empty'),
                 child: Text(
@@ -43,9 +53,9 @@ class NotesScreen extends ConsumerWidget {
             : ListView.builder(
                 key: const ValueKey('list'),
                 padding: const EdgeInsets.all(24),
-                itemCount: notes.length,
+                itemCount: filteredNotes.length,
                 itemBuilder: (context, index) {
-                  final note = notes[index];
+                  final note = filteredNotes[index];
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 350),
                     curve: Curves.easeOutCubic,
