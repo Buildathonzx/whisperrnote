@@ -4,7 +4,7 @@ import 'package:whisperrnote_app/features/auth/login_screen.dart';
 import 'package:whisperrnote_app/features/auth/signup_screen.dart';
 import 'package:whisperrnote_app/features/notes/notes_screen.dart';
 import 'package:whisperrnote_app/features/notes/note_detail_screen.dart';
-import 'package:whisperrnote_app/features/collections/collections_screen.dart';
+import 'package:whisperrnote_app/features/todos/todos_screen.dart';
 import 'package:whisperrnote_app/features/shared/shared_notes_screen.dart';
 import 'package:whisperrnote_app/features/profile/profile_screen.dart';
 import 'package:whisperrnote_app/features/settings/settings_screen.dart';
@@ -31,8 +31,8 @@ final router = GoRouter(
           ),
         ),
         GoRoute(
-          path: '/collections',
-          builder: (context, state) => const CollectionsScreen(),
+          path: '/todos',
+          builder: (context, state) => const TodosScreen(),
         ),
         GoRoute(
           path: '/shared',
@@ -80,8 +80,8 @@ class AppShell extends StatelessWidget {
         label: Text('Notes'),
       ),
       NavigationRailDestination(
-        icon: Icon(Icons.folder),
-        label: Text('Collections'),
+        icon: Icon(Icons.check_circle_outline),
+        label: Text('Todos'),
       ),
       NavigationRailDestination(
         icon: Icon(Icons.share),
@@ -141,7 +141,8 @@ class AppShell extends StatelessWidget {
                         BottomNavigationBarItem(
                             icon: Icon(Icons.note), label: 'Notes'),
                         BottomNavigationBarItem(
-                            icon: Icon(Icons.folder), label: 'Collections'),
+                            icon: Icon(Icons.check_circle_outline),
+                            label: 'Todos'),
                         BottomNavigationBarItem(
                             icon: Icon(Icons.share), label: 'Shared'),
                         BottomNavigationBarItem(
@@ -212,7 +213,7 @@ class AppShell extends StatelessWidget {
         context.go('/notes');
         break;
       case 2:
-        context.go('/collections');
+        context.go('/todos');
         break;
       case 3:
         context.go('/shared');
@@ -229,7 +230,7 @@ class AppShell extends StatelessWidget {
   int _getSelectedIndex(String location) {
     if (location.startsWith('/dashboard')) return 0;
     if (location.startsWith('/notes')) return 1;
-    if (location.startsWith('/collections')) return 2;
+    if (location.startsWith('/todos')) return 2;
     if (location.startsWith('/shared')) return 3;
     if (location.startsWith('/profile')) return 4;
     if (location.startsWith('/settings')) return 5;
