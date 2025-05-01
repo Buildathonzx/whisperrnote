@@ -32,9 +32,8 @@ class _ModernSidebarState extends State<ModernSidebar> {
       _SidebarItem(icon: Icons.tag_rounded, label: 'Tags'),
       _SidebarItem(icon: Icons.settings_rounded, label: 'Settings'),
     ];
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      width: _expanded ? 220 : 72,
+    // Remove any fixed width or AnimatedContainer, let parent control width
+    return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.only(
@@ -50,53 +49,59 @@ class _ModernSidebarState extends State<ModernSidebar> {
         ],
       ),
       child: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 24.0, horizontal: 12),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    child:
-                        const Icon(Icons.person, size: 28, color: Colors.white),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isCollapsed = constraints.maxWidth < 120;
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 24.0, horizontal: 12),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        child: const Icon(Icons.person,
+                            size: 28, color: Colors.white),
+                      ),
+                      if (!isCollapsed) ...[
+                        const SizedBox(width: 12),
+                        Text(
+                          'WhisperNote',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ]
+                    ],
                   ),
-                  if (_expanded) ...[
-                    const SizedBox(width: 12),
-                    Text(
-                      'WhisperNote',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ]
-                ],
-              ),
-            ),
-            IconButton(
-              icon: Icon(_expanded ? Icons.chevron_left : Icons.chevron_right),
-              onPressed: _toggleSidebar,
-              tooltip: _expanded ? 'Collapse' : 'Expand',
-            ),
-            const SizedBox(height: 8),
-            for (int i = 0; i < items.length; i++)
-              _SidebarTile(
-                icon: items[i].icon,
-                label: items[i].label,
-                selected: widget.selectedIndex == i,
-                expanded: _expanded,
-                onTap: () => widget.onItemSelected(i),
-              ),
-            const Spacer(),
-            _SidebarTile(
-              icon: Icons.logout_rounded,
-              label: 'Logout',
-              selected: false,
-              expanded: _expanded,
-              onTap: () {},
-            ),
-            const SizedBox(height: 16),
-          ],
+                ),
+                IconButton(
+                  icon: Icon(
+                      _expanded ? Icons.chevron_left : Icons.chevron_right),
+                  onPressed: _toggleSidebar,
+                  tooltip: _expanded ? 'Collapse' : 'Expand',
+                ),
+                const SizedBox(height: 8),
+                for (int i = 0; i < items.length; i++)
+                  _SidebarTile(
+                    icon: items[i].icon,
+                    label: items[i].label,
+                    selected: widget.selectedIndex == i,
+                    expanded: !isCollapsed,
+                    onTap: () => widget.onItemSelected(i),
+                  ),
+                const Spacer(),
+                _SidebarTile(
+                  icon: Icons.logout_rounded,
+                  label: 'Logout',
+                  selected: false,
+                  expanded: !isCollapsed,
+                  onTap: () {},
+                ),
+                const SizedBox(height: 16),
+              ],
+            );
+          },
         ),
       ),
     );

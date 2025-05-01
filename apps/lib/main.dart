@@ -7,6 +7,7 @@ import 'package:whisperrnote_app/services/local_db_service.dart';
 import 'package:flutter_resizable_container/flutter_resizable_container.dart';
 import 'modern_sidebar.dart';
 import 'modern_bottom_bar.dart';
+import 'search_bar.dart' as custom_search;
 
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
   return ThemeNotifier();
@@ -107,9 +108,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('WhisperNote'),
-      ),
+      // No AppBar, only SearchBar at the top of content
       body: ResizableContainer(
         direction: Axis.horizontal,
         children: [
@@ -122,11 +121,25 @@ class _HomeScaffoldState extends State<HomeScaffold> {
           ),
           ResizableChild(
             size: const ResizableSize.expand(),
-            child: Center(
-              child: Text(
-                'Selected tab: $_selectedIndex',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                custom_search.SearchBar(
+                  hintText: 'Search...',
+                  onSearch: (query) {
+                    // TODO: Implement search logic for notes, collections, etc.
+                  },
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      'Selected tab: $_selectedIndex',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
