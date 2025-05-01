@@ -29,16 +29,6 @@ class NotesScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: const Color(0xFFF6FFF6),
-      appBar: AppBar(
-        title: const Text('WhisperrNote'),
-        backgroundColor: const Color(0xFF22C55E),
-        elevation: 8,
-        shadowColor: Colors.green.withOpacity(0.4),
-        centerTitle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
-        ),
-      ),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 400),
         child: notes.isEmpty

@@ -26,11 +26,12 @@ class _ModernSidebarState extends State<ModernSidebar> {
   @override
   Widget build(BuildContext context) {
     final items = [
-      _SidebarItem(icon: Icons.home_rounded, label: 'Home'),
-      _SidebarItem(icon: Icons.note_rounded, label: 'Notes'),
-      _SidebarItem(icon: Icons.add_circle_outline_rounded, label: 'New Note'),
-      _SidebarItem(icon: Icons.tag_rounded, label: 'Tags'),
-      _SidebarItem(icon: Icons.settings_rounded, label: 'Settings'),
+      const _SidebarItem(icon: Icons.home_rounded, label: 'Home'),
+      const _SidebarItem(icon: Icons.note_rounded, label: 'Notes'),
+      const _SidebarItem(
+          icon: Icons.check_circle_outline_rounded, label: 'Todos'),
+      const _SidebarItem(icon: Icons.tag_rounded, label: 'Tags'),
+      const _SidebarItem(icon: Icons.settings_rounded, label: 'Settings'),
     ];
     // Remove any fixed width or AnimatedContainer, let parent control width
     return Container(
@@ -140,7 +141,7 @@ class _SidebarTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Row(
             children: [
               Icon(icon,

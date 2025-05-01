@@ -47,8 +47,8 @@ class ModernBottomBar extends StatelessWidget {
             label: 'Notes',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline_rounded, size: 32),
-            label: 'New',
+            icon: Icon(Icons.check_circle_outline_rounded),
+            label: 'Todos',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.tag_rounded),

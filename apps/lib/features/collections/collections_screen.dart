@@ -51,24 +51,6 @@ class CollectionsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6FFF6),
-      appBar: AppBar(
-        title: const Text('Collections'),
-        backgroundColor: const Color(0xFF22C55E),
-        elevation: 8,
-        shadowColor: Colors.green.withOpacity(0.4),
-        centerTitle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // TODO: Implement search
-            },
-          ),
-        ],
-      ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: collections.map((collection) {
