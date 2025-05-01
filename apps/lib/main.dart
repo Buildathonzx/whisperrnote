@@ -4,6 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whisperrnote_app/router.dart';
 import 'package:whisperrnote_app/services/local_db_service.dart';
+import 'package:flutter_resizable_container/flutter_resizable_container.dart';
+import 'modern_sidebar.dart';
+import 'modern_bottom_bar.dart';
 
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
   return ThemeNotifier();
@@ -72,6 +75,67 @@ class WhisperNoteApp extends ConsumerWidget {
         ),
       ),
       routerConfig: router,
+    );
+  }
+}
+
+class HomeScaffold extends StatefulWidget {
+  const HomeScaffold({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScaffold> createState() => _HomeScaffoldState();
+}
+
+class _HomeScaffoldState extends State<HomeScaffold> {
+  int _selectedIndex = 0;
+
+  void _onBottomBarTap(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    // TODO: Add navigation logic here if needed
+  }
+
+  void _onSidebarItemSelected(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    // No drawer to close, since sidebar is always visible
+    // TODO: Add navigation logic here if needed
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('WhisperNote'),
+      ),
+      body: Row(
+        children: [
+          ResizableContainer(
+            direction: Axis.horizontal,
+            minWidth: 64,
+            maxWidth: 320,
+            initialWidth: 220,
+            child: ModernSidebar(
+              selectedIndex: _selectedIndex,
+              onItemSelected: _onSidebarItemSelected,
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                'Selected tab: $_selectedIndex',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: ModernBottomBar(
+        currentIndex: _selectedIndex,
+        onTap: _onBottomBarTap,
+      ),
     );
   }
 }
