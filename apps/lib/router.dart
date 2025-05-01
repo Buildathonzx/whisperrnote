@@ -9,6 +9,8 @@ import 'package:whisperrnote_app/features/shared/shared_notes_screen.dart';
 import 'package:whisperrnote_app/features/profile/profile_screen.dart';
 import 'package:whisperrnote_app/features/settings/settings_screen.dart';
 import 'package:whisperrnote_app/features/dashboard/dashboard_screen.dart';
+import 'modern_sidebar.dart';
+import 'modern_bottom_bar.dart';
 
 final router = GoRouter(
   initialLocation: '/notes',
@@ -61,14 +63,53 @@ final router = GoRouter(
   ],
 );
 
-class AppShell extends StatelessWidget {
+class AppShell extends StatefulWidget {
   final Widget child;
-
   const AppShell({super.key, required this.child});
 
   @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  int _selectedIndex = 0;
+
+  void _onSidebarItemSelected(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    // TODO: Add navigation logic for sidebar
+  }
+
+  void _onBottomBarTap(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    // TODO: Add navigation logic for bottom bar
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return child;
+    final isLargeScreen = MediaQuery.of(context).size.width >= 800;
+    return Scaffold(
+      body: isLargeScreen
+          ? Row(
+              children: [
+                ModernSidebar(
+                  selectedIndex: _selectedIndex,
+                  onItemSelected: _onSidebarItemSelected,
+                ),
+                Expanded(child: widget.child),
+              ],
+            )
+          : widget.child,
+      bottomNavigationBar: isLargeScreen
+          ? null
+          : ModernBottomBar(
+              currentIndex: _selectedIndex,
+              onTap: _onBottomBarTap,
+            ),
+    );
   }
 }
 
