@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whisperrnote_app/router.dart';
+import 'package:whisperrnote_app/services/local_db_service.dart';
 
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
   return ThemeNotifier();
@@ -27,7 +28,9 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
   }
 }
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await LocalDbService().init();
   runApp(const ProviderScope(child: WhisperNoteApp()));
 }
 
