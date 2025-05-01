@@ -11,16 +11,8 @@ import 'package:whisperrnote_app/features/settings/settings_screen.dart';
 import 'package:whisperrnote_app/features/dashboard/dashboard_screen.dart';
 
 final router = GoRouter(
-  initialLocation: '/login',
+  initialLocation: '/notes',
   routes: [
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/signup',
-      builder: (context, state) => const SignupScreen(),
-    ),
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
       routes: [
@@ -53,6 +45,16 @@ final router = GoRouter(
         GoRoute(
           path: '/settings',
           builder: (context, state) => const SettingsScreen(),
+          routes: [
+            GoRoute(
+              path: 'login',
+              builder: (context, state) => const LoginScreen(),
+            ),
+            GoRoute(
+              path: 'signup',
+              builder: (context, state) => const SignupScreen(),
+            ),
+          ],
         ),
       ],
     ),
