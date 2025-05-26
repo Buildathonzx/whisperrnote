@@ -78,7 +78,7 @@ export async function updateNote(noteId: string, data: Partial<Note>) {
     // Track edit analytics
     await trackAnalytics(doc.owner_id, noteId, 'note', 'edit', {});
     
-    return doc as Note;
+    return castDocument<Note>(doc);
   } catch (error) {
     console.error('Error updating note:', error);
     throw error;
@@ -134,7 +134,7 @@ export async function listNotes(userId: string, filters?: {
       queries
     );
     
-    return response.documents as Note[];
+    return castDocuments<Note>(response.documents);
   } catch (error) {
     console.error('Error listing notes:', error);
     throw error;
@@ -157,7 +157,7 @@ export async function createNotebook(notebook: Omit<Notebook, '_id' | 'created_a
       notebookData
     );
     
-    return doc as Notebook;
+    return castDocument<Notebook>(doc);
   } catch (error) {
     console.error('Error creating notebook:', error);
     throw error;
@@ -172,7 +172,7 @@ export async function listNotebooks(userId: string) {
       [`owner_id=${userId}`]
     );
     
-    return response.documents as Notebook[];
+    return castDocuments<Notebook>(response.documents);
   } catch (error) {
     console.error('Error listing notebooks:', error);
     throw error;
@@ -193,7 +193,7 @@ export async function updateNotebook(notebookId: string, data: Partial<Notebook>
       updateData
     );
     
-    return doc as Notebook;
+    return castDocument<Notebook>(doc);
   } catch (error) {
     console.error('Error updating notebook:', error);
     throw error;
@@ -231,7 +231,7 @@ export async function createToDo(todo: Omit<ToDo, '_id' | 'created_at' | 'update
       todoData
     );
     
-    return doc as ToDo;
+    return castDocument<ToDo>(doc);
   } catch (error) {
     console.error('Error creating todo:', error);
     throw error;
@@ -252,7 +252,7 @@ export async function updateToDo(todoId: string, data: Partial<ToDo>) {
       updateData
     );
     
-    return doc as ToDo;
+    return castDocument<ToDo>(doc);
   } catch (error) {
     console.error('Error updating todo:', error);
     throw error;
@@ -273,7 +273,7 @@ export async function listToDos(userId: string, status?: string) {
       queries
     );
     
-    return response.documents as ToDo[];
+    return castDocuments<ToDo>(response.documents);
   } catch (error) {
     console.error('Error listing todos:', error);
     throw error;
@@ -310,7 +310,7 @@ export async function shareResource(sharing: Omit<Sharing, '_id' | 'created_at'>
       shareData
     );
     
-    return doc as Sharing;
+    return castDocument<Sharing>(doc);
   } catch (error) {
     console.error('Error sharing resource:', error);
     throw error;
@@ -331,7 +331,7 @@ export async function getSharedResources(userId: string, resourceType?: string) 
       queries
     );
     
-    return response.documents as Sharing[];
+    return castDocuments<Sharing>(response.documents);
   } catch (error) {
     console.error('Error getting shared resources:', error);
     throw error;
@@ -378,7 +378,7 @@ export async function trackAnalytics(
       analyticsData
     );
     
-    return doc as Analytics;
+    return castDocument<Analytics>(doc);
   } catch (error) {
     console.error('Error tracking analytics:', error);
     // Don't throw error for analytics failures
@@ -400,7 +400,7 @@ export async function getAnalytics(userId: string, resourceId?: string) {
       queries
     );
     
-    return response.documents as Analytics[];
+    return castDocuments<Analytics>(response.documents);
   } catch (error) {
     console.error('Error getting analytics:', error);
     throw error;
@@ -436,7 +436,7 @@ export async function getAnalyticsSummary(userId: string, timeRange: 'day' | 'we
       queries
     );
     
-    return response.documents as Analytics[];
+    return castDocuments<Analytics>(response.documents);
   } catch (error) {
     console.error('Error getting analytics summary:', error);
     throw error;
