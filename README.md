@@ -8,6 +8,7 @@ Welcome to WhisperNote, the ultimate note-taking application designed with **you
 
 WhisperNote is built upon a foundation of cutting-edge security technologies, ensuring your notes remain confidential and protected:
 
+*  **Starknet integration:** Utilizing Starknet's Layer 2 solution for enhanced scalability and security, WhisperNote ensures your data is stored in a decentralized manner, free from single points of failure. ⚡
 *   **Calimero Integration:** Leveraging the power of Calimero for enhanced privacy and data protection. 🔒
 *   **ICP SDK Utilization:** Harnessing the Internet Computer Protocol (ICP) SDK for robust, decentralized data storage and unparalleled reliability. 🌐
 *   **End-to-End Encryption:** Your notes are encrypted from the moment they leave your device until they reach their destination, guaranteeing complete confidentiality. 🔐

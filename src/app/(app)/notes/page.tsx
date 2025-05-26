@@ -59,7 +59,25 @@ export default function NotesPage() {
     notebook_id: '',
     tags: [] as string[],
     is_pinned: false,
-    is_encrypted: true
+    is_encrypted: true,
+    owner_id: '',
+    attachments: [] as string[],
+    shared_with: [] as string[],
+    is_archived: false,
+    is_deleted: false,
+    ai_metadata: {
+      view_count: 0,
+      edit_count: 0,
+      share_count: 0,
+      last_accessed: new Date().toISOString()
+    },
+    analytics: {
+      view_count: 0,
+      edit_count: 0,
+      share_count: 0,
+      last_accessed: new Date().toISOString()
+    },
+    extension_data: {}
   });
   const [newNotebook, setNewNotebook] = useState({
     title: '',

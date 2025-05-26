@@ -1,53 +1,53 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, Grid, Typography, Box, Fab, Dialog, DialogTitle, DialogContent, 
-  DialogActions, Button, TextField, FormControl, InputLabel, Select, MenuItem,
-  Stack, Chip, Card, CardContent, CardActions, IconButton, LinearProgress
+import {
+  Container, Grid, Fab, Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, TextField, MenuItem, Chip, Stack, Typography, Box, Tab, Tabs,
+  FormControlLabel, Switch, Select, FormControl, InputLabel, IconButton,
+  Card, CardContent, Tooltip, Divider
 } from '@mui/material';
-import { 
-  Add, Edit, Delete, CheckCircle, Schedule, Flag, Share, Archive,
-  PriorityHigh, CalendarToday, Repeat
+import {
+  Add, FilterList, Sort, ViewModule, ViewList, Search, CalendarToday,
+  Flag, CheckCircle, AccessTime, RadioButtonUnchecked, Archive
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { account } from '@/lib/appwrite';
-import { ToDo, RecurrencePattern } from '@/types/notes';
-import { createToDo, updateToDo, listToDos } from '@/lib/notes';
+import { useRouter } from 'next/navigation';
+import { getCurrentUser } from '../../../lib/auth';
+import { listToDos, createToDo, updateToDo, deleteToDo } from '../../../lib/notes';
+import { ToDo } from '../../../types/notes';
+import ToDoComponent from './ToDo';
 
-const MotionCard = motion(Card);
+const MotionContainer = motion(Container);
+const MotionGrid = motion(Grid);
 
-const priorityColors = {
-  low: '#4CAF50',
-  medium: '#FF9800',
-  high: '#F44336',
-  urgent: '#9C27B0'
-};
-
-const statusColors = {
-  pending: '#757575',
-  in_progress: '#2196F3',
-  completed: '#4CAF50',
-  cancelled: '#F44336'
-};
-
-interface TodoProps {
-  todo: ToDo;
-  onUpdate: (todoId: string, data: Partial<ToDo>) => void;
-  onDelete: (todoId: string) => void;
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
 }
 
-function TodoCard({ todo, onUpdate, onDelete }: TodoProps) {
-  const [expanded, setExpanded] = useState(false);
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`todo-tabpanel-${index}`}
+      aria-labelledby={`todo-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ py: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+export default function ToDosPage() {
+  const [todos, setTodos] = useState<ToDo[]>([]);
       hour: '2-digit',
       minute: '2-digit'
     });

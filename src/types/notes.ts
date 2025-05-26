@@ -94,113 +94,83 @@ export interface ToDo {
 }
 
 export interface RecurrencePattern {
-  type: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
+  type: 'daily' | 'weekly' | 'monthly' | 'yearly';
   interval: number;
-  days_of_week?: number[];
   end_date?: string;
-  occurrences?: number;
+  days_of_week?: number[];
+  day_of_month?: number;
 }
 
 export interface Sharing {
   _id: string;
   resource_id: string;
-  resource_type: 'note' | 'notebook' | 'todo';
+  resource_type: 'note' | 'todo' | 'notebook';
   shared_by: string;
-  shared_with: string[];
-  permission: 'view' | 'edit' | 'admin';
+  shared_with: string;
+  permission: 'read' | 'write' | 'admin';
   created_at: string;
   expires_at?: string;
-  is_public: boolean;
-  access_link?: string;
-  permissions: {
-    can_edit: boolean;
-    can_share: boolean;
-    can_delete: boolean;
-    can_comment?: boolean;
-    can_download?: boolean;
-  };
 }
 
 export interface Extension {
   _id: string;
   name: string;
-  version: string;
   description: string;
-  author: string;
-  is_enabled: boolean;
-  settings: Record<string, any>;
-  permissions: string[];
-  install_date: string;
-  update_date: string;
+  type: 'ai' | 'analytics' | 'theme' | 'integration';
+  config_schema: Record<string, any>;
+  enabled_by_default: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Analytics {
   _id: string;
   user_id: string;
   resource_id: string;
-  resource_type: 'note' | 'notebook' | 'todo';
-  event_type: 'view' | 'edit' | 'share' | 'delete' | 'create' | 'export';
+  resource_type: 'note' | 'todo' | 'notebook';
+  event_type: string;
   event_data: Record<string, any>;
-  timestamp: string;
-  session_id: string;
-  device_info?: {
-    platform: string;
-    browser: string;
-    version: string;
-  };
+  created_at: string;
 }
 
 export interface FileAttachment {
   _id: string;
-  filename: string;
-  file_size: number;
-  mime_type: string;
+  owner_id: string;
   file_url: string;
-  thumbnail_url?: string;
-  uploaded_by: string;
-  uploaded_at: string;
-  is_encrypted: boolean;
+  file_type: string;
+  created_at: string;
+  linked_resource: string;
 }
 
 export interface Group {
   _id: string;
   name: string;
-  description: string;
   owner_id: string;
   members: string[];
   created_at: string;
-  updated_at: string;
-  permissions: {
-    can_invite: boolean;
-    can_remove: boolean;
-    can_edit_settings: boolean;
-  };
 }
 
 // Legacy interfaces for backward compatibility
 export interface NoteCollection extends Notebook {}
 
 export interface ShareRequest {
-  resource_id: string;
-  resource_type: 'note' | 'notebook' | 'todo';
-  recipient_email: string;
-  permission: 'view' | 'edit' | 'admin';
+  noteId: string;
+  recipientEmail: string;
+  permission: 'read' | 'write';
   message?: string;
-  expires_at?: string;
 }
 
 export interface EncryptedKeyShare {
-  share_id: string;
-  encrypted_key: string;
-  recipient_id: string;
-  note_id: string;
+  noteId: string;
+  recipientId: string;
+  encryptedKey: string;
+  keyVersion: number;
 }
 
 export interface NoteMetadata {
-  word_count: number;
-  character_count: number;
-  estimated_reading_time: number;
-  last_modified_by: string;
+  wordCount: number;
+  characterCount: number;
+  readingTime: number;
+  lastModified: string;
   version: number;
-  checksum: string;
 }
