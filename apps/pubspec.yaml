@@ -27,6 +27,7 @@ dependencies:
   appwrite: ^15.0.2
   connectivity_plus: ^6.1.4
   flutter_resizable_container: ^4.1.0
+  starknet: ^0.1.2+1
 
 dev_dependencies:
   flutter_test:
