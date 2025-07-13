@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { account } from '@/lib/appwrite';
 import { getUmiAccount } from '@/integrations/umi/wallet';
+import { UmiCounterContract } from '@/integrations/umi/contract';
 
 const MotionPaper = motion(Paper);
 
@@ -17,6 +18,9 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [umiWallet, setUmiWallet] = useState<string | null>(null);
   const [umiError, setUmiError] = useState('');
+  const [counter, setCounter] = useState<number | null>(null);
+  const [counterLoading, setCounterLoading] = useState(false);
+  const [counterError, setCounterError] = useState('');
 
   useEffect(() => {
     account.get()
@@ -44,6 +48,38 @@ export default function ProfilePage() {
       setUmiError('Failed to connect Umi wallet');
     }
   };
+
+  const fetchCounter = async () => {
+    setCounterLoading(true);
+    try {
+      const contract = new UmiCounterContract();
+      const res = await contract.getCounter();
+      // Parse result as needed, assuming res is a BigInt or number
+      setCounter(Number(res));
+      setCounterError('');
+    } catch (err) {
+      setCounterError('Failed to fetch counter');
+    } finally {
+      setCounterLoading(false);
+    }
+  };
+
+  const handleIncrementCounter = async () => {
+    setCounterLoading(true);
+    try {
+      const contract = new UmiCounterContract();
+      await contract.incrementCounter();
+      await fetchCounter();
+    } catch (err) {
+      setCounterError('Failed to increment counter');
+    } finally {
+      setCounterLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (umiEnabled) fetchCounter();
+  }, [umiEnabled]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -107,6 +143,28 @@ export default function ProfilePage() {
                   {umiError}
                 </Typography>
               )}
+              {/* Counter Contract Section */}
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="subtitle2" gutterBottom>
+                Counter Contract
+              </Typography>
+              {counterLoading ? (
+                <Typography>Loading counter...</Typography>
+              ) : counterError ? (
+                <Typography color="error">{counterError}</Typography>
+              ) : (
+                <Typography variant="body2">
+                  Counter Value: {counter !== null ? counter : 'N/A'}
+                </Typography>
+              )}
+              <Button
+                variant="outlined"
+                sx={{ mt: 1 }}
+                onClick={handleIncrementCounter}
+                disabled={counterLoading || !umiWallet}
+              >
+                Increment Counter
+              </Button>
             </Paper>
           )}
         </Grid>
