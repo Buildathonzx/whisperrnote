@@ -133,22 +133,6 @@
                     "default": null
                 },
                 {
-                    "key": "title",
-                    "type": "string",
-                    "required": false,
-                    "array": false,
-                    "size": 256,
-                    "default": null
-                },
-                {
-                    "key": "content",
-                    "type": "string",
-                    "required": false,
-                    "array": false,
-                    "size": 256,
-                    "default": null
-                },
-                {
                     "key": "createdAt",
                     "type": "datetime",
                     "required": false,
@@ -180,46 +164,6 @@
                     "default": null
                 },
                 {
-                    "key": "tags",
-                    "type": "string",
-                    "required": false,
-                    "array": true,
-                    "size": 256,
-                    "default": null
-                },
-                {
-                    "key": "attachments",
-                    "type": "string",
-                    "required": false,
-                    "array": true,
-                    "size": 256,
-                    "default": null
-                },
-                {
-                    "key": "comments",
-                    "type": "string",
-                    "required": false,
-                    "array": true,
-                    "size": 256,
-                    "default": null
-                },
-                {
-                    "key": "extensions",
-                    "type": "string",
-                    "required": false,
-                    "array": true,
-                    "size": 256,
-                    "default": null
-                },
-                {
-                    "key": "collaborators",
-                    "type": "string",
-                    "required": false,
-                    "array": true,
-                    "size": 256,
-                    "default": null
-                },
-                {
                     "key": "status",
                     "type": "string",
                     "required": false,
@@ -238,6 +182,62 @@
                     "required": false,
                     "array": false,
                     "size": 256,
+                    "default": null
+                },
+                {
+                    "key": "title",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": null
+                },
+                {
+                    "key": "content",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 5000,
+                    "default": null
+                },
+                {
+                    "key": "tags",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 256,
+                    "default": null
+                },
+                {
+                    "key": "attachments",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 1000,
+                    "default": null
+                },
+                {
+                    "key": "comments",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 5000,
+                    "default": null
+                },
+                {
+                    "key": "extensions",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 5000,
+                    "default": null
+                },
+                {
+                    "key": "collaborators",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 5000,
                     "default": null
                 },
                 {

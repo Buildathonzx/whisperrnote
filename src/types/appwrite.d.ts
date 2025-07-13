@@ -39,19 +39,19 @@ export type Users = Models.Document & {
 
 export type Notes = Models.Document & {
   id: string | null;
-  title: string | null;
-  content: string | null;
   createdAt: string | null;
   updatedAt: string | null;
   userId: string | null;
   isPublic: boolean | null;
+  status: Status | null;
+  parentNoteId: string | null;
+  title: string | null;
+  content: string | null;
   tags: string[] | null;
   attachments: string[] | null;
   comments: string[] | null;
   extensions: string[] | null;
   collaborators: string[] | null;
-  status: Status | null;
-  parentNoteId: string | null;
   metadata: string | null;
 }
 
