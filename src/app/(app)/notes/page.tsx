@@ -64,8 +64,9 @@ export default function NotesPage() {
       setLoading(true);
       try {
         const res = await listNotes();
-        setNotes(res.documents || []);
+        setNotes(Array.isArray(res.documents) ? res.documents as Notes[] : []);
       } catch (error) {
+        setNotes([]);
         console.error('Failed to fetch notes:', error);
       } finally {
         setLoading(false);
@@ -145,9 +146,7 @@ export default function NotesPage() {
       !note.content?.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
-    if (filters.type && note.metadata !== filters.type) return false;
-    if (filters.isPinned && !(note as any).isPinned) return false;
-    if (filters.isArchived !== (note as any).isArchived) return false;
+    // Remove references to fields not in Notes type
     if (filters.tags.length > 0 && !filters.tags.some((tag: string) => note.tags?.includes(tag))) return false;
     return true;
   });
@@ -164,9 +163,7 @@ export default function NotesPage() {
   });
 
   const noteStats = {
-    total: notes.length,
-    pinned: notes.filter((n) => (n as any).isPinned).length,
-    archived: notes.filter((n) => (n as any).isArchived).length
+    total: notes.length
   };
 
   if (loading) {
@@ -206,10 +203,6 @@ export default function NotesPage() {
             {/* Stats */}
             <Stack direction="row" spacing={2}>
               <Chip label={`${noteStats.total} Total`} variant="outlined" />
-              <Chip label={`${noteStats.pinned} Pinned`} color="warning" />
-              {noteStats.archived > 0 && (
-                <Chip label={`${noteStats.archived} Archived`} color="default" />
-              )}
             </Stack>
           </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>

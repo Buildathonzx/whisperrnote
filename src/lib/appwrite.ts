@@ -131,18 +131,18 @@ export async function createNote(data: Partial<Notes>) {
     doc.$id,
     { id: doc.$id }
   );
-  // Return the updated document
+  // Return the updated document as Notes type
   return await getNote(doc.$id);
 }
 
 export async function getNote(noteId: string): Promise<Notes> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as Promise<Notes>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as Notes;
 }
 
 export async function updateNote(noteId: string, data: Partial<Notes>) {
   // Do not allow updating id or userId directly
   const { id, userId, ...rest } = data;
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, rest);
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, rest) as Promise<Notes>;
 }
 
 export async function deleteNote(noteId: string) {
@@ -156,7 +156,9 @@ export async function listNotes(queries: any[] = []) {
     if (!user || !user.$id) throw new Error("User not authenticated");
     queries = [Query.equal("userId", user.$id)];
   }
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, queries);
+  // Cast documents to Notes[]
+  const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, queries);
+  return { ...res, documents: res.documents as Notes[] };
 }
 
 // --- TAGS CRUD ---
