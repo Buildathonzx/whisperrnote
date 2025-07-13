@@ -3,9 +3,9 @@ import { getUmiPublicClient, getUmiWalletClient } from './client';
 import { getUmiAccount } from './wallet';
 
 // Replace with actual deployed contract address and ABI
-export const COUNTER_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_UMI_COUNTER_CONTRACT_ADDRESS || '';
-// import counterAbi from './Counter.json'; // Ensure ABI is available
-const counterAbi: any[] = []; // TODO: Replace with actual ABI array
+export const NOTES_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_UMI_NOTES_CONTRACT_ADDRESS || '';
+// import notesAbi from './Notes.json'; // Ensure ABI is available
+const notesAbi: any[] = []; // TODO: Replace with actual ABI array for Notes contract
 
 export interface ContractConfig {
   address: string;
@@ -38,28 +38,22 @@ export class UmiContract {
   }
 }
 
-export class UmiCounterContract {
-  private contract: ethers.Contract;
+export class UmiNotesContract {
+  private contract: any;
   constructor() {
-    this.contract = new ethers.Contract(COUNTER_CONTRACT_ADDRESS, counterAbi);
+    // Use ethers.Contract if ABI is available
+    this.contract = {}; // Placeholder for contract instance
   }
 
-  async getCounter() {
-    const fn = this.contract.getFunction('get');
-    const tx = await fn.populateTransaction(await getUmiAccount());
-    const { to, data } = { to: tx.to as `0x${string}`, data: tx.data as `0x${string}` };
-    const res = await getUmiPublicClient().call({ to, data });
-    // Parse result as needed
-    return res;
+  async listNotes() {
+    // TODO: Replace with actual contract call
+    // Example: return await this.contract.list_notes(account);
+    return []; // Return empty array for now
   }
 
-  async incrementCounter() {
-    const fn = this.contract.getFunction('increment');
-    const tx = await fn.populateTransaction(await getUmiAccount());
-    const { to, data } = { to: tx.to as `0x${string}`, data: tx.data as `0x${string}` };
-    const account = await getUmiAccount();
-    const hash = await getUmiWalletClient().sendTransaction({ account, to, data });
-    await getUmiPublicClient().waitForTransactionReceipt({ hash });
-    return hash;
+  async createNote(title: string, content: string, tags: string[], timestamp: number) {
+    // TODO: Replace with actual contract call
+    // Example: await this.contract.create_note(account, title, content, tags, timestamp);
+    return true;
   }
 }

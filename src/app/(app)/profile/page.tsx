@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { account } from '@/lib/appwrite';
 import { getUmiAccount } from '@/integrations/umi/wallet';
-import { UmiCounterContract } from '@/integrations/umi/contract';
+import { UmiNotesContract } from '@/integrations/umi/contract';
 
 const MotionPaper = motion(Paper);
 
@@ -18,9 +18,11 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [umiWallet, setUmiWallet] = useState<string | null>(null);
   const [umiError, setUmiError] = useState('');
-  const [counter, setCounter] = useState<number | null>(null);
-  const [counterLoading, setCounterLoading] = useState(false);
-  const [counterError, setCounterError] = useState('');
+  const [notes, setNotes] = useState<any[]>([]);
+  const [notesLoading, setNotesLoading] = useState(false);
+  const [notesError, setNotesError] = useState('');
+  const [newNoteTitle, setNewNoteTitle] = useState('');
+  const [newNoteContent, setNewNoteContent] = useState('');
 
   useEffect(() => {
     account.get()
@@ -49,37 +51,39 @@ export default function ProfilePage() {
     }
   };
 
-  const fetchCounter = async () => {
-    setCounterLoading(true);
+  const fetchNotes = async () => {
+    setNotesLoading(true);
     try {
-      const contract = new UmiCounterContract();
-      const res = await contract.getCounter();
-      // Parse result as needed, assuming res is a BigInt or number
-      setCounter(Number(res));
-      setCounterError('');
+      const contract = new UmiNotesContract();
+      const res = await contract.listNotes();
+      setNotes(res || []);
+      setNotesError('');
     } catch (err) {
-      setCounterError('Failed to fetch counter');
+      setNotesError('Failed to fetch notes');
     } finally {
-      setCounterLoading(false);
+      setNotesLoading(false);
     }
   };
 
-  const handleIncrementCounter = async () => {
-    setCounterLoading(true);
+  const handleCreateNote = async () => {
+    if (!newNoteTitle || !newNoteContent) return;
+    setNotesLoading(true);
     try {
-      const contract = new UmiCounterContract();
-      await contract.incrementCounter();
-      await fetchCounter();
+      const contract = new UmiNotesContract();
+      await contract.createNote(newNoteTitle, newNoteContent, [], Date.now());
+      setNewNoteTitle('');
+      setNewNoteContent('');
+      await fetchNotes();
     } catch (err) {
-      setCounterError('Failed to increment counter');
+      setNotesError('Failed to create note');
     } finally {
-      setCounterLoading(false);
+      setNotesLoading(false);
     }
   };
 
   useEffect(() => {
-    if (umiEnabled) fetchCounter();
-  }, [umiEnabled]);
+    if (umiEnabled && umiWallet) fetchNotes();
+  }, [umiEnabled, umiWallet]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -143,28 +147,56 @@ export default function ProfilePage() {
                   {umiError}
                 </Typography>
               )}
-              {/* Counter Contract Section */}
+              {/* Notes Contract Section */}
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle2" gutterBottom>
-                Counter Contract
+                Decentralized Notes
               </Typography>
-              {counterLoading ? (
-                <Typography>Loading counter...</Typography>
-              ) : counterError ? (
-                <Typography color="error">{counterError}</Typography>
+              <Box sx={{ mb: 2 }}>
+                <input
+                  type="text"
+                  placeholder="Note Title"
+                  value={newNoteTitle}
+                  onChange={e => setNewNoteTitle(e.target.value)}
+                  style={{ width: '100%', marginBottom: 8, padding: 8 }}
+                />
+                <textarea
+                  placeholder="Note Content"
+                  value={newNoteContent}
+                  onChange={e => setNewNoteContent(e.target.value)}
+                  style={{ width: '100%', marginBottom: 8, padding: 8 }}
+                  rows={3}
+                />
+                <Button
+                  variant="outlined"
+                  sx={{ mt: 1 }}
+                  onClick={handleCreateNote}
+                  disabled={notesLoading || !umiWallet}
+                >
+                  Create Note
+                </Button>
+              </Box>
+              {notesLoading ? (
+                <Typography>Loading notes...</Typography>
+              ) : notesError ? (
+                <Typography color="error">{notesError}</Typography>
               ) : (
-                <Typography variant="body2">
-                  Counter Value: {counter !== null ? counter : 'N/A'}
-                </Typography>
+                <Box>
+                  {notes.length === 0 ? (
+                    <Typography variant="body2">No notes found.</Typography>
+                  ) : (
+                    notes.map((note, idx) => (
+                      <Paper key={idx} sx={{ mb: 1, p: 1 }}>
+                        <Typography variant="subtitle2">{note.title}</Typography>
+                        <Typography variant="body2">{note.content}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Created: {note.created_at}
+                        </Typography>
+                      </Paper>
+                    ))
+                  )}
+                </Box>
               )}
-              <Button
-                variant="outlined"
-                sx={{ mt: 1 }}
-                onClick={handleIncrementCounter}
-                disabled={counterLoading || !umiWallet}
-              >
-                Increment Counter
-              </Button>
             </Paper>
           )}
         </Grid>
