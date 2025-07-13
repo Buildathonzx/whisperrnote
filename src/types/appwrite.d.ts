@@ -6,19 +6,26 @@ import { type Models } from 'appwrite';
  */
 
 export enum Status {
-  DRAFTPUBLISHEDARCHIVED = "draft,published,archived"
+  DRAFT = "draft",
+  PUBLISHED = "published",
+  ARCHIVED = "archived"
 }
 
 export enum Status {
-  DRAFTPUBLISHEDARCHIVED = "draft,published,archived"
+  DRAFT = "draft",
+  PUBLISHED = "published",
+  ARCHIVED = "archived"
 }
 
 export enum TargetType {
-  NOTECOMMENT = "note,comment"
+  NOTE = "note",
+  COMMENT = "comment"
 }
 
 export enum Permission {
-  READWRITEADMIN = "read,write,admin"
+  READ = "read",
+  WRITE = "write",
+  ADMIN = "admin"
 }
 
 export type Users = Models.Document & {
