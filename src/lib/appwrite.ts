@@ -21,6 +21,9 @@ const account = new Account(client);
 const databases = new Databases(client);
 const storage = new Storage(client);
 
+// export app public uri
+export const APP_URI = process.env.NEXT_PUBLIC_APP_URI!;
+
 // Appwrite config IDs from env
 export const APPWRITE_DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 export const APPWRITE_COLLECTION_ID_USERS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_USERS!;
@@ -136,7 +139,7 @@ export async function createNote(data: Partial<Notes>) {
 }
 
 export async function getNote(noteId: string): Promise<Notes> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as Notes;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as unknown as Notes;
 }
 
 export async function updateNote(noteId: string, data: Partial<Notes>) {
