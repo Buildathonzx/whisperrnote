@@ -63,12 +63,3 @@ export class UmiContract {
   }
 }
 
-// --- Example Usage (Counter) ---
-// import { abi as counterAbi } from './Counter.json';
-// const counterContract = new UmiContract({ address: 'CONTRACT_ADDRESS', abi: counterAbi });
-// await counterContract.callPublic('count');
-// await counterContract.sendTx('increment');
-
-// --- Extend for WhisperNote Features ---
-// You can add modules for note encryption, decentralized storage, etc., and expose them here for integration.
-
