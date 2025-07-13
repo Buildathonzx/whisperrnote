@@ -1,10 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { account } from "@/lib/appwrite";
 import { motion } from "framer-motion";
 
-export default function PasswordResetPage() {
+// Extract the inner component that uses useSearchParams
+function PasswordResetInner() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [message, setMessage] = useState("");
@@ -106,5 +107,13 @@ export default function PasswordResetPage() {
         </p>
       </motion.div>
     </motion.div>
+  );
+}
+
+export default function PasswordResetPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PasswordResetInner />
+    </Suspense>
   );
 }

@@ -1,11 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { account, getCurrentUser, sendEmailVerification, completeEmailVerification } from "@/lib/appwrite";
 import type { Users } from "@/types/appwrite.d";
 import { motion } from "framer-motion";
 
-export default function EmailVerifyPage() {
+function EmailVerifyInner() {
   const [user, setUser] = useState<Users | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -175,5 +175,13 @@ export default function EmailVerifyPage() {
         </p>
       </motion.div>
     </motion.div>
+  );
+}
+
+export default function EmailVerifyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <EmailVerifyInner />
+    </Suspense>
   );
 }
