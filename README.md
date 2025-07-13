@@ -8,13 +8,14 @@ Welcome to WhisperNote, the ultimate note-taking application designed with **you
 
 WhisperNote supports modular integrations to extend functionality with decentralized protocols and networks.
 
-- **Umi Integration:** Enables interaction with Umi smart contracts for decentralized features.  
-  _Codebase: `src/integrations/umi`_
-- **Starknet Integration:** Adds Layer 2 scalability and decentralized storage.  
+- **Umi Integration:** Decentralized smart contract features via Umi Network.  
+  _Codebase: `src/integrations/umi`_  
+  _Contract Repo: [contracts_buildathonzx_whisperrnote_integrations_umi](https://github.com/whisperrnote/contracts_buildathonzx_whisperrnote_integrations_umi.git)_
+- **Starknet Integration:** Layer 2 scalability and decentralized storage.  
   _Codebase: `src/integrations/starknet`_
-- **Calimero Integration:** Provides enhanced privacy and data protection.  
+- **Calimero Integration:** Enhanced privacy and data protection.  
   _Codebase: `src/integrations/calimero`_
-- **ICP SDK Integration:** Supports decentralized data storage and reliability.  
+- **ICP SDK Integration:** Decentralized data storage and reliability.  
   _Codebase: `src/integrations/icp`_
 
 ## 🛡️ Unbreakable Security & Robustness
