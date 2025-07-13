@@ -1,33 +1,110 @@
 "use client";
-import { useEffect, useState } from "react";
-import { completeVerification } from "@/lib/auth";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { account, getCurrentUser } from "@/lib/appwrite";
+import type { Users } from "@/types/appwrite.d";
+import { motion } from "framer-motion";
 
-export default function EmailVerificationPage() {
+export default function EmailVerifyPage() {
+  const [user, setUser] = useState<Users | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [isVerified, setIsVerified] = useState<boolean>(false);
+  const [emailSent, setEmailSent] = useState<boolean>(false);
+
+  const router = useRouter();
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get("userId") || "";
-    const secret = urlParams.get("secret") || "";
-    if (userId && secret) {
-      completeVerification(userId, secret)
-        .then(() => setMessage("Email verified successfully! You can now log in."))
-        .catch((err: any) => setError(err?.message || "Verification failed"))
-        .finally(() => setLoading(false));
-    } else {
-      setError("Invalid verification link.");
+    account.get()
+      .then(u => {
+        setUser(u as unknown as Users);
+        if (u.emailVerification) {
+          setIsVerified(true);
+          router.replace("/notes");
+        }
+      })
+      .catch(() => {
+        router.replace("/login");
+      });
+  }, [router]);
+
+  const handleSendVerification = async () => {
+    setLoading(true);
+    setError("");
+    setMessage("");
+    try {
+      await account.createVerification(window.location.origin + "/verify");
+      setEmailSent(true);
+      setMessage("Verification email sent! Please check your inbox.");
+    } catch (err: any) {
+      setError(err?.message || "Failed to send verification email");
+    } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   return (
-    <div>
-      <h2>Email Verification</h2>
-      {loading && <p>Verifying...</p>}
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
+      className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100"
+    >
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="backdrop-blur-lg bg-white/80 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-purple-100 animate-fade-in"
+      >
+        <img src="/logo/whisperrnote.png" alt="WhisperrNote Logo" className="mx-auto mb-6 w-20 h-20 rounded-full shadow-lg" />
+        <h2 className="text-3xl font-extrabold mb-2 text-center text-purple-700 tracking-tight">
+          {user?.name ? `Welcome, ${user.name}` : "Verify Email"}
+        </h2>
+        <p className="mb-6 text-center text-gray-500">
+          {isVerified
+            ? "Your email is already verified. Redirecting to notes..."
+            : emailSent
+              ? "A verification email has been sent to your address. Please check your inbox and follow the instructions."
+              : "Click the button below to send a verification email to your address."}
+        </p>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 text-red-500 text-center animate-shake"
+          >
+            {error}
+          </motion.p>
+        )}
+        {message && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 text-green-600 text-center"
+          >
+            {message}
+          </motion.p>
+        )}
+        {!isVerified && !emailSent && (
+          <form onSubmit={e => e.preventDefault()} className="space-y-4">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={handleSendVerification}
+              disabled={loading}
+              className="w-full py-3 px-4 bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl font-bold shadow transition-all duration-200"
+            >
+              {loading ? "Sending..." : "Send Verification Email"}
+            </motion.button>
+          </form>
+        )}
+        <p className="mt-6 text-center text-gray-600">
+          <a href="/login" className="text-purple-600 hover:underline">Back to Login</a>
+        </p>
+      </motion.div>
+    </motion.div>
   );
 }
+  

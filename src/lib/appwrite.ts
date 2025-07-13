@@ -66,6 +66,25 @@ export async function getCurrentUser(): Promise<Users | null> {
   }
 }
 
+// --- EMAIL VERIFICATION ---
+
+export async function sendEmailVerification(redirectUrl: string) {
+  return account.createVerification(redirectUrl);
+}
+
+export async function completeEmailVerification(userId: string, secret: string) {
+  return account.updateVerification(userId, secret);
+}
+
+export async function getEmailVerificationStatus(): Promise<boolean> {
+  try {
+    const user = await account.get();
+    return !!user.emailVerification;
+  } catch {
+    return false;
+  }
+}
+
 // --- USERS CRUD ---
 
 export async function createUser(data: Partial<Users>) {
@@ -358,7 +377,7 @@ export async function listNotesByUser(userId: string) {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, [Query.equal('userId', userId)]);
 }
 
-export async function listPublicNotes() {
+export async function listPublicNotes(p0: never[]) {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, [Query.equal('isPublic', true)]);
 }
 
@@ -422,6 +441,9 @@ export default {
   loginEmailPassword,
   logout,
   getCurrentUser,
+  sendEmailVerification,
+  completeEmailVerification,
+  getEmailVerificationStatus,
   createUser,
   getUser,
   updateUser,

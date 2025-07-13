@@ -10,6 +10,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isVerified, setIsVerified] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -18,6 +19,7 @@ export default function SettingsPage() {
         setUser(u);
         setName(u.name || "");
         setEmail(u.email || "");
+        setIsVerified(!!u.emailVerification);
       })
       .catch(() => {
         router.replace("/login");
@@ -42,6 +44,20 @@ export default function SettingsPage() {
   return (
     <div style={{ maxWidth: 500, margin: "auto", padding: 32 }}>
       <h2>Account Settings</h2>
+      <div style={{ marginBottom: 16 }}>
+        <span>
+          Email status:{" "}
+          {isVerified ? (
+            <span style={{ color: "green", fontWeight: 500 }}>Verified</span>
+          ) : (
+            <span style={{ color: "red", fontWeight: 500 }}>
+              Not verified
+              {" "}
+              <a href="/verify" className="text-blue-600 hover:underline">Verify email</a>
+            </span>
+          )}
+        </span>
+      </div>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
       <form onSubmit={handleUpdate}>
