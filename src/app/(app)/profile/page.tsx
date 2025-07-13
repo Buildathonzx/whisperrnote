@@ -5,13 +5,18 @@ import { Edit, AccessTime, NoteAdd, Folder } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { account } from '@/lib/appwrite';
+import { getUmiAccount } from '@/integrations/umi/wallet';
 
 const MotionPaper = motion(Paper);
+
+const umiEnabled = process.env.NEXT_PUBLIC_INTEGRATION_TOGGLE_UMI === 'true';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [umiWallet, setUmiWallet] = useState<string | null>(null);
+  const [umiError, setUmiError] = useState('');
 
   useEffect(() => {
     account.get()
@@ -28,6 +33,16 @@ export default function ProfilePage() {
       return email[0].toUpperCase();
     }
     return '?';
+  };
+
+  const handleConnectUmiWallet = async () => {
+    try {
+      const address = await getUmiAccount();
+      setUmiWallet(address);
+      setUmiError('');
+    } catch (err) {
+      setUmiError('Failed to connect Umi wallet');
+    }
   };
 
   return (
@@ -73,6 +88,27 @@ export default function ProfilePage() {
               </>
             )}
           </MotionPaper>
+          {umiEnabled && (
+            <Paper elevation={1} sx={{ mt: 3, p: 2, textAlign: 'center' }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Umi Integration
+              </Typography>
+              {umiWallet ? (
+                <Typography variant="body2" color="primary">
+                  Connected Wallet: {umiWallet}
+                </Typography>
+              ) : (
+                <Button variant="contained" onClick={handleConnectUmiWallet}>
+                  Connect Umi Wallet
+                </Button>
+              )}
+              {umiError && (
+                <Typography color="error" variant="caption">
+                  {umiError}
+                </Typography>
+              )}
+            </Paper>
+          )}
         </Grid>
 
         {/* Stats and Activity */}
