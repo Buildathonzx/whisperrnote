@@ -10,6 +10,8 @@ import "../globals.css";
 import { AccessTokenWrapper } from '@calimero-network/calimero-client';
 import { getNodeUrl } from '@/lib/calimero/config';
 import { BlockchainProvider } from '@/components/providers/BlockchainProvider';
+import AppShell from "@/components/ui/appShell";
+import { usePathname } from "next/navigation";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -74,6 +76,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [mode, setMode] = useState<'light' | 'dark'>('light');
+  const pathname = usePathname();
 
   const toggleTheme = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
@@ -275,6 +278,16 @@ export default function RootLayout({
     [mode],
   );
 
+  // List of public routes (same as in AppShell)
+  const PUBLIC_ROUTES = [
+    "/", "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/login", "/signup"
+  ];
+  function isPublicRoute(path: string) {
+    return PUBLIC_ROUTES.some(route =>
+      typeof route === "string" ? route === path : route instanceof RegExp && route.test(path)
+    );
+  }
+
   return (
     <html lang="en">
       <body className={geist.className}>
@@ -295,7 +308,10 @@ export default function RootLayout({
                     : 'radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.05) 0%, transparent 40%), radial-gradient(circle at 15% 85%, rgba(59, 130, 246, 0.05) 0%, transparent 40%)',
                 }}
               >
-                {children}
+                {isPublicRoute(pathname)
+                  ? children
+                  : <AppShell>{children}</AppShell>
+                }
               </Box>
             </BlockchainProvider>
           </ThemeProvider>

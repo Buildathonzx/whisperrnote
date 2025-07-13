@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { signupEmailPassword, loginEmailPassword } from "@/lib/appwrite";
+import { signupEmailPassword, loginEmailPassword, getCurrentUser } from "@/lib/appwrite";
 import type { Users } from "@/types/appwrite.d";
 import { motion } from "framer-motion";
 
@@ -11,6 +11,12 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    getCurrentUser().then(user => {
+      if (user) router.replace("/notes");
+    });
+  }, [router]);
 
   const register = async () => {
     setError("");

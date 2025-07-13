@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { loginEmailPassword, getCurrentUser, logout } from "@/lib/appwrite";
 import type { Users } from "@/types/appwrite.d";
@@ -14,6 +14,12 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    getCurrentUser().then(user => {
+      if (user) router.replace("/notes");
+    });
+  }, [router]);
 
   const login = async (email: string, password: string) => {
     setError("");
