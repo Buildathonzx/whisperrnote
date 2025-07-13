@@ -1,61 +1,51 @@
 "use client";
 
 import React, { useState } from 'react';
-import { 
-  Card, CardContent, Typography, CardActions, IconButton, Stack, Chip, Box, 
-  Avatar, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, 
-  Button, Tooltip, LinearProgress 
+import {
+  Card, CardContent, Typography, CardActions, IconButton, Stack, Chip, Box,
+  Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, Tooltip
 } from '@mui/material';
-import { 
-  Edit, Delete, Share, AccessTime, PushPin, Archive, Lock, LockOpen, 
-  Visibility, MoreVert, Comment, Download, Analytics, Label
-} from '@mui/icons-material';
-import { Note } from "../../../types/notes";
+import { Edit, Delete, Share, AccessTime, PushPin, Archive, Lock, LockOpen, Visibility, MoreVert, Analytics } from '@mui/icons-material';
+import type { Notes } from "@/types/appwrite.d";
 import { motion } from "framer-motion";
 import { useRouter } from 'next/navigation';
 
 const MotionCard = motion(Card);
 
 interface NoteComponentProps {
-  note: Note;
-  onEdit?: (note: Note) => void;
+  note: Notes;
+  onEdit?: (note: Notes) => void;
   onDelete?: (noteId: string) => void;
   onShare?: (noteId: string) => void;
   onPin?: (noteId: string, pinned: boolean) => void;
   onArchive?: (noteId: string, archived: boolean) => void;
 }
 
-const priorityColors = {
-  low: '#4CAF50',
-  medium: '#FF9800', 
-  high: '#F44336',
-  urgent: '#9C27B0'
-};
-
-const typeIcons = {
-  text: '📝',
-  scribble: '✏️',
-  audio: '🎵',
-  image: '🖼️',
-  file: '📎',
-  math: '🧮'
-};
-
-export default function NoteComponent({ 
-  note, 
-  onEdit, 
-  onDelete, 
-  onShare, 
-  onPin, 
-  onArchive 
+export default function NoteComponent({
+  note,
+  onEdit,
+  onDelete,
+  onShare,
+  onPin,
+  onArchive
 }: NoteComponentProps) {
-  const [showAnalytics, setShowAnalytics] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const router = useRouter();
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, { 
+  // Reading time calculation (basic: 200 words per minute)
+  const readingTimeMinutes = note.content
+    ? Math.max(1, Math.ceil(note.content.replace(/<[^>]*>/g, '').split(/\s+/).length / 200))
+    : 1;
+
+  const formatDate = (dateString?: string | null) => {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    // fallback for invalid date
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -63,8 +53,6 @@ export default function NoteComponent({
       minute: '2-digit'
     });
   };
-
-  const getTypeIcon = (type: string) => typeIcons[type as keyof typeof typeIcons] || '📝';
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -75,99 +63,95 @@ export default function NoteComponent({
   };
 
   const handleEdit = () => {
-    router.push(`/notes/${note._id}/edit`);
+    router.push(`/notes/${note.$id}`);
     handleMenuClose();
   };
 
   const handleShare = () => {
+    // Open share dialog instead of direct call
     setShareDialogOpen(true);
     handleMenuClose();
+    onShare?.(note.$id);
   };
 
   const handlePin = () => {
-    onPin?.(note._id, !note.is_pinned);
+    // Toggle isPublic as a "pin" for demonstration (since isPinned is not in Notes type)
+    onPin?.(note.$id, !(note.isPublic ?? false));
     handleMenuClose();
   };
 
   const handleArchive = () => {
-    onArchive?.(note._id, !note.is_archived);
+    // Fix: Check if status includes "archived"
+    const isArchived = note.status && note.status.toString().includes("archived");
+    onArchive?.(note.$id, !isArchived);
     handleMenuClose();
   };
 
   const handleDelete = () => {
     if (confirm('Are you sure you want to delete this note?')) {
-      onDelete?.(note._id);
+      onDelete?.(note.$id);
     }
     handleMenuClose();
   };
 
-  const readingTimeMinutes = note.ai_metadata?.readingTime || 
-    Math.ceil((note.content?.split(' ').length || 0) / 200);
+  // Use only valid properties from Notes type
+  const isPinned = note.isPublic ?? false; // Use isPublic as "pinned" indicator
+  const isArchived = note.status && note.status.toString().includes("archived");
+  const isPublic = note.isPublic ?? false;
+  const isEncrypted = (note as any).isEncrypted ?? note.is_encrypted;
 
   return (
     <>
-      <MotionCard 
-        whileHover={{ 
+      <MotionCard
+        whileHover={{
           y: -8,
           boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
         }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        sx={{ 
+        sx={{
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          background: note.is_pinned 
-            ? 'linear-gradient(145deg, rgba(255,235,59,0.1) 0%, rgba(255,235,59,0.05) 100%)'
-            : 'linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
           backdropFilter: 'blur(10px)',
-          border: note.is_pinned 
-            ? '1px solid rgba(255,235,59,0.3)'
-            : '1px solid rgba(255,255,255,0.1)',
           position: 'relative',
-          opacity: note.is_archived ? 0.7 : 1
+          opacity: isArchived ? 0.7 : 1
         }}
       >
-        {/* Header with type icon and actions */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', p: 2, pb: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h6" component="span" sx={{ fontSize: '1.2rem' }}>
-              {getTypeIcon(note.type)}
+              📝
             </Typography>
-            {note.is_pinned && <PushPin color="warning" fontSize="small" />}
-            {note.is_encrypted ? <Lock color="primary" fontSize="small" /> : <LockOpen color="action" fontSize="small" />}
+            {isPinned && <PushPin color="warning" fontSize="small" />}
+            {isPublic ? <LockOpen color="action" fontSize="small" /> : <Lock color="primary" fontSize="small" />}
           </Box>
-          
-          <IconButton 
-            size="small" 
+          <IconButton
+            size="small"
             onClick={handleMenuOpen}
             sx={{ ml: 'auto' }}
           >
             <MoreVert />
           </IconButton>
         </Box>
-
         <CardContent sx={{ flexGrow: 1, pt: 0 }}>
-          {/* Title */}
-          <Typography 
-            variant="h6" 
+          <Typography
+            variant="h6"
             component="h3"
-            sx={{ 
+            sx={{
               mb: 1,
               fontWeight: 600,
               lineHeight: 1.3,
               cursor: 'pointer',
               '&:hover': { color: 'primary.main' }
             }}
-            onClick={() => router.push(`/notes/${note._id}`)}
+            onClick={() => router.push(`/notes/${note.$id}`)}
           >
             {note.title}
           </Typography>
-
-          {/* Content preview */}
-          <Typography 
-            variant="body2" 
+          <Typography
+            variant="body2"
             color="text.secondary"
-            sx={{ 
+            sx={{
               mb: 2,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -177,45 +161,9 @@ export default function NoteComponent({
               lineHeight: 1.4
             }}
           >
-            {note.content.replace(/<[^>]*>/g, '').substring(0, 150)}
-            {note.content.length > 150 && '...'}
+            {note.content?.replace(/<[^>]*>/g, '').substring(0, 150)}
+            {note.content && note.content.length > 150 && '...'}
           </Typography>
-
-          {/* Tags */}
-          {note.tags && note.tags.length > 0 && (
-            <Stack direction="row" spacing={0.5} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
-              {note.tags.slice(0, 3).map((tag) => (
-                <Chip 
-                  key={tag}
-                  label={tag}
-                  size="small"
-                  variant="outlined"
-                  sx={{ fontSize: '0.7rem', height: '20px' }}
-                />
-              ))}
-              {note.tags.length > 3 && (
-                <Chip 
-                  label={`+${note.tags.length - 3}`}
-                  size="small"
-                  variant="outlined"
-                  sx={{ fontSize: '0.7rem', height: '20px' }}
-                />
-              )}
-            </Stack>
-          )}
-
-          {/* AI Insights */}
-          {note.ai_metadata?.summary && (
-            <Box sx={{ mb: 2, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
-              <Typography variant="caption" color="primary" sx={{ fontWeight: 600, display: 'block' }}>
-                AI Summary:
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {note.ai_metadata.summary}
-              </Typography>
-            </Box>
-          )}
-
           {/* Attachments indicator */}
           {note.attachments && note.attachments.length > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -224,7 +172,28 @@ export default function NoteComponent({
               </Typography>
             </Box>
           )}
-
+          {/* Tags */}
+          {note.tags && note.tags.length > 0 && (
+            <Stack direction="row" spacing={0.5} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
+              {note.tags.slice(0, 3).map((tag) => (
+                <Chip
+                  key={tag}
+                  label={tag}
+                  size="small"
+                  variant="outlined"
+                  sx={{ fontSize: '0.7rem', height: '20px' }}
+                />
+              ))}
+              {note.tags.length > 3 && (
+                <Chip
+                  label={`+${note.tags.length - 3}`}
+                  size="small"
+                  variant="outlined"
+                  sx={{ fontSize: '0.7rem', height: '20px' }}
+                />
+              )}
+            </Stack>
+          )}
           {/* Analytics preview */}
           {note.analytics && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
@@ -263,7 +232,8 @@ export default function NoteComponent({
         {/* Footer with dates and actions */}
         <CardActions sx={{ justifyContent: 'space-between', px: 2, py: 1 }}>
           <Typography variant="caption" color="text.secondary">
-            {formatDate(note.updated_at)}
+            {/* Try both snake_case and camelCase */}
+            {formatDate(note.updatedAt ?? note.updated_at)}
           </Typography>
           
           <Stack direction="row" spacing={0.5}>
@@ -273,7 +243,7 @@ export default function NoteComponent({
             <IconButton 
               size="small" 
               onClick={handleShare}
-              disabled={!note.is_encrypted}
+              disabled={isEncrypted === false}
             >
               <Share fontSize="small" />
             </IconButton>
@@ -299,13 +269,13 @@ export default function NoteComponent({
         </MenuItem>
         <MenuItem onClick={handlePin}>
           <PushPin fontSize="small" sx={{ mr: 1 }} />
-          {note.is_pinned ? 'Unpin' : 'Pin'}
+          {isPinned ? 'Unpin' : 'Pin'}
         </MenuItem>
         <MenuItem onClick={handleArchive}>
           <Archive fontSize="small" sx={{ mr: 1 }} />
-          {note.is_archived ? 'Unarchive' : 'Archive'}
+          {isArchived ? 'Unarchive' : 'Archive'}
         </MenuItem>
-        <MenuItem onClick={handleShare} disabled={!note.is_encrypted}>
+        <MenuItem onClick={handleShare} disabled={isEncrypted === false}>
           <Share fontSize="small" sx={{ mr: 1 }} />
           Share
         </MenuItem>
@@ -374,7 +344,7 @@ export default function NoteComponent({
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" color="text.secondary">Topics:</Typography>
                   <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                    {note.ai_metadata.topics.map((topic) => (
+                    {note.ai_metadata.topics.map((topic: string) => (
                       <Chip key={topic} label={topic} size="small" />
                     ))}
                   </Stack>
@@ -384,7 +354,7 @@ export default function NoteComponent({
                 <Box>
                   <Typography variant="caption" color="text.secondary">Key Points:</Typography>
                   <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
-                    {note.ai_metadata.keyPoints.map((point, index) => (
+                    {note.ai_metadata.keyPoints.map((point: string, index: number) => (
                       <li key={index}>
                         <Typography variant="caption">{point}</Typography>
                       </li>

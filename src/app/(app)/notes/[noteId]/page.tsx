@@ -5,16 +5,18 @@ import { ArrowBack, Save, Share, Delete, Label as TagIcon } from '@mui/icons-mat
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { getNote, updateNote, deleteNote } from '@/lib/appwrite';
+import type { Notes } from '@/types/appwrite.d';
 
 const MotionPaper = motion(Paper);
 
 export default function NotePage({ params }: { params: { noteId: string } }) {
   const router = useRouter();
   const { noteId } = params;
-  const [note, setNote] = useState({
+  const [note, setNote] = useState<Partial<Notes>>({
     title: '',
     content: '',
-    tags: [] as string[],
+    tags: [],
     isPublic: false
   });
   const [newTag, setNewTag] = useState('');
@@ -23,20 +25,16 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch note from API
     const fetchNote = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/notes/${noteId}`);
-        const data = await res.json();
-        if (data.note) {
-          setNote({
-            title: data.note.title,
-            content: data.note.content,
-            tags: data.note.tags || [],
-            isPublic: data.note.isPublic || false
-          });
-        }
+        const data = await getNote(noteId);
+        setNote({
+          title: data.title || '',
+          content: data.content || '',
+          tags: data.tags || [],
+          isPublic: data.isPublic || false
+        });
       } finally {
         setIsLoading(false);
       }
@@ -47,27 +45,23 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await fetch(`/api/notes/${noteId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(note)
-      });
+      await updateNote(noteId, note);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    await fetch(`/api/notes/${noteId}`, { method: 'DELETE' });
+    await deleteNote(noteId);
     setIsDeleteDialogOpen(false);
     router.push('/notes');
   };
 
   const addTag = () => {
-    if (newTag && !note.tags.includes(newTag)) {
+    if (newTag && !note.tags?.includes(newTag)) {
       setNote(prev => ({
         ...prev,
-        tags: [...prev.tags, newTag]
+        tags: [...(prev.tags || []), newTag]
       }));
       setNewTag('');
     }
@@ -76,19 +70,19 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
   const removeTag = (tagToRemove: string) => {
     setNote(prev => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: (prev.tags || []).filter(tag => tag !== tagToRemove)
     }));
   };
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Box sx={{ 
-        mb: 3, 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center' 
+      <Box sx={{
+        mb: 3,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
       }}>
-        <IconButton 
+        <IconButton
           onClick={() => router.back()}
           component={motion.button}
           whileHover={{ scale: 1.1 }}
@@ -124,7 +118,6 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
           </Button>
         </Stack>
       </Box>
-
       <MotionPaper
         elevation={2}
         initial={{ opacity: 0, y: 20 }}
@@ -138,7 +131,7 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
           placeholder="Title"
           value={note.title}
           onChange={(e) => setNote(prev => ({ ...prev, title: e.target.value }))}
-          sx={{ 
+          sx={{
             mb: 3,
             '& .MuiInputBase-input': {
               fontSize: '2rem',
@@ -146,13 +139,12 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
             }
           }}
         />
-        
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
             Tags
           </Typography>
           <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
-            {note.tags.map((tag) => (
+            {(note.tags || []).map((tag) => (
               <Chip
                 key={tag}
                 label={tag}
@@ -179,7 +171,6 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
             </Button>
           </Box>
         </Box>
-        
         <TextField
           fullWidth
           multiline
@@ -196,7 +187,6 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
           }}
         />
       </MotionPaper>
-
       <Dialog
         open={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}

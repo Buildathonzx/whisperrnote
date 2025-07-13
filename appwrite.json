@@ -225,7 +225,9 @@
                     "required": false,
                     "array": false,
                     "elements": [
-                        "draft,published,archived"
+                        "draft",
+                        "published",
+                        "archived"
                     ],
                     "format": "enum",
                     "default": null
@@ -501,7 +503,9 @@
                     "required": false,
                     "array": false,
                     "elements": [
-                        "draft,published,archived"
+                        "draft",
+                        "published",
+                        "archived"
                     ],
                     "format": "enum",
                     "default": null
@@ -687,7 +691,8 @@
                     "required": true,
                     "array": false,
                     "elements": [
-                        "note,comment"
+                        "note",
+                        "comment"
                     ],
                     "format": "enum",
                     "default": null
@@ -762,7 +767,9 @@
                     "required": true,
                     "array": false,
                     "elements": [
-                        "read,write,admin"
+                        "read",
+                        "write",
+                        "admin"
                     ],
                     "format": "enum",
                     "default": null
