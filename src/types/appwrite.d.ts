@@ -5,11 +5,26 @@ import { type Models } from 'appwrite';
  * You can regenerate it by running `appwrite types -l ts /home/nathfavour/Documents/code/buildathonzx/whisperrnote`.
  */
 
+export enum Status {
+  DRAFTPUBLISHEDARCHIVED = "draft,published,archived"
+}
+
+export enum Status {
+  DRAFTPUBLISHEDARCHIVED = "draft,published,archived"
+}
+
+export enum TargetType {
+  NOTECOMMENT = "note,comment"
+}
+
+export enum Permission {
+  READWRITEADMIN = "read,write,admin"
+}
+
 export type Users = Models.Document & {
   id: string | null;
   email: string | null;
   name: string | null;
-  passwordHash: string | null;
   walletAddress: string | null;
   createdAt: string | null;
   updatedAt: string | null;
@@ -24,6 +39,13 @@ export type Notes = Models.Document & {
   userId: string | null;
   isPublic: boolean | null;
   tags: string[] | null;
+  attachments: string[] | null;
+  comments: string[] | null;
+  extensions: string[] | null;
+  collaborators: string[] | null;
+  status: Status | null;
+  parentNoteId: string | null;
+  metadata: string | null;
 }
 
 export type Tags = Models.Document & {
@@ -31,6 +53,9 @@ export type Tags = Models.Document & {
   name: string | null;
   notes: string[] | null;
   createdAt: string | null;
+  color: string | null;
+  description: string | null;
+  usageCount: number | null;
 }
 
 export type ApiKeys = Models.Document & {
@@ -41,6 +66,8 @@ export type ApiKeys = Models.Document & {
   createdAt: string | null;
   lastUsed: string | null;
   expiresAt: string | null;
+  scopes: string[] | null;
+  lastUsedIp: string | null;
 }
 
 export type BlogPosts = Models.Document & {
@@ -50,5 +77,63 @@ export type BlogPosts = Models.Document & {
   createdAt: string | null;
   updatedAt: string | null;
   authorId: string | null;
+  tags: string[] | null;
+  coverImage: string | null;
+  excerpt: string | null;
+  status: Status | null;
+  comments: string[] | null;
+  extensions: string[] | null;
+  metadata: string | null;
+}
+
+export type Comments = Models.Document & {
+  noteId: string;
+  userId: string;
+  content: string;
+  createdAt: string;
+  parentCommentId: string | null;
+}
+
+export type Extensions = Models.Document & {
+  name: string;
+  description: string | null;
+  version: string | null;
+  authorId: string | null;
+  enabled: boolean | null;
+  settings: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export type Reactions = Models.Document & {
+  targetType: TargetType;
+  targetId: string;
+  userId: string;
+  emoji: string;
+  createdAt: string;
+}
+
+export type Collaborators = Models.Document & {
+  noteId: string;
+  userId: string;
+  permission: Permission;
+  invitedAt: string | null;
+  accepted: boolean | null;
+}
+
+export type ActivityLog = Models.Document & {
+  userId: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  timestamp: string;
+  details: string | null;
+}
+
+export type Settings = Models.Document & {
+  userId: string;
+  settings: string;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
