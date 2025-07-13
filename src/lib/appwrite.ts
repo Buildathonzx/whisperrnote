@@ -110,7 +110,29 @@ export async function listUsers(queries: any[] = []) {
 // --- NOTES CRUD ---
 
 export async function createNote(data: Partial<Notes>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, ID.unique(), data);
+  // Get current user for userId
+  const user = await getCurrentUser();
+  if (!user || !user.$id) throw new Error("User not authenticated");
+  // Create note, set userId and id
+  const doc = await databases.createDocument(
+    APPWRITE_DATABASE_ID,
+    APPWRITE_COLLECTION_ID_NOTES,
+    ID.unique(),
+    {
+      ...data,
+      userId: user.$id,
+      id: null // id will be set after creation
+    }
+  );
+  // Patch the note to set id = $id (Appwrite does not set this automatically)
+  await databases.updateDocument(
+    APPWRITE_DATABASE_ID,
+    APPWRITE_COLLECTION_ID_NOTES,
+    doc.$id,
+    { id: doc.$id }
+  );
+  // Return the updated document
+  return await getNote(doc.$id);
 }
 
 export async function getNote(noteId: string): Promise<Notes> {
@@ -118,7 +140,9 @@ export async function getNote(noteId: string): Promise<Notes> {
 }
 
 export async function updateNote(noteId: string, data: Partial<Notes>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, data);
+  // Do not allow updating id or userId directly
+  const { id, userId, ...rest } = data;
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, rest);
 }
 
 export async function deleteNote(noteId: string) {
@@ -126,6 +150,12 @@ export async function deleteNote(noteId: string) {
 }
 
 export async function listNotes(queries: any[] = []) {
+  // By default, fetch all notes for the current user
+  if (!queries.length) {
+    const user = await getCurrentUser();
+    if (!user || !user.$id) throw new Error("User not authenticated");
+    queries = [Query.equal("userId", user.$id)];
+  }
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, queries);
 }
 

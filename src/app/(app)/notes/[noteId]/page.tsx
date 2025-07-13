@@ -30,10 +30,15 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
       try {
         const data = await getNote(noteId);
         setNote({
+          id: data.id,
+          userId: data.userId,
           title: data.title || '',
           content: data.content || '',
           tags: data.tags || [],
-          isPublic: data.isPublic || false
+          isPublic: data.isPublic || false,
+          status: data.status,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt
         });
       } finally {
         setIsLoading(false);
@@ -46,6 +51,9 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
     setIsSaving(true);
     try {
       await updateNote(noteId, note);
+      // Optionally refetch note after update
+      const updated = await getNote(noteId);
+      setNote(updated);
     } finally {
       setIsSaving(false);
     }
