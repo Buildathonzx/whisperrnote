@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { account, getCurrentUser } from "@/lib/appwrite";
+import { useRouter, useSearchParams } from "next/navigation";
+import { account, getCurrentUser, sendEmailVerification, completeEmailVerification } from "@/lib/appwrite";
 import type { Users } from "@/types/appwrite.d";
 import { motion } from "framer-motion";
 
@@ -14,7 +14,34 @@ export default function EmailVerifyPage() {
   const [emailSent, setEmailSent] = useState<boolean>(false);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const userId = searchParams?.get("userId") || "";
+  const secret = searchParams?.get("secret") || "";
 
+  // Handle verification link (userId & secret)
+  useEffect(() => {
+    const handleVerificationLink = async () => {
+      if (userId && secret) {
+        setLoading(true);
+        setError("");
+        setMessage("");
+        try {
+          await completeEmailVerification(userId, secret);
+          setMessage("Email verified successfully. Redirecting to notes...");
+          setIsVerified(true);
+          setTimeout(() => router.replace("/notes"), 1500);
+        } catch (err: any) {
+          setError(err?.message || "Failed to verify email");
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    handleVerificationLink();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, secret, router]);
+
+  // Get current user and check verification status
   useEffect(() => {
     account.get()
       .then(u => {
@@ -34,7 +61,7 @@ export default function EmailVerifyPage() {
     setError("");
     setMessage("");
     try {
-      await account.createVerification(window.location.origin + "/verify");
+      await sendEmailVerification(window.location.origin + "/verify");
       setEmailSent(true);
       setMessage("Verification email sent! Please check your inbox.");
     } catch (err: any) {
@@ -44,6 +71,49 @@ export default function EmailVerifyPage() {
     }
   };
 
+  // If handling verification link, show loading/message
+  if (userId && secret) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100"
+      >
+        <motion.div
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="backdrop-blur-lg bg-white/80 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-purple-100 animate-fade-in"
+        >
+          <img src="/logo/whisperrnote.png" alt="WhisperrNote Logo" className="mx-auto mb-6 w-20 h-20 rounded-full shadow-lg" />
+          <h2 className="text-3xl font-extrabold mb-2 text-center text-purple-700 tracking-tight">
+            Verifying Email...
+          </h2>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 text-red-500 text-center animate-shake"
+            >
+              {error}
+            </motion.p>
+          )}
+          {message && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 text-green-600 text-center"
+            >
+              {message}
+            </motion.p>
+          )}
+        </motion.div>
+      </motion.div>
+    );
+  }
+
+  // Otherwise, show send verification email UI
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -107,4 +177,3 @@ export default function EmailVerifyPage() {
     </motion.div>
   );
 }
-  
