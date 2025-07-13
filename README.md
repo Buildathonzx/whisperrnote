@@ -4,14 +4,22 @@
 
 Welcome to WhisperNote, the ultimate note-taking application designed with **your privacy, accessibility and productivity** in mind! 📝✨ Whether you're jotting down brilliant ideas, organizing your thoughts, or keeping track of important information, WhisperNote provides a seamless and secure experience across all your devices.
 
+## 🧩 Integrations
+
+WhisperNote supports modular integrations to extend functionality with decentralized protocols and networks.
+
+- **Umi Integration:** Enables interaction with Umi smart contracts for decentralized features.  
+  _Codebase: `src/integrations/umi`_
+- **Starknet Integration:** Adds Layer 2 scalability and decentralized storage.  
+  _Codebase: `src/integrations/starknet`_
+- **Calimero Integration:** Provides enhanced privacy and data protection.  
+  _Codebase: `src/integrations/calimero`_
+- **ICP SDK Integration:** Supports decentralized data storage and reliability.  
+  _Codebase: `src/integrations/icp`_
+
 ## 🛡️ Unbreakable Security & Robustness
 
-WhisperNote is built upon a foundation of cutting-edge security technologies, ensuring your notes remain confidential and protected:
-
-*  **Starknet integration:** Utilizing Starknet's Layer 2 solution for enhanced scalability and security, WhisperNote ensures your data is stored in a decentralized manner, free from single points of failure. ⚡
-*   **Calimero Integration:** Leveraging the power of Calimero for enhanced privacy and data protection. 🔒
-*   **ICP SDK Utilization:** Harnessing the Internet Computer Protocol (ICP) SDK for robust, decentralized data storage and unparalleled reliability. 🌐
-*   **End-to-End Encryption:** Your notes are encrypted from the moment they leave your device until they reach their destination, guaranteeing complete confidentiality. 🔐
+WhisperNote uses end-to-end encryption and decentralized technologies to keep your notes private and secure.
 
 ## 📱💻 Cross-Platform Freedom
 
@@ -157,7 +165,6 @@ Stay up-to-date with the latest news and developments by following us on:
 *   [Discord](https://discord.gg/YDcm6FzN) 💬
 
 Thank you for choosing WhisperNote! We're confident that you'll love the peace of mind and productivity it brings to your note-taking experience. 😊
-````
 
 
 
