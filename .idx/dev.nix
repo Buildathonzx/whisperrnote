@@ -4,6 +4,7 @@
     pkgs.nodejs_20
     # pkgs.cargo
     pkgs.rustup
+    pkgs.gcc
 
   ];
   idx.extensions = [
