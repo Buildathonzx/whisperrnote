@@ -130,15 +130,8 @@ Note: Some platforms are still under development.
 
 ## 🧪 Test Deployment
 
-The following URLs are available during local development:
-
-### Backend Canisters (Candid Interface)
-
-- **Context Contract:** [http://127.0.0.1:4943/?canisterId=br5f7-7uaaa-aaaaa-qaaca-cai&id=bkyz2-fmaaa-aaaaa-qaaaq-cai](http://127.0.0.1:4943/?canisterId=br5f7-7uaaa-aaaaa-qaaca-cai&id=bkyz2-fmaaa-aaaaa-qaaaq-cai)
-- **Ledger:** [http://127.0.0.1:4943/?canisterId=br5f7-7uaaa-aaaaa-qaaca-cai&id=bd3sg-teaaa-aaaaa-qaaba-cai](http://127.0.0.1:4943/?canisterId=br5f7-7uaaa-aaaaa-qaaca-cai&id=bd3sg-teaaa-aaaaa-qaaba-cai)
-- **Mock External:** [http://127.0.0.1:4943/?canisterId=br5f7-7uaaa-aaaaa-qaaca-cai&id=be2us-64aaa-aaaaa-qaabq-cai](http://127.0.0.1:4943/?canisterId=br5f7-7uaaa-aaaaa-qaaca-cai&id=be2us-64aaa-aaaaa-qaabq-cai)
-
-You can interact with these canisters through their Candid interfaces during local development and testing.
+You can interact with the canisters through their Candid interfaces during local development and testing.
+[ICP integration](https://github.com/nathfavour/whisperrnote_icp)
 
 ## 📸 Screenshots
 
