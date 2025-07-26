@@ -11,7 +11,10 @@ import {
 import { Add, Search, ViewModule, ViewList } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { listNotes, createNote, updateNote, deleteNote } from '@/lib/appwrite';
+import { listNotes as appwriteListNotes, createNote as appwriteCreateNote, updateNote as appwriteUpdateNote, deleteNote as appwriteDeleteNote } from '@/lib/appwrite';
+import { isICPEnabled } from '@/lib/integrations';
+import { fetchNotes as icpFetchNotes, createNote as icpCreateNote, updateNote as icpUpdateNote, deleteNote as icpDeleteNote, NoteModel as ICPNoteModel } from '@/integrations/icp/notes';
+import { createActor } from '@/integrations/icp/agent';
 import type { Notes, Tags } from '@/types/appwrite.d';
 import NoteComponent from './Note';
 
@@ -36,7 +39,7 @@ function TabPanel(props: { children?: React.ReactNode; value: number; index: num
 
 export default function NotesPage() {
   // States
-  const [notes, setNotes] = useState<Notes[]>([]);
+  const [notes, setNotes] = useState<Notes[] | ICPNoteModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [newNote, setNewNote] = useState<Partial<Notes>>({
@@ -63,8 +66,14 @@ export default function NotesPage() {
     const fetchNotes = async () => {
       setLoading(true);
       try {
-        const res = await listNotes();
-        setNotes(Array.isArray(res.documents) ? res.documents as Notes[] : []);
+        if (isICPEnabled()) {
+          const actor = createActor();
+          const icpNotes = await icpFetchNotes(actor);
+          setNotes(icpNotes);
+        } else {
+          const res = await appwriteListNotes();
+          setNotes(Array.isArray(res.documents) ? res.documents as Notes[] : []);
+        }
       } catch (error) {
         setNotes([]);
         console.error('Failed to fetch notes:', error);
@@ -80,13 +89,18 @@ export default function NotesPage() {
     if (!newNote.title?.trim()) return;
     setCreating(true);
     try {
-      const doc = await createNote({
-        ...newNote,
-        tags: Array.isArray(newNote.tags) ? newNote.tags : [],
-        isPublic: !!newNote.isPublic
-      });
-      if (doc) {
-        setNotes((prev) => [doc, ...prev]);
+      if (isICPEnabled()) {
+        const actor = createActor();
+        const icpNote: ICPNoteModel = {
+          id: BigInt(0),
+          title: newNote.title || '',
+          content: newNote.content || '',
+          tags: Array.isArray(newNote.tags) ? newNote.tags : [],
+          owner: '', // Will be set by canister
+        };
+        const id = await icpCreateNote(actor, icpNote);
+        const icpNotes = await icpFetchNotes(actor);
+        setNotes(icpNotes);
         setOpen(false);
         setNewNote({
           title: '',
@@ -94,6 +108,22 @@ export default function NotesPage() {
           tags: [],
           isPublic: false
         });
+      } else {
+        const doc = await appwriteCreateNote({
+          ...newNote,
+          tags: Array.isArray(newNote.tags) ? newNote.tags : [],
+          isPublic: !!newNote.isPublic
+        });
+        if (doc) {
+          setNotes((prev) => [doc, ...prev]);
+          setOpen(false);
+          setNewNote({
+            title: '',
+            content: '',
+            tags: [],
+            isPublic: false
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to create note:', error);
@@ -103,38 +133,59 @@ export default function NotesPage() {
   };
 
   // Delete Note
-  const handleDeleteNote = async (noteId: string) => {
+  const handleDeleteNote = async (noteId: string | bigint) => {
     try {
-      await deleteNote(noteId);
-      setNotes((prev) => prev.filter((note) => note.$id !== noteId));
+      if (isICPEnabled()) {
+        const actor = createActor();
+        await icpDeleteNote(actor, BigInt(noteId));
+        const icpNotes = await icpFetchNotes(actor);
+        setNotes(icpNotes);
+      } else {
+        await appwriteDeleteNote(noteId as string);
+        setNotes((prev) => prev.filter((note) => (note as any).$id !== noteId));
+      }
     } catch (error) {
       console.error('Failed to delete note:', error);
     }
   };
 
   // Pin Note
-  const handlePinNote = async (noteId: string, pinned: boolean) => {
+  const handlePinNote = async (noteId: string | bigint, pinned: boolean) => {
     try {
-      await updateNote(noteId, { isPinned: pinned });
-      setNotes((prev) =>
-        prev.map((note) =>
-          note.$id === noteId ? { ...note, isPinned: pinned } : note
-        )
-      );
+      if (isICPEnabled()) {
+        // Not implemented: ICP does not have isPinned field by default
+        // You may want to extend the canister and NoteModel for this
+        // For now, just log
+        console.warn('Pinning notes is not supported in ICP integration yet.');
+      } else {
+        await appwriteUpdateNote(noteId as string, { isPinned: pinned });
+        setNotes((prev) =>
+          prev.map((note) =>
+            (note as any).$id === noteId ? { ...note, isPinned: pinned } : note
+          )
+        );
+      }
     } catch (error) {
       console.error('Failed to pin note:', error);
     }
   };
 
   // Archive Note
-  const handleArchiveNote = async (noteId: string, archived: boolean) => {
+  const handleArchiveNote = async (noteId: string | bigint, archived: boolean) => {
     try {
-      await updateNote(noteId, { isArchived: archived });
-      setNotes((prev) =>
-        prev.map((note) =>
-          note.$id === noteId ? { ...note, isArchived: archived } : note
-        )
-      );
+      if (isICPEnabled()) {
+        // Not implemented: ICP does not have isArchived field by default
+        // You may want to extend the canister and NoteModel for this
+        // For now, just log
+        console.warn('Archiving notes is not supported in ICP integration yet.');
+      } else {
+        await appwriteUpdateNote(noteId as string, { isArchived: archived });
+        setNotes((prev) =>
+          prev.map((note) =>
+            (note as any).$id === noteId ? { ...note, isArchived: archived } : note
+          )
+        );
+      }
     } catch (error) {
       console.error('Failed to archive note:', error);
     }
