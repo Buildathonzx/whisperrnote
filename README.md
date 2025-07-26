@@ -13,15 +13,16 @@ WhisperNote supports modular integrations to extend functionality with decentral
   _Contract Repo: [contracts_buildathonzx_whisperrnote_integrations_umi](https://github.com/whisperrnote/contracts_buildathonzx_whisperrnote_integrations_umi.git)_
 - **Starknet Integration:** Layer 2 scalability and decentralized storage.  
   _Codebase: `src/integrations/starknet`_
-- **Calimero Integration:** Enhanced privacy and data protection.  
+
   _Codebase: `src/integrations/calimero`_
-- **ICP SDK Integration:** Decentralized data storage and reliability.  
+- **ICP Cannisters Integration:** Decentralized data storage and reliability.  
   [ICP integration repo](https://github.com/nathfavour/whisperrnote_icp)
 
     URLs:
     Backend canister via Candid interface:
         encrypted_notes: [encrypted notes cannister](http://u6s2n-gx777-77774-qaaba-cai.localhost:8000/?id=uxrrr-q7777-77774-qaaaq-cai)
         internet-identity: [internet identity cannister](http://u6s2n-gx777-77774-qaaba-cai.localhost:8000/?id=rdmx6-jaaaa-aaaaa-aaadq-cai)
+- **Calimero Integration:** Enhanced privacy and data protection.  
 
 ## 🛡️ Unbreakable Security & Robustness
 
