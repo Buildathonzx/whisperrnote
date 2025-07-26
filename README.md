@@ -16,7 +16,7 @@ WhisperNote supports modular integrations to extend functionality with decentral
 - **Calimero Integration:** Enhanced privacy and data protection.  
   _Codebase: `src/integrations/calimero`_
 - **ICP SDK Integration:** Decentralized data storage and reliability.  
-  _Codebase: `src/integrations/icp`_
+  [ICP integration repo](https://github.com/nathfavour/whisperrnote_icp)
 
 ## 🛡️ Unbreakable Security & Robustness
 
