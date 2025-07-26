@@ -5,7 +5,10 @@ import { ArrowBack, Save, Share, Delete, Label as TagIcon } from '@mui/icons-mat
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { getNote, updateNote, deleteNote } from '@/lib/appwrite';
+import { getNote as appwriteGetNote, updateNote as appwriteUpdateNote, deleteNote as appwriteDeleteNote } from '@/lib/appwrite';
+import { isICPEnabled } from '@/lib/integrations';
+import { createActor } from '@/integrations/icp/agent';
+import { updateNote as icpUpdateNote, deleteNote as icpDeleteNote, fetchNotes as icpFetchNotes, NoteModel as ICPNoteModel } from '@/integrations/icp/notes';
 import type { Notes } from '@/types/appwrite.d';
 
 const MotionPaper = motion(Paper);
@@ -28,18 +31,37 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
     const fetchNote = async () => {
       setIsLoading(true);
       try {
-        const data = await getNote(noteId);
-        setNote({
-          id: data.id,
-          userId: data.userId,
-          title: data.title || '',
-          content: data.content || '',
-          tags: data.tags || [],
-          isPublic: data.isPublic || false,
-          status: data.status,
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt
-        });
+        if (isICPEnabled()) {
+          const actor = createActor();
+          const icpNotes = await icpFetchNotes(actor);
+          const icpNote = icpNotes.find(n => n.id.toString() === noteId || n.id === BigInt(noteId));
+          if (icpNote) {
+            setNote({
+              id: icpNote.id.toString(),
+              userId: icpNote.owner,
+              title: icpNote.title || '',
+              content: icpNote.content || '',
+              tags: icpNote.tags || [],
+              isPublic: icpNote.isPublic || false,
+              status: icpNote.status,
+              createdAt: icpNote.createdAt,
+              updatedAt: icpNote.updatedAt
+            });
+          }
+        } else {
+          const data = await appwriteGetNote(noteId);
+          setNote({
+            id: data.id,
+            userId: data.userId,
+            title: data.title || '',
+            content: data.content || '',
+            tags: data.tags || [],
+            isPublic: data.isPublic || false,
+            status: data.status,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt
+          });
+        }
       } finally {
         setIsLoading(false);
       }
@@ -50,17 +72,52 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await updateNote(noteId, note);
-      // Optionally refetch note after update
-      const updated = await getNote(noteId);
-      setNote(updated);
+      if (isICPEnabled()) {
+        const actor = createActor();
+        // Convert note to ICPNoteModel
+        const icpNote: ICPNoteModel = {
+          id: BigInt(note.id || noteId),
+          title: note.title || '',
+          content: note.content || '',
+          tags: Array.isArray(note.tags) ? note.tags : [],
+          owner: note.userId || '',
+          isPublic: note.isPublic,
+          status: note.status,
+          createdAt: note.createdAt,
+          updatedAt: note.updatedAt
+        };
+        await icpUpdateNote(actor, icpNote);
+        // Refetch
+        const icpNotes = await icpFetchNotes(actor);
+        const updated = icpNotes.find(n => n.id.toString() === noteId || n.id === BigInt(noteId));
+        if (updated) setNote({
+          id: updated.id.toString(),
+          userId: updated.owner,
+          title: updated.title || '',
+          content: updated.content || '',
+          tags: updated.tags || [],
+          isPublic: updated.isPublic || false,
+          status: updated.status,
+          createdAt: updated.createdAt,
+          updatedAt: updated.updatedAt
+        });
+      } else {
+        await appwriteUpdateNote(noteId, note);
+        const updated = await appwriteGetNote(noteId);
+        setNote(updated);
+      }
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    await deleteNote(noteId);
+    if (isICPEnabled()) {
+      const actor = createActor();
+      await icpDeleteNote(actor, BigInt(noteId));
+    } else {
+      await appwriteDeleteNote(noteId);
+    }
     setIsDeleteDialogOpen(false);
     router.push('/notes');
   };
