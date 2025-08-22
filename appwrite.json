@@ -66,7 +66,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "email",
@@ -74,7 +75,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "name",
@@ -82,7 +84,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "walletAddress",
@@ -90,7 +93,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "createdAt",
@@ -130,7 +134,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "createdAt",
@@ -154,7 +159,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "isPublic",
@@ -182,7 +188,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "title",
@@ -190,7 +197,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": true
                 },
                 {
                     "key": "content",
@@ -198,7 +206,8 @@
                     "required": false,
                     "array": false,
                     "size": 5000,
-                    "default": null
+                    "default": null,
+                    "encrypt": true
                 },
                 {
                     "key": "tags",
@@ -206,7 +215,8 @@
                     "required": false,
                     "array": true,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": true
                 },
                 {
                     "key": "attachments",
@@ -214,7 +224,8 @@
                     "required": false,
                     "array": true,
                     "size": 1000,
-                    "default": null
+                    "default": null,
+                    "encrypt": true
                 },
                 {
                     "key": "comments",
@@ -222,7 +233,8 @@
                     "required": false,
                     "array": true,
                     "size": 5000,
-                    "default": null
+                    "default": null,
+                    "encrypt": true
                 },
                 {
                     "key": "extensions",
@@ -230,7 +242,8 @@
                     "required": false,
                     "array": true,
                     "size": 5000,
-                    "default": null
+                    "default": null,
+                    "encrypt": true
                 },
                 {
                     "key": "collaborators",
@@ -238,7 +251,8 @@
                     "required": false,
                     "array": true,
                     "size": 5000,
-                    "default": null
+                    "default": null,
+                    "encrypt": true
                 },
                 {
                     "key": "metadata",
@@ -246,7 +260,8 @@
                     "required": false,
                     "array": false,
                     "size": 1000,
-                    "default": null
+                    "default": null,
+                    "encrypt": true
                 }
             ],
             "indexes": []
@@ -270,7 +285,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "name",
@@ -278,7 +294,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "notes",
@@ -286,7 +303,8 @@
                     "required": false,
                     "array": true,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "createdAt",
@@ -302,7 +320,8 @@
                     "required": false,
                     "array": false,
                     "size": 32,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "description",
@@ -310,7 +329,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "usageCount",
@@ -343,7 +363,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "key",
@@ -351,7 +372,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "name",
@@ -359,7 +381,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "userId",
@@ -367,7 +390,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "createdAt",
@@ -399,7 +423,8 @@
                     "required": false,
                     "array": true,
                     "size": 64,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "lastUsedIp",
@@ -407,7 +432,8 @@
                     "required": false,
                     "array": false,
                     "size": 64,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": []
@@ -431,7 +457,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "title",
@@ -439,7 +466,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "content",
@@ -447,7 +475,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "createdAt",
@@ -471,7 +500,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "tags",
@@ -479,7 +509,8 @@
                     "required": false,
                     "array": true,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "coverImage",
@@ -487,7 +518,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "excerpt",
@@ -495,7 +527,8 @@
                     "required": false,
                     "array": false,
                     "size": 512,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "status",
@@ -516,7 +549,8 @@
                     "required": false,
                     "array": true,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "extensions",
@@ -524,7 +558,8 @@
                     "required": false,
                     "array": true,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "metadata",
@@ -532,7 +567,8 @@
                     "required": false,
                     "array": false,
                     "size": 1000,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": []
@@ -556,7 +592,8 @@
                     "required": true,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "userId",
@@ -564,7 +601,8 @@
                     "required": true,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "content",
@@ -572,7 +610,8 @@
                     "required": true,
                     "array": false,
                     "size": 2000,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "createdAt",
@@ -588,7 +627,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": []
@@ -612,7 +652,8 @@
                     "required": true,
                     "array": false,
                     "size": 128,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "description",
@@ -620,7 +661,8 @@
                     "required": false,
                     "array": false,
                     "size": 512,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "version",
@@ -628,7 +670,8 @@
                     "required": false,
                     "array": false,
                     "size": 32,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "authorId",
@@ -636,7 +679,8 @@
                     "required": false,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "enabled",
@@ -651,7 +695,8 @@
                     "required": false,
                     "array": false,
                     "size": 1000,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "createdAt",
@@ -703,7 +748,8 @@
                     "required": true,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "userId",
@@ -711,7 +757,8 @@
                     "required": true,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "emoji",
@@ -719,7 +766,8 @@
                     "required": true,
                     "array": false,
                     "size": 16,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "createdAt",
@@ -751,7 +799,8 @@
                     "required": true,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "userId",
@@ -759,7 +808,8 @@
                     "required": true,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "permission",
@@ -811,7 +861,8 @@
                     "required": true,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "action",
@@ -819,7 +870,8 @@
                     "required": true,
                     "array": false,
                     "size": 64,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "targetType",
@@ -827,7 +879,8 @@
                     "required": true,
                     "array": false,
                     "size": 32,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "targetId",
@@ -835,7 +888,8 @@
                     "required": true,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "timestamp",
@@ -851,7 +905,8 @@
                     "required": false,
                     "array": false,
                     "size": 1000,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": []
@@ -875,7 +930,8 @@
                     "required": true,
                     "array": false,
                     "size": 256,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "settings",
@@ -883,7 +939,8 @@
                     "required": true,
                     "array": false,
                     "size": 1000,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "createdAt",
