@@ -42,9 +42,7 @@ export default function SharedNotesPage() {
 
       <MotionPaper 
         elevation={2}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        sx={{ backgroundColor: 'background.paper' }}
       >
         <Tabs
           value={activeTab}
@@ -63,12 +61,8 @@ export default function SharedNotesPage() {
             ].map((note, index) => (
               <MotionListItem
                 key={note.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
                 sx={{ 
                   mb: 2, 
-                  bgcolor: 'background.paper',
                   borderRadius: 1,
                   '&:hover': { bgcolor: 'action.hover' }
                 }}
@@ -112,12 +106,8 @@ export default function SharedNotesPage() {
             ].map((note, index) => (
               <MotionListItem
                 key={note.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
                 sx={{ 
                   mb: 2, 
-                  bgcolor: 'background.paper',
                   borderRadius: 1,
                   '&:hover': { bgcolor: 'action.hover' }
                 }}

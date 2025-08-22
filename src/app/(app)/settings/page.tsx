@@ -57,15 +57,15 @@ export default function SettingsPage() {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper sx={{ p: 3 }}>
+      <Paper sx={{ p: 3, backgroundColor: 'background.paper' }}>
         <Typography variant="h4" gutterBottom>Account Settings</Typography>
         <Box sx={{ mb: 2 }}>
           <Typography>
             Email status:{" "}
             {isVerified ? (
-              <Typography component="span" sx={{ color: "green", fontWeight: 500 }}>Verified</Typography>
+              <Typography component="span" sx={{ color: "success.main", fontWeight: 500 }}>Verified</Typography>
             ) : (
-              <Typography component="span" sx={{ color: "red", fontWeight: 500 }}>
+              <Typography component="span" sx={{ color: "error.main", fontWeight: 500 }}>
                 Not verified{" "}
                 <Button href="/verify" size="small">Verify email</Button>
               </Typography>

@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { getCurrentUser } from "@/lib/appwrite";
+import Navigation from "../Navigation";
+import { Box } from "@mui/material";
+import PageHeader from "../PageHeader";
 
 const PUBLIC_ROUTES = [
   "/", "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/login", "/signup"
@@ -13,7 +16,13 @@ function isPublicRoute(path: string) {
   );
 }
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+interface AppShellProps {
+  children: React.ReactNode;
+  toggleTheme: () => void;
+  isDarkMode: boolean;
+}
+
+export default function AppShell({ children, toggleTheme, isDarkMode }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [authChecked, setAuthChecked] = useState(false);
@@ -38,5 +47,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return <div>Loading...</div>;
   }
 
-  return <>{children}</>;
+  return (
+    <Box sx={{ display: 'flex' }}>
+      <Navigation toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { md: `calc(100% - 240px)` },
+          ml: { md: `240px` },
+          mb: { xs: '56px', md: 0 },
+        }}
+      >
+        <PageHeader />
+        {children}
+      </Box>
+    </Box>
+  );
 }

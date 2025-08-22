@@ -101,10 +101,7 @@ export default function ProfilePage() {
         <Grid item xs={12} md={4}>
           <MotionPaper
             elevation={2}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            sx={{ p: 3, textAlign: 'center' }}
+            sx={{ p: 3, textAlign: 'center', backgroundColor: 'background.paper' }}
           >
             {loading ? (
               <Typography>Loading...</Typography>
@@ -186,9 +183,7 @@ export default function ProfilePage() {
             {/* Quick Stats */}
             <MotionPaper
               elevation={2}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              sx={{ backgroundColor: 'background.paper' }}
             >
               <Grid container>
                 <Grid item xs={4} sx={{ p: 3, textAlign: 'center' }}>
@@ -209,10 +204,7 @@ export default function ProfilePage() {
             {/* Recent Activity */}
             <MotionPaper
               elevation={2}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              sx={{ p: 3 }}
+              sx={{ p: 3, backgroundColor: 'background.paper' }}
             >
               <Typography variant="h6" gutterBottom>Recent Activity</Typography>
               <Stack spacing={2}>
@@ -231,15 +223,12 @@ export default function ProfilePage() {
             {/* Most Used Tags */}
             <MotionPaper
               elevation={2}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              sx={{ p: 3 }}
+              sx={{ p: 3, backgroundColor: 'background.paper' }}
             >
               <Typography variant="h6" gutterBottom>Most Used Tags</Typography>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                 {tags.slice(0, 5).map(tag => (
-                  <Chip key={tag.$id} label={tag.name} style={{ backgroundColor: tag.color || undefined }} variant="outlined" />
+                  <Chip key={tag.$id} label={tag.name} variant="outlined" />
                 ))}
               </Box>
             </MotionPaper>
