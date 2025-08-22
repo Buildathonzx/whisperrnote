@@ -1,35 +1,87 @@
 "use client";
 
-import { Container, Typography, Paper, Avatar, Box, Button, Grid, Stack, Chip, Divider } from '@mui/material';
+import { Container, Typography, Paper, Avatar, Box, Button, Grid, Stack, Chip, Divider, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import { Edit, AccessTime, NoteAdd, Folder } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { account } from '@/lib/appwrite';
-import { getUmiAccount } from '@/integrations/umi/wallet';
-import { UmiNotesContract } from '@/integrations/umi/contract';
-
+import { account, updateUser, uploadProfilePicture, getProfilePicture, listNotes, listTags, listCollaborators, listActivityLogs } from '@/lib/appwrite';
 const MotionPaper = motion(Paper);
-
-const umiEnabled = process.env.NEXT_PUBLIC_INTEGRATION_TOGGLE_UMI === 'true';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [umiWallet, setUmiWallet] = useState<string | null>(null);
-  const [umiError, setUmiError] = useState('');
-  const [notes, setNotes] = useState<any[]>([]);
-  const [notesLoading, setNotesLoading] = useState(false);
-  const [notesError, setNotesError] = useState('');
-  const [newNoteTitle, setNewNoteTitle] = useState('');
-  const [newNoteContent, setNewNoteContent] = useState('');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editUser, setEditUser] = useState<any>({});
+  const [profilePic, setProfilePic] = useState<File | null>(null);
+  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
+  const [stats, setStats] = useState<any>({
+    totalNotes: 0,
+    totalTags: 0,
+    sharedNotes: 0,
+  });
+  const [activityLog, setActivityLog] = useState<any[]>([]);
+  const [tags, setTags] = useState<any[]>([]);
 
   useEffect(() => {
-    account.get()
-      .then(setUser)
-      .catch(() => setError('Failed to load user info'))
-      .finally(() => setLoading(false));
+    const fetchUserAndStats = async () => {
+      try {
+        const user = await account.get();
+        setUser(user);
+        setEditUser(user);
+        if (user.prefs?.profilePicId) {
+          const url = await getProfilePicture(user.prefs.profilePicId);
+          setProfilePicUrl(url.href);
+        }
+
+        const notesRes = await listNotes();
+        const tagsRes = await listTags();
+        const activityLogRes = await listActivityLogs();
+
+        const sharedNotes = notesRes.documents.filter(note => note.collaborators && note.collaborators.length > 0);
+
+        setStats({
+          totalNotes: notesRes.total,
+          totalTags: tagsRes.total,
+          sharedNotes: sharedNotes.length,
+        });
+
+        setActivityLog(activityLogRes.documents);
+        setTags(tagsRes.documents.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0)));
+
+      } catch (error) {
+        setError('Failed to load user info');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserAndStats();
   }, []);
+
+  const handleOpenEditDialog = () => {
+    setEditUser(user);
+    setEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      if (profilePic) {
+        const uploadedFile = await uploadProfilePicture(profilePic);
+        await updateUser(user.$id, { ...editUser, prefs: { ...user.prefs, profilePicId: uploadedFile.$id } });
+      } else {
+        await updateUser(user.$id, editUser);
+      }
+      const updatedUser = await account.get();
+      setUser(updatedUser);
+      handleCloseEditDialog();
+    } catch (error) {
+      console.error('Failed to save changes:', error);
+    }
+  };
 
   const getInitials = (name: string, email: string) => {
     if (name) {
@@ -41,49 +93,6 @@ export default function ProfilePage() {
     return '?';
   };
 
-  const handleConnectUmiWallet = async () => {
-    try {
-      const address = await getUmiAccount();
-      setUmiWallet(address);
-      setUmiError('');
-    } catch (err) {
-      setUmiError('Failed to connect Umi wallet');
-    }
-  };
-
-  const fetchNotes = async () => {
-    setNotesLoading(true);
-    try {
-      const contract = new UmiNotesContract();
-      const res = await contract.listNotes();
-      setNotes(res || []);
-      setNotesError('');
-    } catch (err) {
-      setNotesError('Failed to fetch notes');
-    } finally {
-      setNotesLoading(false);
-    }
-  };
-
-  const handleCreateNote = async () => {
-    if (!newNoteTitle || !newNoteContent) return;
-    setNotesLoading(true);
-    try {
-      const contract = new UmiNotesContract();
-      await contract.createNote(newNoteTitle, newNoteContent, [], Date.now());
-      setNewNoteTitle('');
-      setNewNoteContent('');
-      await fetchNotes();
-    } catch (err) {
-      setNotesError('Failed to create note');
-    } finally {
-      setNotesLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (umiEnabled && umiWallet) fetchNotes();
-  }, [umiEnabled, umiWallet]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -104,6 +113,7 @@ export default function ProfilePage() {
             ) : (
               <>
                 <Avatar
+                  src={profilePicUrl || undefined}
                   sx={{
                     width: 120,
                     height: 120,
@@ -122,85 +132,54 @@ export default function ProfilePage() {
                   variant="outlined"
                   startIcon={<Edit />}
                   sx={{ mt: 2 }}
+                  onClick={handleOpenEditDialog}
                 >
                   Edit Profile
                 </Button>
               </>
             )}
           </MotionPaper>
-          {umiEnabled && (
-            <Paper elevation={1} sx={{ mt: 3, p: 2, textAlign: 'center' }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Umi Integration
-              </Typography>
-              {umiWallet ? (
-                <Typography variant="body2" color="primary">
-                  Connected Wallet: {umiWallet}
-                </Typography>
-              ) : (
-                <Button variant="contained" onClick={handleConnectUmiWallet}>
-                  Connect Umi Wallet
-                </Button>
-              )}
-              {umiError && (
-                <Typography color="error" variant="caption">
-                  {umiError}
-                </Typography>
-              )}
-              {/* Notes Contract Section */}
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle2" gutterBottom>
-                Decentralized Notes
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                <input
-                  type="text"
-                  placeholder="Note Title"
-                  value={newNoteTitle}
-                  onChange={e => setNewNoteTitle(e.target.value)}
-                  style={{ width: '100%', marginBottom: 8, padding: 8 }}
-                />
-                <textarea
-                  placeholder="Note Content"
-                  value={newNoteContent}
-                  onChange={e => setNewNoteContent(e.target.value)}
-                  style={{ width: '100%', marginBottom: 8, padding: 8 }}
-                  rows={3}
-                />
-                <Button
-                  variant="outlined"
-                  sx={{ mt: 1 }}
-                  onClick={handleCreateNote}
-                  disabled={notesLoading || !umiWallet}
-                >
-                  Create Note
-                </Button>
-              </Box>
-              {notesLoading ? (
-                <Typography>Loading notes...</Typography>
-              ) : notesError ? (
-                <Typography color="error">{notesError}</Typography>
-              ) : (
-                <Box>
-                  {notes.length === 0 ? (
-                    <Typography variant="body2">No notes found.</Typography>
-                  ) : (
-                    notes.map((note, idx) => (
-                      <Paper key={idx} sx={{ mb: 1, p: 1 }}>
-                        <Typography variant="subtitle2">{note.title}</Typography>
-                        <Typography variant="body2">{note.content}</Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Created: {note.created_at}
-                        </Typography>
-                      </Paper>
-                    ))
-                  )}
-                </Box>
-              )}
-            </Paper>
-          )}
         </Grid>
-
+        <Dialog open={editDialogOpen} onClose={handleCloseEditDialog}>
+          <DialogTitle>Edit Profile</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Name"
+              type="text"
+              fullWidth
+              variant="standard"
+              value={editUser.name || ''}
+              onChange={(e) => setEditUser({ ...editUser, name: e.target.value })}
+            />
+            <TextField
+              margin="dense"
+              label="Wallet Address"
+              type="text"
+              fullWidth
+              variant="standard"
+              value={editUser.walletAddress || ''}
+              onChange={(e) => setEditUser({ ...editUser, walletAddress: e.target.value })}
+            />
+            <Button
+              variant="contained"
+              component="label"
+              sx={{ mt: 2 }}
+            >
+              Upload Profile Picture
+              <input
+                type="file"
+                hidden
+                onChange={(e) => setProfilePic(e.target.files ? e.target.files[0] : null)}
+              />
+            </Button>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseEditDialog}>Cancel</Button>
+            <Button onClick={handleSaveChanges}>Save</Button>
+          </DialogActions>
+        </Dialog>
         {/* Stats and Activity */}
         <Grid item xs={12} md={8}>
           <Stack spacing={3}>
@@ -213,15 +192,15 @@ export default function ProfilePage() {
             >
               <Grid container>
                 <Grid item xs={4} sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="h4" color="primary" gutterBottom>42</Typography>
+                  <Typography variant="h4" color="primary" gutterBottom>{stats.totalNotes}</Typography>
                   <Typography variant="body2" color="text.secondary">Total Notes</Typography>
                 </Grid>
                 <Grid item xs={4} sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="h4" color="primary" gutterBottom>7</Typography>
-                  <Typography variant="body2" color="text.secondary">Collections</Typography>
+                  <Typography variant="h4" color="primary" gutterBottom>{stats.totalTags}</Typography>
+                  <Typography variant="body2" color="text.secondary">Total Tags</Typography>
                 </Grid>
                 <Grid item xs={4} sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="h4" color="primary" gutterBottom>15</Typography>
+                  <Typography variant="h4" color="primary" gutterBottom>{stats.sharedNotes}</Typography>
                   <Typography variant="body2" color="text.secondary">Shared Notes</Typography>
                 </Grid>
               </Grid>
@@ -237,21 +216,15 @@ export default function ProfilePage() {
             >
               <Typography variant="h6" gutterBottom>Recent Activity</Typography>
               <Stack spacing={2}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <NoteAdd color="primary" />
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="body2">Created new note "Project Ideas"</Typography>
-                    <Typography variant="caption" color="text.secondary">2 hours ago</Typography>
+                {activityLog.slice(0, 5).map((activity) => (
+                  <Box key={activity.$id} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <NoteAdd color="primary" />
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="body2">{activity.action} {activity.targetType} "{activity.targetId}"</Typography>
+                      <Typography variant="caption" color="text.secondary">{new Date(activity.timestamp).toLocaleString()}</Typography>
+                    </Box>
                   </Box>
-                </Box>
-                <Divider />
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Folder color="primary" />
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="body2">Created new collection "Work"</Typography>
-                    <Typography variant="caption" color="text.secondary">Yesterday</Typography>
-                  </Box>
-                </Box>
+                ))}
               </Stack>
             </MotionPaper>
 
@@ -265,11 +238,9 @@ export default function ProfilePage() {
             >
               <Typography variant="h6" gutterBottom>Most Used Tags</Typography>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Chip label="work" color="primary" variant="outlined" />
-                <Chip label="ideas" color="primary" variant="outlined" />
-                <Chip label="personal" color="primary" variant="outlined" />
-                <Chip label="todo" color="primary" variant="outlined" />
-                <Chip label="projects" color="primary" variant="outlined" />
+                {tags.slice(0, 5).map(tag => (
+                  <Chip key={tag.$id} label={tag.name} style={{ backgroundColor: tag.color || undefined }} variant="outlined" />
+                ))}
               </Box>
             </MotionPaper>
           </Stack>

@@ -1,15 +1,16 @@
 "use client";
 
-import { Container, Paper, TextField, Button, Box, IconButton, Stack, Chip, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Container, Paper, TextField, Button, Box, IconButton, Stack, Chip, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Input, Select, MenuItem, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
 import { ArrowBack, Save, Share, Delete, Label as TagIcon } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { getNote as appwriteGetNote, updateNote as appwriteUpdateNote, deleteNote as appwriteDeleteNote } from '@/lib/appwrite';
-import { isICPEnabled } from '@/lib/integrations';
-import { createActor } from '@/integrations/icp/agent';
-import { updateNote as icpUpdateNote, deleteNote as icpDeleteNote, fetchNotes as icpFetchNotes, NoteModel as ICPNoteModel } from '@/integrations/icp/notes';
+import { getNote as appwriteGetNote, updateNote as appwriteUpdateNote, deleteNote as appwriteDeleteNote, uploadFile, deleteFile } from '@/lib/appwrite';
 import type { Notes } from '@/types/appwrite.d';
+import CommentsSection from '../Comments';
+import CollaboratorsSection from '../Collaborators';
+import TagManager from '../TagManager';
+import AttachmentViewer from '../AttachmentViewer';
 
 const MotionPaper = motion(Paper);
 
@@ -22,7 +23,6 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
     tags: [],
     isPublic: false
   });
-  const [newTag, setNewTag] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,37 +31,18 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
     const fetchNote = async () => {
       setIsLoading(true);
       try {
-        if (isICPEnabled()) {
-          const actor = createActor();
-          const icpNotes = await icpFetchNotes(actor);
-          const icpNote = icpNotes.find(n => n.id.toString() === noteId || n.id === BigInt(noteId));
-          if (icpNote) {
-            setNote({
-              id: icpNote.id.toString(),
-              userId: icpNote.owner,
-              title: icpNote.title || '',
-              content: icpNote.content || '',
-              tags: icpNote.tags || [],
-              isPublic: icpNote.isPublic || false,
-              status: icpNote.status,
-              createdAt: icpNote.createdAt,
-              updatedAt: icpNote.updatedAt
-            });
-          }
-        } else {
-          const data = await appwriteGetNote(noteId);
-          setNote({
-            id: data.id,
-            userId: data.userId,
-            title: data.title || '',
-            content: data.content || '',
-            tags: data.tags || [],
-            isPublic: data.isPublic || false,
-            status: data.status,
-            createdAt: data.createdAt,
-            updatedAt: data.updatedAt
-          });
-        }
+        const data = await appwriteGetNote(noteId);
+        setNote({
+          id: data.id,
+          userId: data.userId,
+          title: data.title || '',
+          content: data.content || '',
+          tags: data.tags || [],
+          isPublic: data.isPublic || false,
+          status: data.status,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt
+        });
       } finally {
         setIsLoading(false);
       }
@@ -72,71 +53,43 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      if (isICPEnabled()) {
-        const actor = createActor();
-        // Convert note to ICPNoteModel
-        const icpNote: ICPNoteModel = {
-          id: BigInt(note.id || noteId),
-          title: note.title || '',
-          content: note.content || '',
-          tags: Array.isArray(note.tags) ? note.tags : [],
-          owner: note.userId || '',
-          isPublic: note.isPublic,
-          status: note.status,
-          createdAt: note.createdAt,
-          updatedAt: note.updatedAt
-        };
-        await icpUpdateNote(actor, icpNote);
-        // Refetch
-        const icpNotes = await icpFetchNotes(actor);
-        const updated = icpNotes.find(n => n.id.toString() === noteId || n.id === BigInt(noteId));
-        if (updated) setNote({
-          id: updated.id.toString(),
-          userId: updated.owner,
-          title: updated.title || '',
-          content: updated.content || '',
-          tags: updated.tags || [],
-          isPublic: updated.isPublic || false,
-          status: updated.status,
-          createdAt: updated.createdAt,
-          updatedAt: updated.updatedAt
-        });
-      } else {
-        await appwriteUpdateNote(noteId, note);
-        const updated = await appwriteGetNote(noteId);
-        setNote(updated);
-      }
+      await appwriteUpdateNote(noteId, note);
+      const updated = await appwriteGetNote(noteId);
+      setNote(updated);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if (isICPEnabled()) {
-      const actor = createActor();
-      await icpDeleteNote(actor, BigInt(noteId));
-    } else {
-      await appwriteDeleteNote(noteId);
-    }
+    await appwriteDeleteNote(noteId);
     setIsDeleteDialogOpen(false);
     router.push('/notes');
   };
 
-  const addTag = () => {
-    if (newTag && !note.tags?.includes(newTag)) {
-      setNote(prev => ({
-        ...prev,
-        tags: [...(prev.tags || []), newTag]
-      }));
-      setNewTag('');
+  const handleAttachmentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
+    }
+    const file = e.target.files[0];
+    try {
+      const uploadedFile = await uploadFile(file, 'notes-attachments');
+      const attachmentId = uploadedFile.$id;
+      const updatedAttachments = [...(note.attachments || []), attachmentId];
+      setNote(prev => ({ ...prev, attachments: updatedAttachments }));
+    } catch (error) {
+      console.error('Failed to upload file:', error);
     }
   };
 
-  const removeTag = (tagToRemove: string) => {
-    setNote(prev => ({
-      ...prev,
-      tags: (prev.tags || []).filter(tag => tag !== tagToRemove)
-    }));
+  const handleRemoveAttachment = async (attachmentId: string) => {
+    try {
+      await deleteFile(attachmentId, 'notes-attachments');
+      const updatedAttachments = (note.attachments || []).filter(id => id !== attachmentId);
+      setNote(prev => ({ ...prev, attachments: updatedAttachments }));
+    } catch (error) {
+      console.error('Failed to delete file:', error);
+    }
   };
 
   return (
@@ -170,6 +123,27 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
           >
             Share
           </Button>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={note.isPublic || false}
+                onChange={(e) => setNote(prev => ({ ...prev, isPublic: e.target.checked }))}
+              />
+            }
+            label="Public"
+          />
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={note.status || ''}
+              label="Status"
+              onChange={(e) => setNote(prev => ({ ...prev, status: e.target.value as any }))}
+            >
+              <MenuItem value="draft">Draft</MenuItem>
+              <MenuItem value="published">Published</MenuItem>
+              <MenuItem value="archived">Archived</MenuItem>
+            </Select>
+          </FormControl>
           <Button
             variant="contained"
             startIcon={<Save />}
@@ -205,36 +179,10 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
           }}
         />
         <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-            Tags
-          </Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
-            {(note.tags || []).map((tag) => (
-              <Chip
-                key={tag}
-                label={tag}
-                onDelete={() => removeTag(tag)}
-                sx={{ m: 0.5 }}
-              />
-            ))}
-          </Stack>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <TextField
-              size="small"
-              placeholder="Add a tag"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && addTag()}
-            />
-            <Button
-              startIcon={<TagIcon />}
-              onClick={addTag}
-              variant="outlined"
-              size="small"
-            >
-              Add Tag
-            </Button>
-          </Box>
+          <TagManager
+            selectedTags={note.tags || []}
+            onChange={(tags) => setNote(prev => ({ ...prev, tags }))}
+          />
         </Box>
         <TextField
           fullWidth
@@ -251,6 +199,19 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
             }
           }}
         />
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+            Attachments
+          </Typography>
+          <Input
+            type="file"
+            onChange={handleAttachmentUpload}
+          />
+          <AttachmentViewer
+            attachmentIds={note.attachments || []}
+            onAttachmentDeleted={handleRemoveAttachment}
+          />
+        </Box>
       </MotionPaper>
       <Dialog
         open={isDeleteDialogOpen}
@@ -269,6 +230,8 @@ export default function NotePage({ params }: { params: { noteId: string } }) {
           </Button>
         </DialogActions>
       </Dialog>
+      <CommentsSection noteId={noteId} />
+      <CollaboratorsSection noteId={noteId} />
     </Container>
   );
 }

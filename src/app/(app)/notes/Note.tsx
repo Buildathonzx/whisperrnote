@@ -18,8 +18,7 @@ interface NoteComponentProps {
   onEdit?: (note: Notes) => void;
   onDelete?: (noteId: string) => void;
   onShare?: (noteId: string) => void;
-  onPin?: (noteId: string, pinned: boolean) => void;
-  onArchive?: (noteId: string, archived: boolean) => void;
+  onTogglePublic?: (noteId: string, isPublic: boolean) => void;
 }
 
 export default function NoteComponent({
@@ -27,8 +26,7 @@ export default function NoteComponent({
   onEdit,
   onDelete,
   onShare,
-  onPin,
-  onArchive
+  onTogglePublic
 }: NoteComponentProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -74,19 +72,6 @@ export default function NoteComponent({
     onShare?.(note.$id);
   };
 
-  const handlePin = () => {
-    // Toggle isPublic as a "pin" for demonstration (since isPinned is not in Notes type)
-    onPin?.(note.$id, !(note.isPublic ?? false));
-    handleMenuClose();
-  };
-
-  const handleArchive = () => {
-    // Fix: Check if status includes "archived"
-    const isArchived = note.status && note.status.toString().includes("archived");
-    onArchive?.(note.$id, !isArchived);
-    handleMenuClose();
-  };
-
   const handleDelete = () => {
     if (confirm('Are you sure you want to delete this note?')) {
       onDelete?.(note.$id);
@@ -94,9 +79,12 @@ export default function NoteComponent({
     handleMenuClose();
   };
 
+  const handleTogglePublic = () => {
+    onTogglePublic?.(note.$id, !note.isPublic);
+    handleMenuClose();
+  };
+
   // Use only valid properties from Notes type
-  const isPinned = note.isPublic ?? false; // Use isPublic as "pinned" indicator
-  const isArchived = note.status && note.status.toString().includes("archived");
   const isPublic = note.isPublic ?? false;
   const isEncrypted = (note as any).isEncrypted ?? note.is_encrypted;
 
@@ -114,7 +102,6 @@ export default function NoteComponent({
           flexDirection: 'column',
           backdropFilter: 'blur(10px)',
           position: 'relative',
-          opacity: isArchived ? 0.7 : 1
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', p: 2, pb: 1 }}>
@@ -122,7 +109,6 @@ export default function NoteComponent({
             <Typography variant="h6" component="span" sx={{ fontSize: '1.2rem' }}>
               📝
             </Typography>
-            {isPinned && <PushPin color="warning" fontSize="small" />}
             {isPublic ? <LockOpen color="action" fontSize="small" /> : <Lock color="primary" fontSize="small" />}
           </Box>
           <IconButton
@@ -267,13 +253,9 @@ export default function NoteComponent({
           <Edit fontSize="small" sx={{ mr: 1 }} />
           Edit
         </MenuItem>
-        <MenuItem onClick={handlePin}>
-          <PushPin fontSize="small" sx={{ mr: 1 }} />
-          {isPinned ? 'Unpin' : 'Pin'}
-        </MenuItem>
-        <MenuItem onClick={handleArchive}>
-          <Archive fontSize="small" sx={{ mr: 1 }} />
-          {isArchived ? 'Unarchive' : 'Archive'}
+        <MenuItem onClick={handleTogglePublic}>
+          <LockOpen fontSize="small" sx={{ mr: 1 }} />
+          {isPublic ? 'Make Private' : 'Make Public'}
         </MenuItem>
         <MenuItem onClick={handleShare} disabled={isEncrypted === false}>
           <Share fontSize="small" sx={{ mr: 1 }} />

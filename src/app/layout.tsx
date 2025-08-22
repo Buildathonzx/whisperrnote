@@ -7,15 +7,8 @@ import Box from '@mui/material/Box';
 import Header from '../components/Header';
 import { useState, useMemo } from 'react';
 import "../globals.css";
-import { AccessTokenWrapper } from '@calimero-network/calimero-client';
-import { getNodeUrl } from '@/lib/calimero/config';
-import { BlockchainProvider } from '@/components/providers/BlockchainProvider';
 import AppShell from "@/components/ui/appShell";
 import { usePathname } from "next/navigation";
-// Conditionally import ICPProvider
-import dynamic from 'next/dynamic';
-
-const ICPProvider = dynamic(() => import('../components/providers/ICPProvider').then(m => m.ICPProvider), { ssr: false });
 
 const geist = Geist({
   subsets: ["latin"],
@@ -217,40 +210,34 @@ export default function RootLayout({
     );
   }
 
-  const useICP = process.env.NEXT_PUBLIC_INTEGRATION_ICP === 'true';
-
   const content = (
-    <AccessTokenWrapper getNodeUrl={getNodeUrl}>
-      <ThemeProvider theme={glassTheme}>
-        <CssBaseline />
-        <Header toggleTheme={toggleTheme} isDarkMode={mode === 'dark'} />
-        <BlockchainProvider>
-          <Box
-            component="main"
-            className="animated-content"
-            sx={{
-              minHeight: '100vh',
-              pt: '64px',
-              backgroundColor: 'background.default',
-              backgroundImage: mode === 'light'
-                ? 'radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.03) 0%, transparent 40%), radial-gradient(circle at 15% 85%, rgba(59, 130, 246, 0.03) 0%, transparent 40%)'
-                : 'radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.05) 0%, transparent 40%), radial-gradient(circle at 15% 85%, rgba(59, 130, 246, 0.05) 0%, transparent 40%)',
-            }}
-          >
-            {isPublicRoute(pathname)
-              ? children
-              : <AppShell>{children}</AppShell>
-            }
-          </Box>
-        </BlockchainProvider>
-      </ThemeProvider>
-    </AccessTokenWrapper>
+    <ThemeProvider theme={glassTheme}>
+      <CssBaseline />
+      <Header toggleTheme={toggleTheme} isDarkMode={mode === 'dark'} />
+      <Box
+        component="main"
+        className="animated-content"
+        sx={{
+          minHeight: '100vh',
+          pt: '64px',
+          backgroundColor: 'background.default',
+          backgroundImage: mode === 'light'
+            ? 'radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.03) 0%, transparent 40%), radial-gradient(circle at 15% 85%, rgba(59, 130, 246, 0.03) 0%, transparent 40%)'
+            : 'radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.05) 0%, transparent 40%), radial-gradient(circle at 15% 85%, rgba(59, 130, 246, 0.05) 0%, transparent 40%)',
+        }}
+      >
+        {isPublicRoute(pathname)
+          ? children
+          : <AppShell>{children}</AppShell>
+        }
+      </Box>
+    </ThemeProvider>
   );
 
   return (
     <html lang="en">
       <body className={geist.className}>
-        {useICP ? <ICPProvider>{content}</ICPProvider> : content}
+        {content}
       </body>
     </html>
   );

@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account } from "@/lib/appwrite";
+import { account, getSettings, createSettings, updateSettings } from "@/lib/appwrite";
+import { Container, Paper, Typography, TextField, Button, Switch, FormControlLabel, CircularProgress, Alert, Box } from '@mui/material';
 
 export default function SettingsPage() {
   const [user, setUser] = useState<any>(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -14,17 +14,27 @@ export default function SettingsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    account.get()
-      .then((u) => {
+    const fetchUserAndSettings = async () => {
+      try {
+        const u = await account.get();
         setUser(u);
-        setName(u.name || "");
-        setEmail(u.email || "");
         setIsVerified(!!u.emailVerification);
-      })
-      .catch(() => {
+
+        try {
+          const s = await getSettings(u.$id);
+          setSettings(s);
+        } catch (e) {
+          // If settings don't exist, create them
+          const newSettings = await createSettings({ userId: u.$id, settings: JSON.stringify({ theme: 'light', notifications: true }) });
+          setSettings(newSettings);
+        }
+      } catch {
         router.replace("/login");
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserAndSettings();
   }, [router]);
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -32,55 +42,69 @@ export default function SettingsPage() {
     setError("");
     setSuccess("");
     try {
-      await account.updateName(name);
-      setSuccess("Profile updated successfully.");
+      await updateSettings(user.$id, { settings: JSON.stringify(settings.settings) });
+      setSuccess("Settings updated successfully.");
     } catch (err: any) {
-      setError(err?.message || "Failed to update profile");
+      setError(err?.message || "Failed to update settings");
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <CircularProgress />;
+
+  const handleSettingChange = (key: string, value: any) => {
+    setSettings((prev: any) => ({ ...prev, settings: { ...prev.settings, [key]: value } }));
+  };
 
   return (
-    <div style={{ maxWidth: 500, margin: "auto", padding: 32 }}>
-      <h2>Account Settings</h2>
-      <div style={{ marginBottom: 16 }}>
-        <span>
-          Email status:{" "}
-          {isVerified ? (
-            <span style={{ color: "green", fontWeight: 500 }}>Verified</span>
-          ) : (
-            <span style={{ color: "red", fontWeight: 500 }}>
-              Not verified
-              {" "}
-              <a href="/verify" className="text-blue-600 hover:underline">Verify email</a>
-            </span>
-          )}
-        </span>
-      </div>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
-      <form onSubmit={handleUpdate}>
-        <div style={{ marginBottom: 16 }}>
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            disabled
-            style={{ width: "100%", marginTop: 4 }}
-          />
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <label>Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            style={{ width: "100%", marginTop: 4 }}
-          />
-        </div>
-        <button type="submit" style={{ width: "100%" }}>Update Profile</button>
-      </form>
-    </div>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Paper sx={{ p: 3 }}>
+        <Typography variant="h4" gutterBottom>Account Settings</Typography>
+        <Box sx={{ mb: 2 }}>
+          <Typography>
+            Email status:{" "}
+            {isVerified ? (
+              <Typography component="span" sx={{ color: "green", fontWeight: 500 }}>Verified</Typography>
+            ) : (
+              <Typography component="span" sx={{ color: "red", fontWeight: 500 }}>
+                Not verified{" "}
+                <Button href="/verify" size="small">Verify email</Button>
+              </Typography>
+            )}
+          </Typography>
+        </Box>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+        {settings && (
+          <form onSubmit={handleUpdate}>
+            <TextField
+              label="Email"
+              value={user?.email || ''}
+              disabled
+              fullWidth
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              label="Name"
+              value={user?.name || ''}
+              disabled
+              fullWidth
+              sx={{ mb: 2 }}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={settings.settings.notifications}
+                  onChange={(e) => handleSettingChange('notifications', e.target.checked)}
+                />
+              }
+              label="Enable Notifications"
+            />
+            <Box sx={{ mt: 2 }}>
+              <Button type="submit" variant="contained">Update Settings</Button>
+            </Box>
+          </form>
+        )}
+      </Paper>
+    </Container>
   );
 }
