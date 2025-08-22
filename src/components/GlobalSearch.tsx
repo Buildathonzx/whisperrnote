@@ -121,7 +121,7 @@ export default function GlobalSearch() {
             backgroundColor: 'background.paper',
             transition: 'all 0.2s',
             '&.Mui-focused': {
-              boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              boxShadow: (theme) => theme.shadows[4]
             }
           }
         }}

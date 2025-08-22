@@ -11,6 +11,13 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        'dark-brown': '#3E2723',
+        'medium-brown': '#5D4037',
+        'light-brown': '#8D6E63',
+        'brownish-white': '#F5F5F5',
+        'dark-paper': '#4E342E',
+        'sun-yellow': '#FFC107',
+        'sun-yellow-dark': '#FFA000',
       },
     },
   },

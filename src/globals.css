@@ -2,23 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
+/*
+  Theming variables (:root) and body styles are now handled by Material UI's ThemeProvider and CssBaseline
+  in /src/app/layout.tsx and /src/theme.ts. This ensures a single source of truth for the application's theme.
+*/
 
 /* Smooth scrolling */
 html {
@@ -57,33 +44,6 @@ html {
   animation: fadeIn 0.5s ease-out;
 }
 
-/* Glass effect */
-.glass-effect {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.dark .glass-effect {
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* Hover effects */
-.hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.dark .hover-lift:hover {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
 /* Animation triggers for scroll */
 .reveal {
   opacity: 0;
@@ -96,51 +56,6 @@ html {
   transform: translateY(0);
 }
 
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #3B82F6, #EC4899);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* 3D button effect */
-.btn-3d {
-  position: relative;
-  transform-style: preserve-3d;
-  transition: all 0.3s ease;
-}
-
-.btn-3d:before {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  left: 0;
-  bottom: -6px;
-  background: inherit;
-  filter: brightness(60%);
-  transform: translateZ(-1px);
-  border-radius: inherit;
-}
-
-.btn-3d:hover {
-  transform: translateY(-3px) translateZ(0);
-}
-
-.btn-3d:active {
-  transform: translateY(0) translateZ(0);
-}
-
-/* Card hover effects */
-.card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-hover:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-}
-
 /* Enhance scroll animations */
 .scroll-reveal {
   opacity: 0;
@@ -151,119 +66,4 @@ html {
 .scroll-reveal.active {
   opacity: 1;
   transform: translateY(0);
-}
-
-/* Enhanced glass morphism */
-.glass-morphism {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06),
-    inset 0 0 20px rgba(255, 255, 255, 0.05);
-}
-
-/* Enhanced button effects */
-.button-glow {
-  position: relative;
-  overflow: hidden;
-}
-
-.button-glow::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.3) 0%,
-    transparent 50%
-  );
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.button-glow:hover::after {
-  opacity: 1;
-}
-
-/* 3D Card effect */
-.card-3d {
-  transform-style: preserve-3d;
-  perspective: 1000px;
-  transition: transform 0.3s ease;
-}
-
-.card-3d:hover {
-  transform: translateY(-10px) rotateX(4deg) rotateY(4deg);
-}
-
-/* Gradient backgrounds */
-.gradient-bg {
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.1) 0%,
-    rgba(236, 72, 153, 0.1) 100%
-  );
-}
-
-/* Floating animation */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-.floating {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Glassmorphism backgrounds */
-.glass-bg {
-  background: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-}
-
-/* 3D Card effect */
-.card-3d {
-  background: rgba(255,255,255,0.12);
-  box-shadow: 0 10px 30px 0 rgba(31, 38, 135, 0.18), 0 1.5px 4px 0 rgba(0,0,0,0.10);
-  border-radius: 18px;
-  transition: transform 0.3s cubic-bezier(.25,.8,.25,1), box-shadow 0.3s;
-  transform-style: preserve-3d;
-}
-.card-3d:hover {
-  transform: translateY(-8px) scale(1.03) rotateX(2deg) rotateY(2deg);
-  box-shadow: 0 20px 40px 0 rgba(31, 38, 135, 0.22), 0 4px 12px 0 rgba(0,0,0,0.12);
-}
-
-/* Glassy button */
-.btn-glass {
-  background: rgba(255,255,255,0.22);
-  border: 1px solid rgba(255,255,255,0.32);
-  box-shadow: 0 2px 8px rgba(31,38,135,0.10);
-  color: var(--foreground);
-  border-radius: 12px;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-  backdrop-filter: blur(8px);
-}
-.btn-glass:hover {
-  background: rgba(255,255,255,0.32);
-  box-shadow: 0 6px 18px rgba(31,38,135,0.18);
-  transform: translateY(-2px) scale(1.04);
-}
-
-/* 3D floating animation */
-@keyframes float3d {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-8px) scale(1.03); }
-}
-.float-3d {
-  animation: float3d 3s ease-in-out infinite;
 }

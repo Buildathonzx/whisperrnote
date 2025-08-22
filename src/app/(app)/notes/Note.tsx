@@ -9,8 +9,6 @@ import {
 import { Edit, Delete, Share, AccessTime, PushPin, Archive, Lock, LockOpen, Visibility, MoreVert, Analytics } from '@mui/icons-material';
 import type { Notes } from "@/types/appwrite.d";
 import { motion } from "framer-motion";
-import { useRouter } from 'next/navigation';
-
 const MotionCard = motion(Card);
 
 interface NoteComponentProps {
@@ -31,7 +29,6 @@ export default function NoteComponent({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const router = useRouter();
 
   // Reading time calculation (basic: 200 words per minute)
   const readingTimeMinutes = note.content
@@ -60,11 +57,6 @@ export default function NoteComponent({
     setAnchorEl(null);
   };
 
-  const handleEdit = () => {
-    router.push(`/notes/${note.$id}`);
-    handleMenuClose();
-  };
-
   const handleShare = () => {
     // Open share dialog instead of direct call
     setShareDialogOpen(true);
@@ -91,17 +83,13 @@ export default function NoteComponent({
   return (
     <>
       <MotionCard
-        whileHover={{
-          y: -8,
-          boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-        }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
         sx={{
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          backdropFilter: 'blur(10px)',
           position: 'relative',
+          backgroundColor: 'background.paper',
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', p: 2, pb: 1 }}>
@@ -127,10 +115,7 @@ export default function NoteComponent({
               mb: 1,
               fontWeight: 600,
               lineHeight: 1.3,
-              cursor: 'pointer',
-              '&:hover': { color: 'primary.main' }
             }}
-            onClick={() => router.push(`/notes/${note.$id}`)}
           >
             {note.title}
           </Typography>
@@ -167,7 +152,6 @@ export default function NoteComponent({
                   label={tag}
                   size="small"
                   variant="outlined"
-                  sx={{ fontSize: '0.7rem', height: '20px' }}
                 />
               ))}
               {note.tags.length > 3 && (
@@ -175,7 +159,6 @@ export default function NoteComponent({
                   label={`+${note.tags.length - 3}`}
                   size="small"
                   variant="outlined"
-                  sx={{ fontSize: '0.7rem', height: '20px' }}
                 />
               )}
             </Stack>
@@ -223,9 +206,6 @@ export default function NoteComponent({
           </Typography>
           
           <Stack direction="row" spacing={0.5}>
-            <IconButton size="small" onClick={handleEdit}>
-              <Edit fontSize="small" />
-            </IconButton>
             <IconButton 
               size="small" 
               onClick={handleShare}
@@ -249,10 +229,6 @@ export default function NoteComponent({
           sx: { borderRadius: 2, minWidth: 180 }
         }}
       >
-        <MenuItem onClick={handleEdit}>
-          <Edit fontSize="small" sx={{ mr: 1 }} />
-          Edit
-        </MenuItem>
         <MenuItem onClick={handleTogglePublic}>
           <LockOpen fontSize="small" sx={{ mr: 1 }} />
           {isPublic ? 'Make Private' : 'Make Public'}

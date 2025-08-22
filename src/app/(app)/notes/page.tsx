@@ -20,6 +20,8 @@ import { useRouter } from 'next/navigation';
 import { listNotes as appwriteListNotes, createNote as appwriteCreateNote, updateNote as appwriteUpdateNote, deleteNote as appwriteDeleteNote } from '@/lib/appwrite';
 import type { Notes, Tags } from '@/types/appwrite.d';
 import NoteComponent from './Note';
+import NoteViewer from './NoteViewer';
+import { Drawer } from '@mui/material';
 
 const MotionContainer = motion(Container);
 const MotionGrid = motion(Grid);
@@ -61,8 +63,18 @@ export default function NotesPage() {
   const [sortBy, setSortBy] = useState('updatedAt');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentTab, setCurrentTab] = useState(0);
+  const [selectedNote, setSelectedNote] = useState<Notes | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const router = useRouter();
+  const handleNoteClick = (note: Notes) => {
+    setSelectedNote(note);
+    setDrawerOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+    setSelectedNote(null);
+  };
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -179,17 +191,7 @@ export default function NotesPage() {
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
           <Box>
-            <Typography
-              variant="h4"
-              component="h1"
-              sx={{
-                fontWeight: 'bold',
-                background: 'linear-gradient(45deg, #3B82F6 30%, #8B5CF6 90%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                mb: 1
-              }}
-            >
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 1 }}>
               Your Notes
             </Typography>
             {/* Stats */}
@@ -207,7 +209,7 @@ export default function NotesPage() {
           </Box>
         </Box>
         {/* Search and Filters */}
-        <Paper sx={{ p: 2, mb: 3 }}>
+        <Paper sx={{ p: 2, mb: 3, backgroundColor: 'background.paper' }}>
           <Stack direction="row" spacing={2}>
             <TextField
               fullWidth
@@ -245,7 +247,7 @@ export default function NotesPage() {
       {/* Content Tabs */}
       <TabPanel value={currentTab} index={0}>
         {sortedNotes.length === 0 ? (
-          <Paper sx={{ p: 6, textAlign: 'center' }}>
+          <Paper sx={{ p: 6, textAlign: 'center', backgroundColor: 'background.paper' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No notes found
             </Typography>
@@ -275,6 +277,8 @@ export default function NotesPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
+                    onClick={() => handleNoteClick(note)}
+                    style={{ cursor: 'pointer' }}
                   >
                     <NoteComponent
                       note={note}
@@ -362,7 +366,6 @@ export default function NotesPage() {
           position: 'fixed',
           bottom: 24,
           right: 24,
-          boxShadow: '0 4px 12px rgba(59, 130, 246, 0.5)'
         }}
         component={motion.button}
         whileHover={{ scale: 1.1 }}
@@ -418,6 +421,20 @@ export default function NotesPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={handleDrawerClose}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', md: '60%', lg: '50%' },
+            height: '100%',
+          },
+        }}
+      >
+        <NoteViewer note={selectedNote} onClose={handleDrawerClose} />
+      </Drawer>
     </MotionContainer>
   );
 }
