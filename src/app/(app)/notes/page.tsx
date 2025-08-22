@@ -6,15 +6,18 @@ import {
   DialogActions, Button, TextField, Stack, Chip, Paper, IconButton, Card, CardContent,
   LinearProgress, Alert,
   Tab,
-  Tabs
+  Tabs,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Switch,
+  FormControlLabel
 } from '@mui/material';
 import { Add, Search, ViewModule, ViewList } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { listNotes as appwriteListNotes, createNote as appwriteCreateNote, updateNote as appwriteUpdateNote, deleteNote as appwriteDeleteNote } from '@/lib/appwrite';
-import { isICPEnabled } from '@/lib/integrations';
-import { fetchNotes as icpFetchNotes, createNote as icpCreateNote, updateNote as icpUpdateNote, deleteNote as icpDeleteNote, NoteModel as ICPNoteModel } from '@/integrations/icp/notes';
-import { createActor } from '@/integrations/icp/agent';
 import type { Notes, Tags } from '@/types/appwrite.d';
 import NoteComponent from './Note';
 
@@ -39,7 +42,7 @@ function TabPanel(props: { children?: React.ReactNode; value: number; index: num
 
 export default function NotesPage() {
   // States
-  const [notes, setNotes] = useState<Notes[] | ICPNoteModel[]>([]);
+  const [notes, setNotes] = useState<Notes[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [newNote, setNewNote] = useState<Partial<Notes>>({
@@ -52,8 +55,7 @@ export default function NotesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<any>({
     type: '',
-    isPinned: false,
-    isArchived: false,
+    status: '',
     tags: []
   });
   const [sortBy, setSortBy] = useState('updatedAt');
@@ -66,14 +68,8 @@ export default function NotesPage() {
     const fetchNotes = async () => {
       setLoading(true);
       try {
-        if (isICPEnabled()) {
-          const actor = createActor();
-          const icpNotes = await icpFetchNotes(actor);
-          setNotes(icpNotes);
-        } else {
-          const res = await appwriteListNotes();
-          setNotes(Array.isArray(res.documents) ? res.documents as Notes[] : []);
-        }
+        const res = await appwriteListNotes();
+        setNotes(Array.isArray(res.documents) ? res.documents as Notes[] : []);
       } catch (error) {
         setNotes([]);
         console.error('Failed to fetch notes:', error);
@@ -89,18 +85,13 @@ export default function NotesPage() {
     if (!newNote.title?.trim()) return;
     setCreating(true);
     try {
-      if (isICPEnabled()) {
-        const actor = createActor();
-        const icpNote: ICPNoteModel = {
-          id: BigInt(0),
-          title: newNote.title || '',
-          content: newNote.content || '',
-          tags: Array.isArray(newNote.tags) ? newNote.tags : [],
-          owner: '', // Will be set by canister
-        };
-        const id = await icpCreateNote(actor, icpNote);
-        const icpNotes = await icpFetchNotes(actor);
-        setNotes(icpNotes);
+      const doc = await appwriteCreateNote({
+        ...newNote,
+        tags: Array.isArray(newNote.tags) ? newNote.tags : [],
+        isPublic: !!newNote.isPublic
+      });
+      if (doc) {
+        setNotes((prev) => [doc, ...prev]);
         setOpen(false);
         setNewNote({
           title: '',
@@ -108,22 +99,6 @@ export default function NotesPage() {
           tags: [],
           isPublic: false
         });
-      } else {
-        const doc = await appwriteCreateNote({
-          ...newNote,
-          tags: Array.isArray(newNote.tags) ? newNote.tags : [],
-          isPublic: !!newNote.isPublic
-        });
-        if (doc) {
-          setNotes((prev) => [doc, ...prev]);
-          setOpen(false);
-          setNewNote({
-            title: '',
-            content: '',
-            tags: [],
-            isPublic: false
-          });
-        }
       }
     } catch (error) {
       console.error('Failed to create note:', error);
@@ -133,61 +108,25 @@ export default function NotesPage() {
   };
 
   // Delete Note
-  const handleDeleteNote = async (noteId: string | bigint) => {
+  const handleDeleteNote = async (noteId: string) => {
     try {
-      if (isICPEnabled()) {
-        const actor = createActor();
-        await icpDeleteNote(actor, BigInt(noteId));
-        const icpNotes = await icpFetchNotes(actor);
-        setNotes(icpNotes);
-      } else {
-        await appwriteDeleteNote(noteId as string);
-        setNotes((prev) => prev.filter((note) => (note as any).$id !== noteId));
-      }
+      await appwriteDeleteNote(noteId);
+      setNotes((prev) => prev.filter((note) => (note as any).$id !== noteId));
     } catch (error) {
       console.error('Failed to delete note:', error);
     }
   };
 
-  // Pin Note
-  const handlePinNote = async (noteId: string | bigint, pinned: boolean) => {
+  const handleTogglePublic = async (noteId: string, isPublic: boolean) => {
     try {
-      if (isICPEnabled()) {
-        // Not implemented: ICP does not have isPinned field by default
-        // You may want to extend the canister and NoteModel for this
-        // For now, just log
-        console.warn('Pinning notes is not supported in ICP integration yet.');
-      } else {
-        await appwriteUpdateNote(noteId as string, { isPinned: pinned });
-        setNotes((prev) =>
-          prev.map((note) =>
-            (note as any).$id === noteId ? { ...note, isPinned: pinned } : note
-          )
-        );
-      }
+      await appwriteUpdateNote(noteId, { isPublic });
+      setNotes((prev) =>
+        prev.map((note) =>
+          (note as any).$id === noteId ? { ...note, isPublic } : note
+        )
+      );
     } catch (error) {
-      console.error('Failed to pin note:', error);
-    }
-  };
-
-  // Archive Note
-  const handleArchiveNote = async (noteId: string | bigint, archived: boolean) => {
-    try {
-      if (isICPEnabled()) {
-        // Not implemented: ICP does not have isArchived field by default
-        // You may want to extend the canister and NoteModel for this
-        // For now, just log
-        console.warn('Archiving notes is not supported in ICP integration yet.');
-      } else {
-        await appwriteUpdateNote(noteId as string, { isArchived: archived });
-        setNotes((prev) =>
-          prev.map((note) =>
-            (note as any).$id === noteId ? { ...note, isArchived: archived } : note
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Failed to archive note:', error);
+      console.error('Failed to toggle public status:', error);
     }
   };
 
@@ -197,7 +136,9 @@ export default function NotesPage() {
       !note.content?.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
-    // Remove references to fields not in Notes type
+    if (filters.status && note.status !== filters.status) {
+      return false;
+    }
     if (filters.tags.length > 0 && !filters.tags.some((tag: string) => note.tags?.includes(tag))) return false;
     return true;
   });
@@ -267,7 +208,7 @@ export default function NotesPage() {
         </Box>
         {/* Search and Filters */}
         <Paper sx={{ p: 2, mb: 3 }}>
-          <Stack spacing={2}>
+          <Stack direction="row" spacing={2}>
             <TextField
               fullWidth
               placeholder="Search notes..."
@@ -277,6 +218,21 @@ export default function NotesPage() {
                 startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />
               }}
             />
+            <FormControl sx={{ minWidth: 120 }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={filters.status}
+                label="Status"
+                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              >
+                <MenuItem value="">
+                  <em>All</em>
+                </MenuItem>
+                <MenuItem value="draft">Draft</MenuItem>
+                <MenuItem value="published">Published</MenuItem>
+                <MenuItem value="archived">Archived</MenuItem>
+              </Select>
+            </FormControl>
           </Stack>
         </Paper>
         {/* Tabs */}
@@ -323,8 +279,7 @@ export default function NotesPage() {
                     <NoteComponent
                       note={note}
                       onDelete={handleDeleteNote}
-                      onPin={handlePinNote}
-                      onArchive={handleArchiveNote}
+                      onTogglePublic={handleTogglePublic}
                     />
                   </motion.div>
                 </Grid>
@@ -337,13 +292,67 @@ export default function NotesPage() {
         <Alert severity="info" sx={{ mb: 2 }}>
           Recent notes from the last 7 days
         </Alert>
-        {/* Recent notes implementation */}
+        <MotionGrid container spacing={3}>
+          <AnimatePresence>
+            {sortedNotes
+              .filter(note => {
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                return new Date(note.updatedAt || '') > sevenDaysAgo;
+              })
+              .map((note, index) => (
+              <Grid
+                item
+                xs={12}
+                sm={viewMode === 'grid' ? 6 : 12}
+                md={viewMode === 'grid' ? 4 : 12}
+                key={note.$id}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
+                  <NoteComponent
+                    note={note}
+                    onDelete={handleDeleteNote}
+                  />
+                </motion.div>
+              </Grid>
+            ))}
+          </AnimatePresence>
+        </MotionGrid>
       </TabPanel>
       <TabPanel value={currentTab} index={2}>
-        <Alert severity="info" sx={{ mb: 2 }}>
-          Analytics and insights about your note usage
-        </Alert>
-        {/* Analytics implementation */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="h6">Total Notes</Typography>
+              <Typography variant="h4">{notes.length}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="h6">Public Notes</Typography>
+              <Typography variant="h4">{notes.filter(n => n.isPublic).length}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="h6">Private Notes</Typography>
+              <Typography variant="h4">{notes.filter(n => !n.isPublic).length}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="h6">Notes by Status</Typography>
+              <Typography>Drafts: {notes.filter(n => n.status === 'draft').length}</Typography>
+              <Typography>Published: {notes.filter(n => n.status === 'published').length}</Typography>
+              <Typography>Archived: {notes.filter(n => n.status === 'archived').length}</Typography>
+            </Paper>
+          </Grid>
+        </Grid>
       </TabPanel>
       {/* Floating Action Button */}
       <Fab
@@ -386,6 +395,15 @@ export default function NotesPage() {
               fullWidth
               value={Array.isArray(newNote.tags) ? newNote.tags.join(', ') : ''}
               onChange={(e) => setNewNote({ ...newNote, tags: e.target.value.split(',').map(tag => tag.trim()) })}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={newNote.isPublic || false}
+                  onChange={(e) => setNewNote({ ...newNote, isPublic: e.target.checked })}
+                />
+              }
+              label="Public Note"
             />
           </Stack>
         </DialogContent>

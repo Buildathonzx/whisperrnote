@@ -232,7 +232,14 @@ export async function listBlogPosts(queries: any[] = []) {
 
 // --- COMMENTS CRUD ---
 
-export async function createComment(data: Partial<Comments>) {
+export async function createComment(noteId: string, content: string) {
+  const user = await getCurrentUser();
+  if (!user || !user.$id) throw new Error("User not authenticated");
+  const data = {
+    noteId,
+    content,
+    userId: user.$id,
+  };
   return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, ID.unique(), data);
 }
 
@@ -248,8 +255,8 @@ export async function deleteComment(commentId: string) {
   return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, commentId);
 }
 
-export async function listComments(queries: any[] = []) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, queries);
+export async function listComments(noteId: string) {
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, [Query.equal('noteId', noteId)]);
 }
 
 // --- EXTENSIONS CRUD ---
@@ -314,8 +321,8 @@ export async function deleteCollaborator(collaboratorId: string) {
   return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, collaboratorId);
 }
 
-export async function listCollaborators(queries: any[] = []) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, queries);
+export async function listCollaborators(noteId: string) {
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, [Query.equal('noteId', noteId)]);
 }
 
 // --- ACTIVITY LOG CRUD ---
@@ -336,14 +343,17 @@ export async function deleteActivityLog(activityLogId: string) {
   return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, activityLogId);
 }
 
-export async function listActivityLogs(queries: any[] = []) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, queries);
+export async function listActivityLogs() {
+  const user = await getCurrentUser();
+  if (!user || !user.$id) throw new Error("User not authenticated");
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, [Query.equal('userId', user.$id)]);
 }
 
 // --- SETTINGS CRUD ---
 
 export async function createSettings(data: Partial<Settings>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, ID.unique(), data);
+  if (!data.userId) throw new Error("userId is required to create settings");
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, data.userId, data);
 }
 
 export async function getSettings(settingsId: string): Promise<Settings> {
