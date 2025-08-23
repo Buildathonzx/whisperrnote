@@ -7,7 +7,7 @@ import { Box } from "@mui/material";
 import PageHeader from "../PageHeader";
 
 const PUBLIC_ROUTES = [
-  "/", "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/login", "/signup"
+  "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/login", "/signup"
 ];
 
 function isPublicRoute(path: string) {

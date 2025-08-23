@@ -27,7 +27,7 @@ export default function RootLayout({
   );
 
   const PUBLIC_ROUTES = [
-    "/", "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/login", "/signup"
+    "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/login", "/signup"
   ];
   function isPublicRoute(path: string) {
     return PUBLIC_ROUTES.some(route =>

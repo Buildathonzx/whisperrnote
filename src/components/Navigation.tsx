@@ -27,6 +27,7 @@ import {
   Logout as LogoutIcon,
   Brightness4,
   Brightness7,
+  Info as InfoIcon,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -85,6 +86,12 @@ export default function Navigation({ toggleTheme, isDarkMode }: NavigationProps)
             {isDarkMode ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
         </Box>
+        <ListItemButton component={Link} href="/landing">
+          <ListItemIcon>
+            <InfoIcon />
+          </ListItemIcon>
+          <ListItemText primary="About Us" />
+        </ListItemButton>
         <ListItemButton>
           <ListItemIcon>
             <LogoutIcon />

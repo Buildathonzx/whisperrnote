@@ -19,11 +19,14 @@ const colors = {
   grey: '#9E9E9E',
 };
 
-// Function to create a checkered background
-const createCheckeredBackground = (color1: string, color2: string, size: number) => ({
-  backgroundImage: `linear-gradient(45deg, ${color1} 25%, transparent 25%), linear-gradient(-45deg, ${color1} 25%, transparent 25%), linear-gradient(45deg, transparent 75%, ${color1} 75%), linear-gradient(-45deg, transparent 75%, ${color1} 75%)`,
+// Function to create a subtle grid background with thin lines
+const createGridBackground = (lineColor: string, backgroundColor: string, size: number) => ({
+  backgroundImage: `
+    linear-gradient(to right, ${lineColor} 1px, transparent 1px),
+    linear-gradient(to bottom, ${lineColor} 1px, transparent 1px)
+  `,
   backgroundSize: `${size}px ${size}px`,
-  backgroundColor: color2,
+  backgroundColor: backgroundColor,
 });
 
 // Create the light theme
@@ -49,7 +52,7 @@ export const lightTheme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          ...createCheckeredBackground(colors.lightBrown, colors.brownishWhite, 20),
+          ...createGridBackground('rgba(141, 110, 99, 0.1)', colors.brownishWhite, 24),
         },
       },
     },
@@ -79,7 +82,7 @@ export const darkTheme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          ...createCheckeredBackground(colors.mediumBrown, colors.darkBrown, 20),
+          ...createGridBackground('rgba(93, 64, 55, 0.15)', colors.darkBrown, 24),
         },
       },
     },
