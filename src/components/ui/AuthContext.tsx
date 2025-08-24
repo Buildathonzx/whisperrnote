@@ -6,8 +6,8 @@ import { InitialLoadingScreen } from './InitialLoadingScreen';
 
 interface User {
   $id: string;
-  email: string;
-  name: string;
+  email: string | null;
+  name: string | null;
   emailVerification?: boolean;
   [key: string]: any;
 }
