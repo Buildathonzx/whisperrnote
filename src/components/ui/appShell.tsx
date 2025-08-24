@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { getCurrentUser } from "@/lib/appwrite";
 import Navigation from "../Navigation";
-import { Box } from "@mui/material";
-import PageHeader from "../PageHeader";
+import QuickCreateFab from "./QuickCreateFab";
+import { Box, CircularProgress, Typography } from "@mui/material";
 
 const PUBLIC_ROUTES = [
-  "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/login", "/signup"
+  "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/login", "/signup", "/landing"
 ];
 
 function isPublicRoute(path: string) {
@@ -43,26 +43,79 @@ export default function AppShell({ children, toggleTheme, isDarkMode }: AppShell
       });
   }, [pathname, router]);
 
+  const handleCreateNote = () => {
+    router.push('/notes/new');
+  };
+
+  const handleCreateVoiceNote = () => {
+    console.log('Creating voice note...');
+  };
+
+  const handleCreatePhotoNote = () => {
+    console.log('Creating photo note...');
+  };
+
+  const handleCreateLinkNote = () => {
+    console.log('Creating link note...');
+  };
+
   if (!authChecked) {
-    return <div>Loading...</div>;
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          minHeight: '100vh',
+          gap: 2,
+        }}
+      >
+        <CircularProgress size={48} thickness={4} />
+        <Typography variant="body1" color="text.secondary">
+          Loading WhisperNote...
+        </Typography>
+      </Box>
+    );
   }
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <Navigation toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
+      
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { md: `calc(100% - 240px)` },
-          ml: { md: `240px` },
-          mb: { xs: '56px', md: 0 },
+          display: 'flex',
+          flexDirection: 'column',
+          // Desktop: account for sidebar width
+          width: { xs: '100%', md: 'calc(100% - 280px)' },
+          ml: { xs: 0, md: '280px' },
+          // Mobile: account for top header and bottom nav
+          pt: { xs: 0, md: 0 },
+          pb: { xs: '100px', md: 2 }, // Space for mobile bottom nav
+          minHeight: '100vh',
         }}
       >
-        <PageHeader />
-        {children}
+        <Box
+          sx={{
+            flex: 1,
+            p: { xs: 2, md: 3 },
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}
+        >
+          {children}
+        </Box>
       </Box>
+
+      <QuickCreateFab
+        onCreateNote={handleCreateNote}
+        onCreateVoiceNote={handleCreateVoiceNote}
+        onCreatePhotoNote={handleCreatePhotoNote}
+        onCreateLinkNote={handleCreateLinkNote}
+      />
     </Box>
   );
 }

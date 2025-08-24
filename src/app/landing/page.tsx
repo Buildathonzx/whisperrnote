@@ -1,563 +1,393 @@
 "use client";
 
-import { Box, Container, Typography, Button, Stack, Paper, Grid, Divider, Avatar, Card, CardContent, Chip, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import { Security, Speed, Create, Cloud, Code, Group, LockOutlined, Timeline, DevicesOther, 
-  SmartToy, Psychology, AutoAwesome, Storage, Keyboard, Extension, Article, ExpandMore, Check, ArrowForward } from '@mui/icons-material';
+import { 
+  Box, 
+  Container, 
+  Typography, 
+  Button, 
+  Stack, 
+  Paper, 
+  Grid, 
+  Card, 
+  Chip,
+  useTheme,
+  useMediaQuery,
+  Avatar,
+} from '@mui/material';
+import { 
+  ArrowForward,
+  PlayArrow,
+  Star,
+  Shield,
+  Rocket,
+  AutoAwesome,
+  Group,
+  Extension,
+  Cloud,
+} from '@mui/icons-material';
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from 'framer-motion';
-import { Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 
 const MotionBox = motion(Box);
-const MotionPaper = motion(Paper);
 const MotionCard = motion(Card);
+const MotionPaper = motion(Paper);
 
 const features = [
   {
-    icon: <Security sx={{ fontSize: 40, color: 'primary.main' }} />,
-    title: 'End-to-End Encryption & Decentralized Infrastructure',
-    description: 'Your notes are secured with robust, decentralized encryption protocols ensuring ultimate privacy.'
+    icon: <Shield sx={{ fontSize: 48 }} />,
+    title: 'Military-Grade Security',
+    description: 'End-to-end encryption with blockchain-verified integrity. Your thoughts remain truly private.',
+    color: '#4CAF50',
   },
   {
-    icon: <Speed sx={{ fontSize: 40, color: 'primary.main' }} />,
+    icon: <Rocket sx={{ fontSize: 48 }} />,
     title: 'Lightning Fast',
-    description: 'Optimized for speed and performance'
+    description: 'Optimized for speed with instant sync across all your devices. Never miss a thought.',
+    color: '#2196F3',
   },
   {
-    icon: <Create sx={{ fontSize: 40, color: 'primary.main' }} />,
-    title: 'Rich Text Editor',
-    description: 'Full-featured markdown and rich text support'
+    icon: <AutoAwesome sx={{ fontSize: 48 }} />,
+    title: 'AI-Powered Insights',
+    description: 'Smart summaries, auto-tagging, and content suggestions that learn from your style.',
+    color: '#FF9800',
   },
   {
-    icon: <Cloud sx={{ fontSize: 40, color: 'primary.main' }} />,
-    title: 'Cloud Sync',
-    description: 'Access your notes from anywhere'
+    icon: <Group sx={{ fontSize: 48 }} />,
+    title: 'Real-time Collaboration',
+    description: 'Work together seamlessly with live cursors, comments, and synchronized editing.',
+    color: '#9C27B0',
   },
   {
-    icon: <Code sx={{ fontSize: 40, color: 'primary.main' }} />,
-    title: 'Developer API',
-    description: 'Build integrations with our robust API'
+    icon: <Extension sx={{ fontSize: 48 }} />,
+    title: 'Extensible Platform',
+    description: 'Customize your workflow with powerful plugins and integrations.',
+    color: '#FF5722',
   },
   {
-    icon: <Group sx={{ fontSize: 40, color: 'primary.main' }} />,
-    title: 'Collaboration',
-    description: 'Share and collaborate on notes in real-time'
-  }
-];
-
-const platformFeatures = [
-  {
-    icon: <DevicesOther />,
-    title: 'Cross-Platform',
-    description: 'Available on web, desktop, and mobile'
+    icon: <Cloud sx={{ fontSize: 48 }} />,
+    title: 'Universal Access',
+    description: 'Access your notes anywhere - web, desktop, mobile, or offline.',
+    color: '#607D8B',
   },
-  {
-    icon: <LockOutlined />,
-    title: 'Secure Sharing',
-    description: 'Share notes with end-to-end encryption'
-  },
-  {
-    icon: <Timeline />,
-    title: 'Version History',
-    description: 'Track changes with full version history'
-  }
 ];
 
 const testimonials = [
   {
-    name: 'Sarah Johnson',
-    role: 'Software Developer',
-    content: 'WhisperNote has completely transformed how I organize my development notes. The API integration is fantastic!',
-    avatar: 'SJ'
+    name: 'Sarah Chen',
+    role: 'Product Designer',
+    content: "WhisperNote transformed our design process. The collaboration features are incredible!",
+    rating: 5,
   },
   {
-    name: 'Michael Chen',
-    role: 'Product Manager',
-    content: "The collaboration features are game-changing. Our team's productivity has increased significantly.",
-    avatar: 'MC'
+    name: 'Marcus Thompson',
+    role: 'Software Engineer',
+    content: "The API integration capabilities are outstanding. Perfect for technical documentation.",
+    rating: 5,
   },
   {
-    name: 'Emily Davis',
+    name: 'Elena Rodriguez',
     role: 'Content Creator',
-    content: 'The rich text editor and cloud sync make it perfect for managing my content across devices.',
-    avatar: 'ED'
-  }
+    content: "I love how the AI helps organize my thoughts. It's like having a personal assistant.",
+    rating: 5,
+  },
 ];
 
-const pricingPlans = [
-  {
-    name: 'Free',
-    price: '$0',
-    period: 'forever',
-    features: [
-      'Unlimited notes',
-      '20 GB storage',
-      'Advanced encryption',
-      'Access across web, desktop, and mobile'
-    ],
-    isPopular: false
-  },
-  {
-    name: 'Pro',
-    price: '$8',
-    period: 'per month',
-    features: [
-      'Unlimited notes',
-      '200 GB storage',
-      'Decentralized & end-to-end encryption',
-      'Access to all platforms',
-      'Priority support',
-      'Custom setup spaces',
-      'Enhanced AI integrations',
-      'API access'
-    ],
-    isPopular: true
-  },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    period: 'per user/month',
-    features: [
-      'Everything in Pro',
-      'Custom storage limits',
-      'Advanced admin controls',
-      'SSO integration',
-      'Dedicated support',
-      'Custom AI and Web3 integrations',
-      'Setup custom collaborative spaces'
-    ],
-    isPopular: false
-  }
+const stats = [
+  { number: '50K+', label: 'Active Users' },
+  { number: '1M+', label: 'Notes Created' },
+  { number: '99.9%', label: 'Uptime' },
+  { number: '24/7', label: 'Support' },
 ];
 
-const aiFeatures = [
-  {
-    title: 'Smart Summarization',
-    description: 'AI-powered note summarization for quick review',
-    icon: <SmartToy />
-  },
-  {
-    title: 'Topic Analysis',
-    description: 'Automatic categorization and tagging of notes',
-    icon: <Psychology />
-  },
-  {
-    title: 'Content Enhancement',
-    description: 'AI suggestions for better writing and organization',
-    icon: <AutoAwesome />
-  }
-];
+export default function LandingPage() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-const integrations = [
-  {
-    title: 'Browser Extension',
-    description: 'Save content directly from your browser',
-    icon: <Extension />
-  },
-  {
-    title: 'Cloud Storage',
-    description: 'Sync with Google Drive, Dropbox, and more',
-    icon: <Storage />
-  },
-  {
-    title: 'Keyboard Shortcuts',
-    description: 'Powerful shortcuts for quick note-taking',
-    icon: <Keyboard />
-  }
-];
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2 }
+    }
+  };
 
-const faqs = [
-  {
-    question: 'How secure are my notes?',
-    answer: 'Your notes are protected with end-to-end encryption. Only you and those you choose to share with can access them. We use industry-standard encryption protocols to ensure your data remains private.'
-  },
-  {
-    question: 'Can I access my notes offline?',
-    answer: 'Yes! Our desktop and mobile apps support offline access. Your notes sync automatically when you are back online.'
-  },
-  {
-    question: 'What happens if I exceed my storage limit?',
-    answer: 'You will receive a notification when approaching your limit. You can either upgrade your plan or manage your storage by archiving or deleting unused notes.'
-  },
-  {
-    question: 'How does the AI summarization work?',
-    answer: 'Our AI analyzes your notes\' content and generates concise summaries while preserving key information. This feature is available on Pro and Enterprise plans.'
-  },
-  {
-    question: 'Can I import notes from other apps?',
-    answer: 'Yes, we support importing notes from Evernote, OneNote, and plain text files. Our import tool helps preserve your note formatting.'
-  }
-];
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
 
-const blogPosts = [
-  {
-    title: 'Maximizing Productivity with AI Note-Taking',
-    excerpt: 'Learn how AI-powered features can transform your note-taking workflow...',
-    author: 'Sarah Johnson',
-    date: 'March 15, 2024',
-    readTime: '5 min read',
-    image: '/blog/ai-notes.jpg'
-  },
-  {
-    title: 'The Future of Collaborative Note-Taking',
-    excerpt: 'Discover how real-time collaboration is changing the way teams work together...',
-    author: 'Michael Chen',
-    date: 'March 12, 2024',
-    readTime: '4 min read',
-    image: '/blog/collaboration.jpg'
-  },
-  {
-    title: 'Security Best Practices for Note-Taking',
-    excerpt: 'Essential tips to keep your digital notes secure and private...',
-    author: 'Emily Davis',
-    date: 'March 10, 2024',
-    readTime: '6 min read',
-    image: '/blog/security.jpg'
-  }
-];
-
-export default function Home() {
   return (
-    <Box suppressHydrationWarning>
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
+    }}>
       {/* Hero Section */}
       <Box sx={{ 
-        background: 'linear-gradient(135deg, #3B82F6 0%, #EC4899 100%)',
-        color: 'white',
-        py: { xs: 8, md: 12 },
-        mb: 8,
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        py: { xs: 8, md: 12 },
       }}>
         <Container maxWidth="lg">
-          <Grid container spacing={4} alignItems="center">
+          <Grid container spacing={6} alignItems="center">
             <Grid item xs={12} md={6}>
               <MotionBox
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
               >
-                <Typography 
-                  variant="h2" 
-                  component="h1" 
-                  gutterBottom 
-                  sx={{ 
-                    fontWeight: 700,
-                    fontSize: { xs: '2.5rem', md: '3.5rem' }
-                  }}
-                >
-                  Empower Your Mind: Modern, Encrypted, AI-Powered, Web3-Enabled Note-Taking
-                </Typography>
-                <Typography 
-                  variant="h5" 
-                  sx={{ mb: 4, fontWeight: 300 }}
-                >
-                  Experience decentralized, private infrastructure fused with cutting-edge AI integrations for seamless note management.
-                </Typography>
-                <Stack 
-                  direction={{ xs: 'column', sm: 'row' }} 
-                  spacing={2}
-                >
-                  <Button
-                    component={Link}
-                    href="/signup"
-                    variant="contained"
-                    color="secondary"
-                    size="large"
-                    sx={{ 
-                      py: 1.5,
-                      px: 4,
-                      fontSize: '1.1rem'
-                    }}
-                  >
-                    Get Started Free
-                  </Button>
-                  <Button
-                    component={Link}
-                    href="#features"
-                    variant="outlined"
-                    size="large"
-                    sx={{ 
-                      borderColor: 'white',
-                      color: 'white',
-                      '&:hover': {
-                        borderColor: 'white',
-                        bgcolor: 'rgba(255,255,255,0.1)'
-                      }
-                    }}
-                  >
-                    Learn More
-                  </Button>
-                </Stack>
-              </MotionBox>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <MotionBox
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  position: 'relative'
-                }}
-              >
-                <Box
-                  sx={{
-                    width: '100%',
-                    maxWidth: 500,
-                    height: 'auto',
-                    position: 'relative'
-                  }}
-                >
-                  <Image
-                    src="/logo/whisperrnote.png"
-                    alt="WhisperNote Interface"
-                    width={500}
-                    height={500}
-                    style={{
-                      width: '100%',
-                      height: 'auto',
-                      borderRadius: '12px',
-                      boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+                <MotionBox variants={itemVariants}>
+                  <Chip
+                    label="🚀 Now with AI-powered insights"
+                    sx={{
+                      mb: 3,
+                      background: `linear-gradient(135deg, ${theme.palette.primary.main}20, ${theme.palette.secondary.main}20)`,
+                      border: `2px solid ${theme.palette.primary.main}40`,
+                      fontWeight: 600,
                     }}
                   />
-                </Box>
+                </MotionBox>
+
+                <MotionBox variants={itemVariants}>
+                  <Typography 
+                    variant="h1"
+                    sx={{ 
+                      fontWeight: 800,
+                      fontSize: { xs: '2.5rem', md: '4rem' },
+                      lineHeight: 1.1,
+                      mb: 2,
+                      background: `linear-gradient(135deg, ${theme.palette.text.primary}, ${theme.palette.primary.main})`,
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    Your Ideas,{' '}
+                    <Box component="span" sx={{ 
+                      background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}>
+                      Amplified
+                    </Box>
+                  </Typography>
+                </MotionBox>
+
+                <MotionBox variants={itemVariants}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      mb: 4, 
+                      color: 'text.secondary',
+                      fontWeight: 400,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    The only note-taking app you'll ever need. Secure, intelligent, and designed for the way you think.
+                  </Typography>
+                </MotionBox>
+
+                <MotionBox variants={itemVariants}>
+                  <Stack 
+                    direction={{ xs: 'column', sm: 'row' }} 
+                    spacing={2}
+                    sx={{ mb: 4 }}
+                  >
+                    <Button
+                      component={Link}
+                      href="/signup"
+                      variant="contained"
+                      size="large"
+                      sx={{ 
+                        py: 2,
+                        px: 4,
+                        fontSize: '1.1rem',
+                        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                      endIcon={<ArrowForward />}
+                    >
+                      Start Free Today
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      sx={{ 
+                        py: 2,
+                        px: 4,
+                        fontSize: '1.1rem',
+                        borderWidth: 2,
+                        '&:hover': {
+                          borderWidth: 2,
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                      startIcon={<PlayArrow />}
+                    >
+                      Watch Demo
+                    </Button>
+                  </Stack>
+                </MotionBox>
+
+                <MotionBox variants={itemVariants}>
+                  <Stack direction="row" spacing={4} sx={{ mt: 4 }}>
+                    {stats.map((stat, index) => (
+                      <Box key={index} sx={{ textAlign: 'center' }}>
+                        <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                          {stat.number}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {stat.label}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                </MotionBox>
+              </MotionBox>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <MotionBox
+                initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                sx={{ 
+                  position: 'relative',
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}
+              >
+                <Paper
+                  sx={{
+                    p: 3,
+                    borderRadius: '24px',
+                    background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.action.hover} 100%)`,
+                    transform: 'rotate(3deg)',
+                    '&:hover': {
+                      transform: 'rotate(0deg) scale(1.02)',
+                      transition: 'all 0.3s ease',
+                    }
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: { xs: 300, md: 400 },
+                      height: { xs: 400, md: 500 },
+                      borderRadius: '16px',
+                      background: `linear-gradient(135deg, ${theme.palette.primary.main}10, ${theme.palette.secondary.main}10)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <Typography variant="h6" color="text.secondary">
+                      App Preview
+                    </Typography>
+                    
+                    {/* Floating elements for visual interest */}
+                    {[...Array(6)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        animate={{
+                          y: [0, -20, 0],
+                          opacity: [0.5, 1, 0.5],
+                        }}
+                        transition={{
+                          duration: 3,
+                          delay: i * 0.5,
+                          repeat: Infinity,
+                        }}
+                        style={{
+                          position: 'absolute',
+                          left: `${20 + i * 15}%`,
+                          top: `${20 + (i % 3) * 20}%`,
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          background: theme.palette.primary.main,
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Paper>
               </MotionBox>
             </Grid>
           </Grid>
         </Container>
       </Box>
 
-      {/* Features Grid Section */}
-      <Container maxWidth="lg" sx={{ mb: 8 }} id="features">
-        <Typography
-          variant="h3"
-          align="center"
-          gutterBottom
-          sx={{ mb: 6, fontWeight: 600 }}
-        >
-          Powerful Features
-        </Typography>
-        <Grid container spacing={4}>
-          {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <MotionPaper
-                elevation={2}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                sx={{ p: 3, height: '100%' }}
-              >
-                {feature.icon}
-                <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-                  {feature.title}
-                </Typography>
-                <Typography color="text.secondary">
-                  {feature.description}
-                </Typography>
-              </MotionPaper>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-
-      {/* AI Features Section */}
-      <Box sx={{ bgcolor: 'background.paper', py: 8 }}>
+      {/* Features Section */}
+      <Box sx={{ py: { xs: 8, md: 12 } }}>
         <Container maxWidth="lg">
-          <Typography
-            variant="h3"
-            align="center"
-            gutterBottom
-            sx={{ mb: 6, fontWeight: 600 }}
+          <MotionBox
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            sx={{ textAlign: 'center', mb: 8 }}
           >
-            Powered by AI
-          </Typography>
-          <Grid container spacing={4}>
-            {aiFeatures.map((feature, index) => (
-              <Grid item xs={12} md={4} key={feature.title}>
-                <MotionPaper
-                  elevation={2}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  sx={{ p: 4, height: '100%', textAlign: 'center' }}
-                >
-                  <Box sx={{ color: 'primary.main', mb: 2 }}>
-                    {feature.icon}
-                  </Box>
-                  <Typography variant="h5" gutterBottom>
-                    {feature.title}
-                  </Typography>
-                  <Typography color="text.secondary">
-                    {feature.description}
-                  </Typography>
-                </MotionPaper>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontWeight: 700,
+                mb: 2,
+                background: `linear-gradient(135deg, ${theme.palette.text.primary}, ${theme.palette.primary.main})`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Everything You Need
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
+              Powerful features designed to enhance your productivity and creativity
+            </Typography>
+          </MotionBox>
 
-      {/* Integrations Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography
-          variant="h3"
-          align="center"
-          gutterBottom
-          sx={{ mb: 6, fontWeight: 600 }}
-        >
-          Seamless Integrations
-        </Typography>
-        <Grid container spacing={4}>
-          {integrations.map((integration, index) => (
-            <Grid item xs={12} md={4} key={integration.title}>
-              <MotionPaper
-                elevation={2}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                sx={{ p: 4, height: '100%' }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Box sx={{ 
-                    mr: 2,
-                    color: 'primary.main',
-                    bgcolor: 'primary.light',
-                    p: 1,
-                    borderRadius: 2
-                  }}>
-                    {integration.icon}
-                  </Box>
-                  <Typography variant="h6">
-                    {integration.title}
-                  </Typography>
-                </Box>
-                <Typography color="text.secondary">
-                  {integration.description}
-                </Typography>
-              </MotionPaper>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-
-      {/* Pricing Section */}
-      <Box sx={{ bgcolor: 'background.paper', py: 8 }}>
-        <Container maxWidth="lg">
-          <Typography
-            variant="h3"
-            align="center"
-            gutterBottom
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Simple, Transparent Pricing
-          </Typography>
-          <Typography
-            variant="h6"
-            align="center"
-            color="text.secondary"
-            sx={{ mb: 6 }}
-          >
-            Choose the plan that works best for you
-          </Typography>
           <Grid container spacing={4}>
-            {pricingPlans.map((plan, index) => (
-              <Grid item xs={12} md={4} key={plan.name}>
+            {features.map((feature, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
                 <MotionCard
-                  elevation={plan.isPopular ? 8 : 2}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
                   sx={{ 
-                    p: 4,
                     height: '100%',
-                    position: 'relative',
-                    border: plan.isPopular ? 2 : 0,
-                    borderColor: 'primary.main'
+                    p: 3,
+                    background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${feature.color}08 100%)`,
+                    border: `2px solid ${feature.color}20`,
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: `0 12px 40px ${feature.color}20`,
+                    },
                   }}
                 >
-                  {plan.isPopular && (
-                    <Chip
-                      label="Most Popular"
-                      color="primary"
-                      sx={{
-                        position: 'absolute',
-                        top: -12,
-                        right: 24
-                      }}
-                    />
-                  )}
-                  <Typography variant="h5" gutterBottom>
-                    {plan.name}
-                  </Typography>
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="h3" component="span">
-                      {plan.price}
-                    </Typography>
-                    <Typography variant="subtitle1" component="span" color="text.secondary">
-                      /{plan.period}
-                    </Typography>
-                  </Box>
-                  <Divider sx={{ my: 3 }} />
-                  <List>
-                    {plan.features.map((feature) => (
-                      <ListItem key={feature} sx={{ px: 0 }}>
-                        <ListItemIcon>
-                          <Check color="primary" />
-                        </ListItemIcon>
-                        <ListItemText primary={feature} />
-                      </ListItem>
-                    ))}
-                  </List>
-                  <Button
-                    variant={plan.isPopular ? "contained" : "outlined"}
-                    fullWidth
-                    size="large"
-                    sx={{ mt: 3 }}
-                    component={Link}
-                    href="/signup"
+                  <Box
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: '20px',
+                      background: `linear-gradient(135deg, ${feature.color}20, ${feature.color}40)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: feature.color,
+                      mb: 3,
+                    }}
                   >
-                    Get Started
-                  </Button>
-                </MotionCard>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* Platform Section */}
-      <Box sx={{ bgcolor: 'background.paper', py: 8 }}>
-        <Container maxWidth="lg">
-          <Typography
-            variant="h3"
-            align="center"
-            gutterBottom
-            sx={{ mb: 6, fontWeight: 600 }}
-          >
-            Platform Features
-          </Typography>
-          <Grid container spacing={4}>
-            {platformFeatures.map((feature, index) => (
-              <Grid item xs={12} md={4} key={feature.title}>
-                <MotionPaper
-                  elevation={2}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  sx={{ p: 4, height: '100%', textAlign: 'center' }}
-                >
-                  <Box sx={{ color: 'primary.main', mb: 2 }}>
                     {feature.icon}
                   </Box>
-                  <Typography variant="h5" gutterBottom>
+                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
                     {feature.title}
                   </Typography>
-                  <Typography color="text.secondary">
+                  <Typography color="text.secondary" sx={{ lineHeight: 1.6 }}>
                     {feature.description}
                   </Typography>
-                </MotionPaper>
+                </MotionCard>
               </Grid>
             ))}
           </Grid>
@@ -565,183 +395,154 @@ export default function Home() {
       </Box>
 
       {/* Testimonials Section */}
-      <Box sx={{ bgcolor: 'background.paper', py: 8 }}>
+      <Box sx={{ 
+        py: { xs: 8, md: 12 },
+        background: `linear-gradient(135deg, ${theme.palette.action.hover} 0%, ${theme.palette.background.paper} 100%)`,
+      }}>
         <Container maxWidth="lg">
-          <Typography
-            variant="h3"
-            align="center"
-            gutterBottom
-            sx={{ mb: 6, fontWeight: 600 }}
+          <MotionBox
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            sx={{ textAlign: 'center', mb: 8 }}
           >
-            What Our Users Say
-          </Typography>
+            <Typography variant="h2" sx={{ fontWeight: 700, mb: 2 }}>
+              Loved by Professionals
+            </Typography>
+            <Typography variant="h6" color="text.secondary">
+              Join thousands of satisfied users who've transformed their workflow
+            </Typography>
+          </MotionBox>
+
           <Grid container spacing={4}>
             {testimonials.map((testimonial, index) => (
-              <Grid item xs={12} md={4} key={testimonial.name}>
-                <MotionPaper
-                  elevation={2}
+              <Grid item xs={12} md={4} key={index}>
+                <MotionCard
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  sx={{ p: 4, height: '100%', textAlign: 'center' }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  sx={{ 
+                    height: '100%',
+                    p: 4,
+                    background: theme.palette.background.paper,
+                  }}
                 >
-                  <Avatar sx={{ bgcolor: 'primary.main', width: 56, height: 56, mb: 2 }}>
-                    {testimonial.avatar}
-                  </Avatar>
-                  <Typography variant="h6" gutterBottom>
-                    {testimonial.name}
+                  <Box sx={{ display: 'flex', mb: 2 }}>
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} sx={{ color: '#FFD700', fontSize: 20 }} />
+                    ))}
+                  </Box>
+                  <Typography 
+                    sx={{ 
+                      mb: 3,
+                      fontStyle: 'italic',
+                      fontSize: '1.1rem',
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    "{testimonial.content}"
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {testimonial.role}
-                  </Typography>
-                  <Typography color="text.secondary">
-                    {testimonial.content}
-                  </Typography>
-                </MotionPaper>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Avatar 
+                      sx={{ 
+                        mr: 2,
+                        width: 50,
+                        height: 50,
+                        background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                      }}
+                    >
+                      {testimonial.name.split(' ').map(n => n[0]).join('')}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                        {testimonial.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {testimonial.role}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </MotionCard>
               </Grid>
             ))}
           </Grid>
         </Container>
       </Box>
 
-      {/* FAQ Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography
-          variant="h3"
-          align="center"
-          gutterBottom
-          sx={{ mb: 6, fontWeight: 600 }}
-        >
-          Frequently Asked Questions
-        </Typography>
-        <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-          {faqs.map((faq, index) => (
-            <MotionPaper
-              key={index}
-              component={Accordion}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              sx={{ mb: 2 }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                sx={{ '&.Mui-expanded': { minHeight: 64 } }}
-              >
-                <Typography variant="h6">{faq.question}</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography color="text.secondary">
-                  {faq.answer}
-                </Typography>
-              </AccordionDetails>
-            </MotionPaper>
-          ))}
-        </Box>
-      </Container>
-
-      {/* Blog Section */}
-      <Box sx={{ bgcolor: 'background.paper', py: 8 }}>
+      {/* CTA Section */}
+      <Box sx={{ 
+        py: { xs: 8, md: 12 },
+        background: `linear-gradient(135deg, ${theme.palette.primary.main}10, ${theme.palette.secondary.main}10)`,
+      }}>
         <Container maxWidth="lg">
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            mb: 6 
-          }}>
-            <Typography variant="h3" sx={{ fontWeight: 600 }}>
-              Latest from Our Blog
-            </Typography>
-            <Button 
-              variant="outlined" 
-              component={Link} 
-              href="/blog"
-              endIcon={<ArrowForward />}
+          <MotionPaper
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            sx={{
+              p: { xs: 4, md: 8 },
+              textAlign: 'center',
+              borderRadius: '24px',
+              background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.action.hover} 100%)`,
+            }}
+          >
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                fontWeight: 700,
+                mb: 2,
+                background: `linear-gradient(135deg, ${theme.palette.text.primary}, ${theme.palette.primary.main})`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
             >
-              View All Posts
-            </Button>
-          </Box>
-          <Grid container spacing={4}>
-            {blogPosts.map((post, index) => (
-              <Grid item xs={12} md={4} key={index}>
-                <MotionCard
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  sx={{ height: '100%' }}
-                >
-                  <Box 
-                    sx={{ 
-                      height: 200, 
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    <Image
-                      src={post.image}
-                      alt={post.title}
-                      fill
-                      style={{ 
-                        objectFit: 'cover',
-                        transition: 'transform 0.3s ease'
-                      }}
-                    />
-                  </Box>
-                  <CardContent>
-                    <Typography 
-                      variant="h5" 
-                      gutterBottom
-                      sx={{ 
-                        fontWeight: 600,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                      }}
-                    >
-                      {post.title}
-                    </Typography>
-                    <Typography 
-                      color="text.secondary"
-                      sx={{
-                        mb: 2,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                      }}
-                    >
-                      {post.excerpt}
-                    </Typography>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Avatar 
-                          sx={{ 
-                            width: 24, 
-                            height: 24,
-                            mr: 1,
-                            bgcolor: 'primary.main'
-                          }}
-                        >
-                          {post.author[0]}
-                        </Avatar>
-                        <Typography variant="caption">
-                          {post.author}
-                        </Typography>
-                      </Box>
-                      <Typography variant="caption" color="text.secondary">
-                        {post.readTime}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </MotionCard>
-              </Grid>
-            ))}
-          </Grid>
+              Ready to Transform Your Ideas?
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: 600, mx: 'auto' }}>
+              Join thousands of professionals who've already revolutionized their note-taking experience
+            </Typography>
+            
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+              <Button
+                component={Link}
+                href="/signup"
+                variant="contained"
+                size="large"
+                sx={{ 
+                  py: 2,
+                  px: 6,
+                  fontSize: '1.2rem',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                }}
+                endIcon={<ArrowForward />}
+              >
+                Start Your Journey
+              </Button>
+              <Button
+                component={Link}
+                href="/login"
+                variant="outlined"
+                size="large"
+                sx={{ 
+                  py: 2,
+                  px: 6,
+                  fontSize: '1.2rem',
+                  borderWidth: 2,
+                  '&:hover': {
+                    borderWidth: 2,
+                  },
+                }}
+              >
+                Sign In
+              </Button>
+            </Stack>
+
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
+              No credit card required • Free forever plan available
+            </Typography>
+          </MotionPaper>
         </Container>
       </Box>
     </Box>
