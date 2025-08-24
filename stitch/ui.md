@@ -338,3 +338,9 @@ This architecture minimizes full-page navigations by using overlays for forms an
 4. **Content Priority**: CS1-CS6 determine main content area appearance
 5. **Authentication**: AS1-AS7 can appear over any page requiring auth
 6. **State Inheritance**: Combined states inherit properties from base states
+
+FINAL NOTES:
+
+### color and feel
+
+dark modes use a very dark shade of brown for foregrounds, light mode uses brownish white for foregrounds. backgrounds use dark shades of ash in dark mode and ash-white in light mode for background (it is allowed to use sun-yellow shades sometimes to avoid an excessively monotonous feeling in some places). make use of 3d feels, as much as possible, expressive design, design that feels solid with 3d look and feel, shadows, border radius on everything, subtle hues. at the same time with muted unobstructive backgrounds where necessary. 
