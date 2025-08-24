@@ -144,6 +144,11 @@ const AppTitle = styled(Typography)(({ theme }) => ({
     : '0 2px 4px rgba(45, 32, 22, 0.1)',
   transform: 'perspective(500px) rotateX(10deg)',
   transformOrigin: 'center bottom',
+  // Ensure the title is always visible and prominent
+  opacity: 1,
+  visibility: 'visible',
+  position: 'relative',
+  zIndex: 1,
 }));
 
 const LoadingText = styled(Typography)(({ theme }) => ({

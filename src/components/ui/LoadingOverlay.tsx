@@ -69,6 +69,9 @@ const LoadingCard = styled(Box)(({ theme }) => ({
   transformStyle: 'preserve-3d',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   animation: `${fadeIn} 0.5s ease-out`,
+  // Ensure stable positioning and visibility
+  position: 'relative',
+  zIndex: 2,
   
   '&:hover': {
     transform: 'perspective(500px) rotateX(0deg) rotateY(0deg) scale(1.02)',
@@ -144,6 +147,11 @@ const AppTitle = styled(Typography)(({ theme }) => ({
     : '0 2px 4px rgba(45, 32, 22, 0.1)',
   transform: 'perspective(500px) rotateX(10deg)',
   transformOrigin: 'center bottom',
+  // Ensure the title is always visible and prominent
+  opacity: 1,
+  visibility: 'visible',
+  position: 'relative',
+  zIndex: 1,
 }));
 
 const LoadingText = styled(Typography)(({ theme }) => ({
