@@ -1,8 +1,8 @@
 import { Actor } from '@dfinity/agent';
 import { BlockchainService, CreateProposalRequest, Proposal, ApprovalRequest } from './types';
-import { ApiResponse } from '@calimero-is-near/calimero-p2p-sdk';
-import { getContextId, getNodeUrl } from '../calimero/config';
-import { getConfigAndJwt } from '../calimero/client';
+// import { ApiResponse } from '@calimero-is-near/calimero-p2p-sdk';
+// import { getContextId, getNodeUrl } from '../calimero/config';
+// import { getConfigAndJwt } from '../calimero/client';
 import { ICPClient } from '../icp/client';
 import { CalimeroStorage } from '../calimero/storage';
 import { CalimeroWebSocket } from '../calimero/ws';

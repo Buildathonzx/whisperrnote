@@ -2,7 +2,8 @@ import { account, ID } from './appwrite';
 import { NextRequest } from 'next/server';
 import { Identity } from '@dfinity/agent';
 import { ICPAuth } from './icp/auth';
-import { BlockchainService } from './blockchain/service';
+import { BlockchainServiceImpl } from './blockchain/service';
+import type { BlockchainService } from './blockchain/types';
 
 // Register a new user
 export const register = async (email: string, password: string, name?: string) => {
@@ -71,11 +72,12 @@ export const getAuthUser = async (token: string) => {
 
   try {
     const user = await getCurrentUser();
+    if (!user) return null;
     return {
       id: user.$id,
       email: user.email,
       name: user.name,
-      walletAddress: user.walletAddress || null,
+      // walletAddress: user.walletAddress || null, // Not present on User<Preferences>
       createdAt: user.registration,
       updatedAt: user.$updatedAt || null,
     };
@@ -87,7 +89,7 @@ export const getAuthUser = async (token: string) => {
 export class AuthManager {
   private static instance: AuthManager;
   private icpAuth: ICPAuth;
-  private blockchainService: BlockchainService | null = null;
+  private blockchainService: BlockchainServiceImpl | null = null;
 
   private constructor() {
     this.icpAuth = new ICPAuth();
