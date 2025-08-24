@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import { useState, useMemo } from 'react';
 import "../globals.css";
 import AppShell from "@/components/ui/appShell";
+import { AppWithLoading } from "@/components/ui/AppWithLoading";
 import { usePathname } from "next/navigation";
 import { lightTheme, darkTheme } from '../theme';
 
@@ -36,21 +37,23 @@ export default function RootLayout({
   }
 
   const content = (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Box
-        component="main"
-        className="animated-content"
-        sx={{
-          minHeight: '100vh',
-        }}
-      >
-        {isPublicRoute(pathname)
-          ? children
-          : <AppShell toggleTheme={toggleTheme} isDarkMode={mode === 'dark'}>{children}</AppShell>
-        }
-      </Box>
-    </ThemeProvider>
+    <AppWithLoading>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box
+          component="main"
+          className="animated-content"
+          sx={{
+            minHeight: '100vh',
+          }}
+        >
+          {isPublicRoute(pathname)
+            ? children
+            : <AppShell toggleTheme={toggleTheme} isDarkMode={mode === 'dark'}>{children}</AppShell>
+          }
+        </Box>
+      </ThemeProvider>
+    </AppWithLoading>
   );
 
   return (

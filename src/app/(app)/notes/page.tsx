@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Container, Grid, Typography, Box, Fab, Dialog, DialogTitle, DialogContent,
   DialogActions, Button, TextField, Stack, Chip, Paper, IconButton, Card, CardContent,
-  LinearProgress, Alert,
+  Alert,
   Tab,
   Tabs,
   Select,
@@ -16,8 +16,8 @@ import {
 } from '@mui/material';
 import { Add, Search, ViewModule, ViewList } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import { listNotes as appwriteListNotes, createNote as appwriteCreateNote, updateNote as appwriteUpdateNote, deleteNote as appwriteDeleteNote } from '@/lib/appwrite';
+import { useLoading } from '@/components/ui/LoadingContext';
 import type { Notes, Tags } from '@/types/appwrite.d';
 import NoteComponent from './Note';
 import NoteViewer from './NoteViewer';
@@ -45,7 +45,7 @@ function TabPanel(props: { children?: React.ReactNode; value: number; index: num
 export default function NotesPage() {
   // States
   const [notes, setNotes] = useState<Notes[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { showLoading, hideLoading } = useLoading();
   const [open, setOpen] = useState(false);
   const [newNote, setNewNote] = useState<Partial<Notes>>({
     title: '',
@@ -78,7 +78,7 @@ export default function NotesPage() {
 
   useEffect(() => {
     const fetchNotes = async () => {
-      setLoading(true);
+      showLoading('Loading your notes...');
       try {
         const res = await appwriteListNotes();
         setNotes(Array.isArray(res.documents) ? res.documents as Notes[] : []);
@@ -86,11 +86,11 @@ export default function NotesPage() {
         setNotes([]);
         console.error('Failed to fetch notes:', error);
       } finally {
-        setLoading(false);
+        hideLoading();
       }
     };
     fetchNotes();
-  }, []);
+  }, [showLoading, hideLoading]);
 
   // Create Note
   const handleCreateNote = async () => {
@@ -169,15 +169,6 @@ export default function NotesPage() {
   const noteStats = {
     total: notes.length
   };
-
-  if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-        <LinearProgress sx={{ mb: 2 }} />
-        <Typography>Loading your notes...</Typography>
-      </Container>
-    );
-  }
 
   return (
     <MotionContainer

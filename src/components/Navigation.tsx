@@ -32,11 +32,10 @@ import {
   Brightness7,
   Logout as LogoutIcon,
   Notifications as NotificationsIcon,
-  Home as HomeIcon,
 } from '@mui/icons-material';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { useNavigationWithLoading } from '@/lib/useNavigationWithLoading';
 
 // Mobile bottom navigation items following ui.md spec
 const mobileNavItems = [
@@ -65,12 +64,11 @@ export default function Navigation({ toggleTheme, isDarkMode }: NavigationProps)
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const pathname = usePathname();
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
+  const { navigateTo } = useNavigationWithLoading();
 
-  const handleNavigation = (href: string, isAction?: boolean) => {
-    if (isAction) {
-      // Handle create action - could open modal or navigate
-      console.log('Create action triggered');
-    }
+  const handleCreateAction = () => {
+    // Handle create action - could open modal or navigate
+    console.log('Create action triggered');
   };
 
   // Mobile Bottom Navigation with 3D design
@@ -112,7 +110,7 @@ export default function Navigation({ toggleTheme, isDarkMode }: NavigationProps)
                 key={item.id}
                 size="medium"
                 color="primary"
-                onClick={() => handleNavigation(item.href, true)}
+                onClick={() => handleCreateAction()}
                 sx={{
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
                   '&:hover': {
@@ -132,8 +130,13 @@ export default function Navigation({ toggleTheme, isDarkMode }: NavigationProps)
           return (
             <IconButton
               key={item.id}
-              component={Link}
-              href={item.href}
+              onClick={() => {
+                if (item.isAction) {
+                  handleCreateAction();
+                } else {
+                  navigateTo(item.href, `Loading ${item.text.toLowerCase()}...`);
+                }
+              }}
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -226,8 +229,7 @@ export default function Navigation({ toggleTheme, isDarkMode }: NavigationProps)
             return (
               <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
                 <ListItemButton 
-                  component={Link} 
-                  href={item.href}
+                  onClick={() => navigateTo(item.href, `Loading ${item.text.toLowerCase()}...`)}
                   sx={{
                     borderRadius: '12px',
                     py: 1.5,
@@ -385,9 +387,10 @@ export default function Navigation({ toggleTheme, isDarkMode }: NavigationProps)
           {sidebarItems.map((item) => (
             <ListItem key={item.text} disablePadding>
               <ListItemButton 
-                component={Link} 
-                href={item.href}
-                onClick={() => setLeftDrawerOpen(false)}
+                onClick={() => {
+                  navigateTo(item.href, `Loading ${item.text.toLowerCase()}...`);
+                  setLeftDrawerOpen(false);
+                }}
                 sx={{ borderRadius: '8px', mb: 1 }}
               >
                 <ListItemIcon>{item.icon}</ListItemIcon>
