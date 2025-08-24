@@ -77,7 +77,7 @@ export class ICPClient {
       id: note.id,
       content,
       title: note.metadata.title,
-      sharedWith: note.shared_with.map(p => p.toText())
+      sharedWith: note.shared_with.map((p: Principal) => p.toText())
     };
   }
 

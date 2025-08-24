@@ -77,7 +77,7 @@ export const getAuthUser = async (token: string) => {
       name: user.name,
       walletAddress: user.walletAddress || null,
       createdAt: user.registration,
-      updatedAt: user.updatedAt || null,
+      updatedAt: user.$updatedAt || null,
     };
   } catch (error) {
     return null;
