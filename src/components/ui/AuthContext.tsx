@@ -8,7 +8,7 @@ interface User {
   $id: string;
   email: string;
   name: string;
-  emailVerification: boolean;
+  emailVerification?: boolean;
   [key: string]: any;
 }
 
