@@ -7,16 +7,15 @@ import { useState, useMemo } from 'react';
 import "../globals.css";
 import AppShell from "@/components/ui/appShell";
 import { AppWithLoading } from "@/components/ui/AppWithLoading";
+import { AuthProvider, useAuth } from "@/components/ui/AuthContext";
+import { RouteGuard } from "@/components/ui/RouteGuard";
 import { usePathname } from "next/navigation";
 import { lightTheme, darkTheme } from '../theme';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const AppContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mode, setMode] = useState<'light' | 'dark'>('light');
   const pathname = usePathname();
+  const { isAuthenticated } = useAuth();
 
   const toggleTheme = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
@@ -28,38 +27,54 @@ export default function RootLayout({
   );
 
   const PUBLIC_ROUTES = [
-    "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/login", "/signup"
+    "/", "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/login", "/signup"
   ];
+  
   function isPublicRoute(path: string) {
     return PUBLIC_ROUTES.some(route =>
       typeof route === "string" ? route === path : route instanceof RegExp && route.test(path)
     );
   }
 
-  const content = (
-    <AppWithLoading>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Box
-          component="main"
-          className="animated-content"
-          sx={{
-            minHeight: '100vh',
-          }}
-        >
-          {isPublicRoute(pathname)
-            ? children
-            : <AppShell toggleTheme={toggleTheme} isDarkMode={mode === 'dark'}>{children}</AppShell>
-          }
-        </Box>
-      </ThemeProvider>
-    </AppWithLoading>
-  );
+  const shouldShowAppShell = isAuthenticated && !isPublicRoute(pathname);
 
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box
+        component="main"
+        className="animated-content"
+        sx={{
+          minHeight: '100vh',
+        }}
+      >
+        <RouteGuard>
+          {shouldShowAppShell ? (
+            <AppShell toggleTheme={toggleTheme} isDarkMode={mode === 'dark'}>
+              {children}
+            </AppShell>
+          ) : (
+            children
+          )}
+        </RouteGuard>
+      </Box>
+    </ThemeProvider>
+  );
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body>
-        {content}
+        <AppWithLoading>
+          <AuthProvider>
+            <AppContent>{children}</AppContent>
+          </AuthProvider>
+        </AppWithLoading>
       </body>
     </html>
   );

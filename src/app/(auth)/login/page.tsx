@@ -1,8 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { loginEmailPassword, getCurrentUser, logout } from "@/lib/appwrite";
-import type { Users } from "@/types/appwrite.d";
+import { loginEmailPassword, getCurrentUser } from "@/lib/appwrite";
+import { useAuth } from "@/components/ui/AuthContext";
+import { useLoading } from "@/components/ui/LoadingContext";
 
 // Add framer-motion for animation
 import { motion } from "framer-motion";
