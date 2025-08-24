@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Container, Typography, Box, Avatar, CircularProgress, Chip } from '@mui/material';
 import { getNote, getUser } from '@/lib/appwrite';
 import type { Notes, Users } from '@/types/appwrite.d';
+import { Button } from '@/components/ui/Button';
 
 export default function BlogDetailPage() {
   const params = useParams();
@@ -29,57 +29,48 @@ export default function BlogDetailPage() {
 
   if (loading || !note) {
     return (
-      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
-        <CircularProgress />
-      </Container>
+      <div className="container mx-auto px-5 py-12 text-center">
+        <p>Loading...</p>
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 8 }}>
-      <Box sx={{ mb: 4 }}>
-        {note.coverImage && (
-          <Box sx={{ mb: 2 }}>
-            <img
-              src={note.coverImage}
-              alt={note.title || 'Blog Cover'}
-              style={{
-                width: '100%',
-                maxHeight: 320,
-                objectFit: 'cover',
-                borderRadius: 12,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.08)'
-              }}
-            />
-          </Box>
-        )}
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 700, mb: 2 }}>
-          {note.title}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', mr: 1 }}>
-            {author?.name ? author.name[0] : author?.email ? author.email[0] : '?'}
-          </Avatar>
-          <Typography variant="subtitle1" sx={{ mr: 2 }}>
-            {author?.name || author?.email || 'Unknown'}
-          </Typography>
-          <Chip label={note.status || 'Published'} color="primary" size="small" sx={{ mr: 2 }} />
-          <Typography variant="caption" color="text.secondary">
-            {note.createdAt ? new Date(note.createdAt).toLocaleDateString() : ''}
-          </Typography>
-        </Box>
-        {note.excerpt && (
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-            {note.excerpt}
-          </Typography>
-        )}
-      </Box>
-      <Box sx={{ bgcolor: 'background.paper', p: 4, borderRadius: 2, boxShadow: 1 }}>
-        {/* Render note content as markdown or HTML */}
-        <Typography variant="body1" sx={{ whiteSpace: 'pre-line', fontSize: '1.15rem' }}>
-          {note.content}
-        </Typography>
-      </Box>
-    </Container>
+    <div className="bg-ash-white">
+      <main className="flex flex-1 justify-center py-12 px-8">
+        <div className="w-full max-w-4xl">
+          <article className="content-card p-6 sm:p-10">
+            <div className="mb-8">
+              <div
+                className="w-full aspect-[16/9] bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden solid-3d-card"
+                style={{ backgroundImage: `url(${note.coverImage || 'https://via.placeholder.com/1200x675'})` }}
+              >
+                <div className="w-full h-full bg-gradient-to-t from-black/50 to-transparent p-6 flex flex-col justify-end">
+                  <h1
+                    className="text-brownish-white text-4xl lg:text-5xl font-extrabold !font-['Newsreader'] tracking-tighter leading-tight"
+                    style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}
+                  >
+                    {note.title}
+                  </h1>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between mb-6 text-sm text-text-muted">
+              <p>By {author?.name || 'Unknown'}</p>
+              <p>Published on {note.createdAt ? new Date(note.createdAt).toLocaleDateString() : ''}</p>
+            </div>
+            <div className="flex gap-3 mb-8 flex-wrap">
+              {note.tags?.map((tag, index) => (
+                <Button key={index} variant="secondary">
+                  {tag}
+                </Button>
+              ))}
+            </div>
+            <div className="prose prose-lg max-w-none text-text-main leading-relaxed space-y-6" dangerouslySetInnerHTML={{ __html: note.content || '' }}>
+            </div>
+          </article>
+        </div>
+      </main>
+    </div>
   );
 }
