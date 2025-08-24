@@ -1,39 +1,18 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
-import { Container, Typography, Grid, Card, CardContent, CardMedia, Box, CircularProgress, Avatar, Chip } from '@mui/material';
-import { motion } from 'framer-motion';
-import { listPublicNotes, getUser } from '@/lib/appwrite';
-import type { Notes, Users } from '@/types/appwrite.d';
+import { listPublicNotes } from '@/lib/appwrite';
+import type { Notes } from '@/types/appwrite.d';
 import Link from 'next/link';
-
-const MotionCard = motion(Card);
-
-// Hardcoded featured note IDs (replace with actual IDs)
-const FEATURED_NOTE_IDS: never[] = [
-  // Example: '664e1a2b003e2bb950f7', '664e1a2b003e2bb950f8'
-];
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 export default function BlogPage() {
-  const [featuredNotes, setFeaturedNotes] = useState<Notes[]>([]);
   const [publicNotes, setPublicNotes] = useState<Notes[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchBlogs = async () => {
-      // Fetch featured notes
-      const featured: Notes[] = [];
-      for (const id of FEATURED_NOTE_IDS) {
-        try {
-          const note = await listPublicNotes([id]);
-          if (note && note.documents && note.documents.length > 0) {
-            featured.push(note.documents[0]);
-          }
-        } catch {}
-      }
-      setFeaturedNotes(featured);
-
-      // Fetch all public notes (blogs)
       const res = await listPublicNotes();
       setPublicNotes(res.documents || []);
       setLoading(false);
@@ -43,126 +22,67 @@ export default function BlogPage() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-        <CircularProgress />
-      </Container>
+      <div className="container mx-auto px-5 py-12 text-center">
+        <p>Loading...</p>
+      </div>
     );
   }
 
+  const tags = ['All Posts', 'Productivity', 'Writing', 'Note-taking', 'Collaboration', 'Tips'];
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Blog
-      </Typography>
-      {/* Featured Blogs */}
-      {featuredNotes.length > 0 && (
-        <>
-          <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
-            Featured Blogs
-          </Typography>
-          <Grid container spacing={4}>
-            {featuredNotes.map((note) => (
-              <Grid item xs={12} md={4} key={note.$id}>
-                <Link href={`/blog/${note.$id}`} passHref>
-                  <MotionCard
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    sx={{ cursor: 'pointer', height: '100%' }}
-                  >
-                    {/* Optionally display cover image if available */}
-                    {note.coverImage && (
-                      <CardMedia
-                        component="img"
-                        height="140"
-                        image={note.coverImage}
-                        alt={note.title || 'Blog Cover'}
-                      />
-                    )}
-                    <CardContent>
-                      <Chip label="Featured" color="primary" sx={{ mb: 1 }} />
-                      <Typography variant="h5" component="div">
-                        {note.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        {note.excerpt || (note.content ? note.content.substring(0, 100) + '...' : '')}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                        <AuthorInfo userId={note.userId || ''} />
-                        <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                          {note.createdAt ? new Date(note.createdAt).toLocaleDateString() : ''}
-                        </Typography>
-                      </Box>
-                    </CardContent>
-                  </MotionCard>
-                </Link>
-              </Grid>
+    <div className="bg-ash-light text-brownish-white">
+      <main className="flex-1 px-8 py-12 lg:px-24 xl:px-40">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-12 text-center">
+            <h1 className="text-6xl font-extrabold tracking-tighter text-heading-color">
+              From Our Blog
+            </h1>
+            <p className="mt-4 text-xl text-tag-text-color">
+              Insights and stories from the NoteSphere community.
+            </p>
+          </div>
+          <div className="mb-12 flex flex-wrap justify-center gap-3">
+            {tags.map((tag, index) => (
+              <Button key={index} variant={index === 0 ? 'default' : 'secondary'}>
+                {tag}
+              </Button>
             ))}
-          </Grid>
-        </>
-      )}
-      {/* All Public Blogs */}
-      <Typography variant="h5" sx={{ mt: 6, mb: 2 }}>
-        All Blogs
-      </Typography>
-      <Grid container spacing={4}>
-        {publicNotes.map((note) => (
-          <Grid item xs={12} md={4} key={note.$id}>
-            <Link href={`/blog/${note.$id}`} passHref>
-              <MotionCard
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                sx={{ cursor: 'pointer', height: '100%' }}
-              >
-                {note.coverImage && (
-                  <CardMedia
-                    component="img"
-                    height="140"
-                    image={note.coverImage}
-                    alt={note.title || 'Blog Cover'}
-                  />
-                )}
-                <CardContent>
-                  <Typography variant="h5" component="div">
-                    {note.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {note.excerpt || (note.content ? note.content.substring(0, 100) + '...' : '')}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <AuthorInfo userId={note.userId || ''} />
-                    <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                      {note.createdAt ? new Date(note.createdAt).toLocaleDateString() : ''}
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </MotionCard>
-            </Link>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
-  );
-}
-
-// Helper to display author info
-function AuthorInfo({ userId }: { userId: string }) {
-  const [author, setAuthor] = useState<Users | null>(null);
-
-  useEffect(() => {
-    if (userId) {
-      getUser(userId).then(setAuthor).catch(() => setAuthor(null));
-    }
-  }, [userId]);
-
-  if (!author) return null;
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <Avatar sx={{ width: 24, height: 24, bgcolor: 'primary.main', mr: 1 }}>
-        {author.name ? author.name[0] : author.email ? author.email[0] : '?'}
-      </Avatar>
-      <Typography variant="caption">{author.name || author.email || 'Unknown'}</Typography>
-    </Box>
+          </div>
+          <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
+            {publicNotes.map((note) => (
+              <Link key={note.$id} href={`/blog/${note.$id}`} passHref>
+                <Card className="group flex flex-col cursor-pointer">
+                  <div className="overflow-hidden">
+                    <div
+                      className="w-full aspect-video bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                      style={{ backgroundImage: `url(${note.coverImage || 'https://via.placeholder.com/400x250'})` }}
+                    ></div>
+                  </div>
+                  <div className="p-6 flex flex-col flex-grow">
+                    <h3 className="text-2xl font-bold text-heading-color mb-2">
+                      {note.title}
+                    </h3>
+                    <p className="text-tag-text-color text-base leading-relaxed mb-4 flex-grow">
+                      {note.excerpt || (note.content ? note.content.substring(0, 100) + '...' : '')}
+                    </p>
+                    <div className="flex gap-2 mt-auto">
+                      {note.tags?.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="text-xs font-semibold bg-tag-bg-color text-tag-text-color px-3 py-1 rounded-full"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

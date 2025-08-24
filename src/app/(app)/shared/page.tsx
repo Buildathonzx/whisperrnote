@@ -1,183 +1,116 @@
 "use client";
 
-import { Container, Typography, Paper, Tabs, Tab, Box, List, ListItem, ListItemText, ListItemSecondary, IconButton, Avatar, Chip, Stack, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
-import { Share, People, Lock, PersonAdd, ContentCopy } from '@mui/icons-material';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
+import { Button } from '@/components/ui/Button';
+import {
+  HomeIcon,
+  BellIcon,
+  PlusCircleIcon,
+  UserIcon,
+  MagnifyingGlassIcon
+} from '@heroicons/react/24/outline';
 
-const MotionPaper = motion(Paper);
-const MotionListItem = motion(ListItem);
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div role="tabpanel" hidden={value !== index} {...other}>
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+const sharedNotes = [
+  {
+    title: 'Project Brainstorm',
+    collaborators: 'Alex, Jordan, Taylor',
+    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAG9QiSan10ioOZ1knuOPbrQAbYlLbVP30UW_v4BDLPh_k95QXZujrTc5nBGp0qqVSM-BJxOWmsx8hgHByYNhaNb2G6NYja4uDrvGmytQcOyo8WTM9VwPT-Wsm4YHftydf4nO_EoNuZBAlAFrKoQLTOpuyzRJS6P1WQW1XuTRxXPJMVQKbwHSq2HfG4tTJeZ0a737dAgKIUldO2CFJKhK0roBj_cJni5hK1eDx68-19OBmTgdoetmCntNimV4EnVfTjpBB3-AIpFW1l',
+  },
+  {
+    title: 'Meeting Notes',
+    collaborators: 'Alex, Taylor',
+    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCo2X3cqY1HF-oRLJAfBD81itASvlgpQRn4mIeTyXfCK399F8JHzpsY7-rtxWquoYTRXbhm3_f8_upaP5pkN6PH6lXjXrkl67y_PAd-GcwihpuWNvc-eeuE2Dq_U98NlCKJe_isS6zqilK4NTwxwoIZuOdg5SdMozIbH9ntJezLXQbgSNOAJ6eigZpXCi4w2-b0KRYiMWMpkBYDcvgmHdAPmX6sShUnNB6gvXSQOPawayENs-zZ3mILIPrpYQJ_nwiLZXS8oI4k0LBo',
+  },
+  {
+    title: 'Research Findings',
+    collaborators: 'Alex, Jordan',
+    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDGj4e6BZ_fdpzZ65o67n1E15T1JjT3bZsIgmKvi34WgkopnamHldx_mVag9PO1YyMVbhox6B9YrEivcW_6AAp5sNlyzsOJzjEGJcKG__M7z4E1-HyxoSyZAnolO8ZeVogW_DgtRAQEvrALcdC9y6IY2OdhwPeA9jcJGV9o1CBhVIth04qdh1ESQSfeY7DButR9acm9bPSyOk-7IzUoYAzQkbBv4yXY2YU4OCacULfQlnhV3ZsGiYQOak7gVltoVYMvqOkW_DDnYDc_',
+  },
+  {
+    title: 'Client Feedback',
+    collaborators: 'Alex, Jordan, Taylor',
+    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAUSBNnzmhb51V6jspXxHv_COCHGQNidX3Gm5NuKCDRprHmHPusG8vztS9U6bdyJG0f-ttdYE8ITxtFmMsK0dzkzgLyHzbLq_cPL-O2EQ-KZoEMttrxwcLvKOFNTXAtJ76V_6aIhWklZktdxLkBWs35iuATeTlQglRFASDkZhIKWMnswp_pj7Bsy8ctt8uLUNkBfQDyf_0DbhHtfmR994XKu6TeHBeXl0saZuBdVyNvWHt8A6VpnKtERpWBsEaQrMscRx39eX2KeNAb',
+  },
+];
 
 export default function SharedNotesPage() {
-  const [activeTab, setActiveTab] = useState(0);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
-
-  const handleShare = () => {
-    // TODO: Implement share functionality
-    setShareDialogOpen(false);
-    setInviteEmail('');
-  };
-
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
-        Shared Notes
-      </Typography>
-
-      <MotionPaper 
-        elevation={2}
-        sx={{ backgroundColor: 'background.paper' }}
-      >
-        <Tabs
-          value={activeTab}
-          onChange={(_, newValue) => setActiveTab(newValue)}
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
-        >
-          <Tab label="Shared with me" />
-          <Tab label="Shared by me" />
-        </Tabs>
-
-        <TabPanel value={activeTab} index={0}>
-          <List>
-            {[
-              { title: 'Team Project Notes', sharedBy: 'Alice Smith', date: '2 days ago' },
-              { title: 'Meeting Minutes', sharedBy: 'Bob Johnson', date: 'Yesterday' },
-            ].map((note, index) => (
-              <MotionListItem
-                key={note.title}
-                sx={{ 
-                  mb: 2, 
-                  borderRadius: 1,
-                  '&:hover': { bgcolor: 'action.hover' }
-                }}
-              >
-                <Stack spacing={2} sx={{ width: '100%' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar>{note.sharedBy[0]}</Avatar>
-                      <Box>
-                        <Typography variant="subtitle1">{note.title}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Shared by {note.sharedBy} • {note.date}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Button startIcon={<ContentCopy />}>
-                      Copy
-                    </Button>
-                  </Box>
-                </Stack>
-              </MotionListItem>
-            ))}
-          </List>
-        </TabPanel>
-
-        <TabPanel value={activeTab} index={1}>
-          <List>
-            {[
-              { 
-                title: 'Project Guidelines', 
-                sharedWith: ['Team A', 'Team B'], 
-                date: '1 week ago',
-                isPublic: true
-              },
-              { 
-                title: 'Research Notes', 
-                sharedWith: ['Research Group'], 
-                date: '3 days ago',
-                isPublic: false
-              },
-            ].map((note, index) => (
-              <MotionListItem
-                key={note.title}
-                sx={{ 
-                  mb: 2, 
-                  borderRadius: 1,
-                  '&:hover': { bgcolor: 'action.hover' }
-                }}
-              >
-                <Stack spacing={2} sx={{ width: '100%' }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <Box>
-                      <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {note.title}
-                        {note.isPublic ? (
-                          <Chip size="small" icon={<People />} label="Public" color="primary" />
-                        ) : (
-                          <Chip size="small" icon={<Lock />} label="Private" variant="outlined" />
-                        )}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Shared {note.date}
-                      </Typography>
-                      <Box sx={{ mt: 1 }}>
-                        <Stack direction="row" spacing={1}>
-                          {note.sharedWith.map((team) => (
-                            <Chip key={team} label={team} size="small" />
-                          ))}
-                          <Chip 
-                            icon={<PersonAdd />} 
-                            label="Invite" 
-                            size="small" 
-                            onClick={() => setShareDialogOpen(true)}
-                            sx={{ cursor: 'pointer' }}
-                          />
-                        </Stack>
-                      </Box>
-                    </Box>
-                    <IconButton>
-                      <Share />
-                    </IconButton>
-                  </Box>
-                </Stack>
-              </MotionListItem>
-            ))}
-          </List>
-        </TabPanel>
-      </MotionPaper>
-
-      <Dialog 
-        open={shareDialogOpen} 
-        onClose={() => setShareDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Share Note</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Email Address"
-            type="email"
-            fullWidth
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-            placeholder="Enter email address to share with"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShareDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleShare} variant="contained">
-            Share
+    <div className="relative flex min-h-screen flex-col bg-light-bg text-dark-fg">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-dark-border bg-light-bg/80 px-4 py-4 backdrop-blur-sm sm:px-6">
+        <div className="flex items-center gap-2">
+          <h1 className="font-serif text-xl font-bold text-dark-fg">
+            NoteShare
+          </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button size="icon" variant="secondary">
+            <MagnifyingGlassIcon className="h-6 w-6" />
           </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+          <Button size="icon">
+            <PlusCircleIcon className="h-6 w-6" />
+          </Button>
+        </div>
+      </header>
+      <main className="flex-grow px-4 py-8 sm:px-6">
+        <h2 className="font-serif text-4xl font-extrabold text-dark-fg mb-8">
+          Shared Notes
+        </h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+          {sharedNotes.map((note, index) => (
+            <div key={index} className="group flex flex-col">
+              <div className="relative w-full aspect-[4/3] overflow-hidden rounded-xl border-2 border-dark-border bg-gray-200 card-shadow card-shadow-hover transition-all duration-300">
+                <img
+                  alt={note.title}
+                  className="h-full w-full object-cover"
+                  src={note.imageUrl}
+                />
+              </div>
+              <div className="pt-4">
+                <h3 className="font-serif text-lg font-bold leading-tight text-dark-fg">
+                  {note.title}
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  {note.collaborators}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+      <footer className="sticky bottom-0 z-10 border-t border-dark-border bg-light-bg/80 backdrop-blur-sm">
+        <nav className="flex h-20 items-center justify-around px-2">
+          <a
+            href="#"
+            className="flex w-1/4 flex-col items-center justify-center text-gray-500"
+          >
+            <HomeIcon className="h-6 w-6" />
+            <span className="text-xs font-medium">Home</span>
+          </a>
+          <a
+            href="#"
+            className="flex w-1/4 flex-col items-center justify-center text-gray-500"
+          >
+            <PlusCircleIcon className="h-6 w-6" />
+            <span className="text-xs font-medium">Notes</span>
+          </a>
+          <a
+            href="#"
+            className="relative flex w-1/4 flex-col items-center justify-center text-accent"
+          >
+            <div className="absolute -top-3 rounded-full bg-accent px-3 py-1 text-xs font-bold text-white shadow-lg">
+              Shared
+            </div>
+            <UserIcon className="h-6 w-6" />
+          </a>
+          <a
+            href="#"
+            className="flex w-1/4 flex-col items-center justify-center text-gray-500"
+          >
+            <BellIcon className="h-6 w-6" />
+            <span className="text-xs font-medium">Updates</span>
+          </a>
+        </nav>
+      </footer>
+    </div>
   );
 }

@@ -1,240 +1,147 @@
 "use client";
 
-import { Container, Typography, Paper, Avatar, Box, Button, Grid, Stack, Chip, Divider, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
-import { Edit, AccessTime, NoteAdd, Folder } from '@mui/icons-material';
-import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { account, updateUser, uploadProfilePicture, getProfilePicture, listNotes, listTags, listCollaborators, listActivityLogs } from '@/lib/appwrite';
-const MotionPaper = motion(Paper);
+import { account, updateUser, uploadProfilePicture, getProfilePicture, listNotes } from '@/lib/appwrite';
+import { Button } from '@/components/ui/Button';
+import { useOverlay } from '@/components/ui/OverlayContext';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editUser, setEditUser] = useState<any>({});
-  const [profilePic, setProfilePic] = useState<File | null>(null);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
-  const [stats, setStats] = useState<any>({
-    totalNotes: 0,
-    totalTags: 0,
-    sharedNotes: 0,
-  });
-  const [activityLog, setActivityLog] = useState<any[]>([]);
-  const [tags, setTags] = useState<any[]>([]);
+  const [notes, setNotes] = useState<any[]>([]);
+  const { openOverlay, closeOverlay } = useOverlay();
 
   useEffect(() => {
-    const fetchUserAndStats = async () => {
+    const fetchUserData = async () => {
       try {
-        const user = await account.get();
-        setUser(user);
-        setEditUser(user);
-        if (user.prefs?.profilePicId) {
-          const url = await getProfilePicture(user.prefs.profilePicId);
+        const currentUser = await account.get();
+        setUser(currentUser);
+        if (currentUser.prefs?.profilePicId) {
+          const url = await getProfilePicture(currentUser.prefs.profilePicId);
           setProfilePicUrl(url.href);
         }
-
-        const notesRes = await listNotes();
-        const tagsRes = await listTags();
-        const activityLogRes = await listActivityLogs();
-
-        const sharedNotes = notesRes.documents.filter(note => note.collaborators && note.collaborators.length > 0);
-
-        setStats({
-          totalNotes: notesRes.total,
-          totalTags: tagsRes.total,
-          sharedNotes: sharedNotes.length,
-        });
-
-        setActivityLog(activityLogRes.documents);
-        setTags(tagsRes.documents.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0)));
-
+        const notesResponse = await listNotes();
+        setNotes(notesResponse.documents);
       } catch (error) {
-        setError('Failed to load user info');
+        console.error('Failed to fetch user data:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchUserAndStats();
+    fetchUserData();
   }, []);
 
-  const handleOpenEditDialog = () => {
-    setEditUser(user);
-    setEditDialogOpen(true);
+  const handleEditProfile = () => {
+    openOverlay(
+      <EditProfileForm
+        user={user}
+        onClose={closeOverlay}
+        onProfileUpdate={async (updatedUser, newProfilePic) => {
+          setUser(updatedUser);
+          if (newProfilePic) {
+            const url = await getProfilePicture(updatedUser.prefs.profilePicId);
+            setProfilePicUrl(url.href);
+          }
+        }}
+      />
+    );
   };
 
-  const handleCloseEditDialog = () => {
-    setEditDialogOpen(false);
-  };
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="bg-background text-text-primary">
+      <main className="px-10 md:px-20 lg:px-40 flex-1 py-12 bg-gradient-to-b from-background to-[#F4F1EC]">
+        <div className="layout-content-container flex flex-col max-w-5xl mx-auto">
+          <div className="flex flex-col md:flex-row p-4 items-center md:items-start gap-8">
+            <div className="flex flex-col items-center gap-4 flex-shrink-0">
+              <div
+                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-40 border-4 border-white shadow-lg"
+                style={{ backgroundImage: `url(${profilePicUrl || 'https://via.placeholder.com/150'})` }}
+              ></div>
+              <div className="flex flex-col items-center justify-center text-center">
+                <p className="text-primary text-3xl font-bold">{user?.name}</p>
+                <p className="text-text-secondary text-lg">{user?.email}</p>
+                <p className="text-text-secondary text-base">Joined {new Date(user?.$createdAt).getFullYear()}</p>
+              </div>
+              <Button onClick={handleEditProfile}>Edit Profile</Button>
+            </div>
+            <div className="w-full mt-8 md:mt-0">
+              <div className="border-b border-border">
+                <div className="flex px-4 gap-8">
+                  <a href="#" className="flex flex-col items-center justify-center border-b-2 border-primary text-primary pb-3 pt-4">
+                    <p className="text-base font-bold">Notes</p>
+                  </a>
+                  <a href="#" className="flex flex-col items-center justify-center border-b-2 border-transparent text-text-secondary pb-3 pt-4 hover:text-primary hover:border-primary transition-colors">
+                    <p className="text-base font-bold">Posts</p>
+                  </a>
+                </div>
+              </div>
+              <div className="divide-y divide-border">
+                {notes.map(note => (
+                  <div key={note.$id} className="p-6 bg-white/30 rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300 my-4 border border-border">
+                    <div className="flex items-start justify-between gap-6">
+                      <div className="flex flex-col gap-3">
+                        <p className="text-text-secondary text-sm">Published</p>
+                        <p className="text-primary text-xl font-bold">{note.title}</p>
+                        <p className="text-text-secondary text-base">{note.content.substring(0, 100)}...</p>
+                        <Button variant="secondary">Read Note</Button>
+                      </div>
+                      <div className="w-full bg-center bg-no-repeat aspect-[4/3] bg-cover rounded-lg flex-1 shadow-lg border border-gray-200" style={{backgroundImage: `url(${note.coverImage || 'https://via.placeholder.com/300x200'})`}}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
+  const [name, setName] = useState(user?.name || '');
+  const [profilePic, setProfilePic] = useState<File | null>(null);
 
   const handleSaveChanges = async () => {
     try {
+      let prefs = user.prefs;
       if (profilePic) {
         const uploadedFile = await uploadProfilePicture(profilePic);
-        await updateUser(user.$id, { ...editUser, prefs: { ...user.prefs, profilePicId: uploadedFile.$id } });
-      } else {
-        await updateUser(user.$id, editUser);
+        prefs = { ...prefs, profilePicId: uploadedFile.$id };
       }
-      const updatedUser = await account.get();
-      setUser(updatedUser);
-      handleCloseEditDialog();
+      const updatedUser = await updateUser(user.$id, { name, prefs });
+      onProfileUpdate(updatedUser, !!profilePic);
+      onClose();
     } catch (error) {
       console.error('Failed to save changes:', error);
     }
   };
 
-  const getInitials = (name: string, email: string) => {
-    if (name) {
-      return name.split(' ').map((n) => n[0]).join('').toUpperCase();
-    }
-    if (email) {
-      return email[0].toUpperCase();
-    }
-    return '?';
-  };
-
-
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Grid container spacing={4}>
-        {/* Profile Overview */}
-        <Grid item xs={12} md={4}>
-          <MotionPaper
-            elevation={2}
-            sx={{ p: 3, textAlign: 'center', backgroundColor: 'background.paper' }}
-          >
-            {loading ? (
-              <Typography>Loading...</Typography>
-            ) : error ? (
-              <Typography color="error">{error}</Typography>
-            ) : (
-              <>
-                <Avatar
-                  src={profilePicUrl || undefined}
-                  sx={{
-                    width: 120,
-                    height: 120,
-                    margin: '0 auto 1rem',
-                    bgcolor: 'primary.main',
-                    fontSize: '3rem'
-                  }}
-                >
-                  {getInitials(user?.name, user?.email)}
-                </Avatar>
-                <Typography variant="h5" gutterBottom>{user?.name || 'No Name'}</Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  {user?.email || 'No Email'}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  startIcon={<Edit />}
-                  sx={{ mt: 2 }}
-                  onClick={handleOpenEditDialog}
-                >
-                  Edit Profile
-                </Button>
-              </>
-            )}
-          </MotionPaper>
-        </Grid>
-        <Dialog open={editDialogOpen} onClose={handleCloseEditDialog}>
-          <DialogTitle>Edit Profile</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Name"
-              type="text"
-              fullWidth
-              variant="standard"
-              value={editUser.name || ''}
-              onChange={(e) => setEditUser({ ...editUser, name: e.target.value })}
-            />
-            <TextField
-              margin="dense"
-              label="Wallet Address"
-              type="text"
-              fullWidth
-              variant="standard"
-              value={editUser.walletAddress || ''}
-              onChange={(e) => setEditUser({ ...editUser, walletAddress: e.target.value })}
-            />
-            <Button
-              variant="contained"
-              component="label"
-              sx={{ mt: 2 }}
-            >
-              Upload Profile Picture
-              <input
-                type="file"
-                hidden
-                onChange={(e) => setProfilePic(e.target.files ? e.target.files[0] : null)}
-              />
-            </Button>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseEditDialog}>Cancel</Button>
-            <Button onClick={handleSaveChanges}>Save</Button>
-          </DialogActions>
-        </Dialog>
-        {/* Stats and Activity */}
-        <Grid item xs={12} md={8}>
-          <Stack spacing={3}>
-            {/* Quick Stats */}
-            <MotionPaper
-              elevation={2}
-              sx={{ backgroundColor: 'background.paper' }}
-            >
-              <Grid container>
-                <Grid item xs={4} sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="h4" color="primary" gutterBottom>{stats.totalNotes}</Typography>
-                  <Typography variant="body2" color="text.secondary">Total Notes</Typography>
-                </Grid>
-                <Grid item xs={4} sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="h4" color="primary" gutterBottom>{stats.totalTags}</Typography>
-                  <Typography variant="body2" color="text.secondary">Total Tags</Typography>
-                </Grid>
-                <Grid item xs={4} sx={{ p: 3, textAlign: 'center' }}>
-                  <Typography variant="h4" color="primary" gutterBottom>{stats.sharedNotes}</Typography>
-                  <Typography variant="body2" color="text.secondary">Shared Notes</Typography>
-                </Grid>
-              </Grid>
-            </MotionPaper>
-
-            {/* Recent Activity */}
-            <MotionPaper
-              elevation={2}
-              sx={{ p: 3, backgroundColor: 'background.paper' }}
-            >
-              <Typography variant="h6" gutterBottom>Recent Activity</Typography>
-              <Stack spacing={2}>
-                {activityLog.slice(0, 5).map((activity) => (
-                  <Box key={activity.$id} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <NoteAdd color="primary" />
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="body2">{activity.action} {activity.targetType} "{activity.targetId}"</Typography>
-                      <Typography variant="caption" color="text.secondary">{new Date(activity.timestamp).toLocaleString()}</Typography>
-                    </Box>
-                  </Box>
-                ))}
-              </Stack>
-            </MotionPaper>
-
-            {/* Most Used Tags */}
-            <MotionPaper
-              elevation={2}
-              sx={{ p: 3, backgroundColor: 'background.paper' }}
-            >
-              <Typography variant="h6" gutterBottom>Most Used Tags</Typography>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                {tags.slice(0, 5).map(tag => (
-                  <Chip key={tag.$id} label={tag.name} variant="outlined" />
-                ))}
-              </Box>
-            </MotionPaper>
-          </Stack>
-        </Grid>
-      </Grid>
-    </Container>
+    <div className="p-8 bg-surface rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold text-primary mb-4">Edit Profile</h2>
+      <div className="space-y-4">
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full p-2 border border-border rounded"
+        />
+        <input
+          type="file"
+          onChange={(e) => setProfilePic(e.target.files ? e.target.files[0] : null)}
+          className="w-full p-2 border border-border rounded"
+        />
+      </div>
+      <div className="flex justify-end gap-4 mt-6">
+        <Button variant="secondary" onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSaveChanges}>Save</Button>
+      </div>
+    </div>
   );
-}
+};

@@ -2,68 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
-  Theming variables (:root) and body styles are now handled by Material UI's ThemeProvider and CssBaseline
-  in /src/app/layout.tsx and /src/theme.ts. This ensures a single source of truth for the application's theme.
-*/
+@layer base {
+  :root {
+    --background: theme('colors.light-bg');
+    --foreground: theme('colors.light-fg');
+    --card: theme('colors.light-card');
+    --border: theme('colors.light-border');
+    --accent: theme('colors.accent');
+  }
 
-/* Smooth scrolling */
+  .dark {
+    --background: theme('colors.dark-bg');
+    --foreground: theme('colors.dark-fg');
+    --card: theme('colors.dark-card');
+    --border: theme('colors.dark-border');
+    --accent: theme('colors.accent');
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
+
+  h1 {
+    @apply text-4xl;
+  }
+
+  h2 {
+    @apply text-3xl;
+  }
+
+  h3 {
+    @apply text-2xl;
+  }
+}
+
 html {
   scroll-behavior: smooth;
-}
-
-/* Basic animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes scaleUp {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-@keyframes slideInLeft {
-  from { transform: translateX(-30px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(30px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-}
-
-/* Animated content class */
-.animated-content {
-  animation: fadeIn 0.5s ease-out;
-}
-
-/* Animation triggers for scroll */
-.reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Enhance scroll animations */
-.scroll-reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.scroll-reveal.active {
-  opacity: 1;
-  transform: translateY(0);
 }
