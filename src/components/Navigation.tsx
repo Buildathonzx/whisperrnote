@@ -36,6 +36,7 @@ import {
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useNavigationWithLoading } from '@/lib/useNavigationWithLoading';
+import { useAuth } from './ui/AuthContext';
 
 // Mobile bottom navigation items following ui.md spec
 const mobileNavItems = [
@@ -282,15 +283,35 @@ export default function Navigation({ toggleTheme, isDarkMode }: NavigationProps)
         {/* User Section & Theme Toggle */}
         <Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Avatar sx={{ width: 40, height: 40 }}>U</Avatar>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                User Name
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                user@example.com
-              </Typography>
-            </Box>
+{(() => {
+  const { user, isAuthenticated, logout } = useAuth();
+  if (!isAuthenticated || !user) {
+    return (
+      <Box sx={{ flex: 1 }}>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          Guest
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          Not logged in
+        </Typography>
+      </Box>
+    );
+  }
+  return (
+    <>
+      <Avatar sx={{ width: 40, height: 40 }}>{user.name ? user.name[0] : user.email ? user.email[0] : 'U'}</Avatar>
+      <Box sx={{ flex: 1 }}>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          {user.name || user.email || 'User'}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          {user.email}
+        </Typography>
+      </Box>
+    </>
+  );
+})()}
+
           </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -305,24 +326,32 @@ export default function Navigation({ toggleTheme, isDarkMode }: NavigationProps)
             </Box>
           </Box>
 
-          <IconButton
-            sx={{
-              width: '100%',
-              justifyContent: 'flex-start',
-              gap: 2,
-              py: 1.5,
-              px: 2,
-              borderRadius: '12px',
-              color: 'text.secondary',
-              '&:hover': {
-                backgroundColor: 'action.hover',
-                color: 'error.main',
-              },
-            }}
-          >
-            <LogoutIcon />
-            <Typography variant="body2">Logout</Typography>
-          </IconButton>
+{(() => {
+  const { isAuthenticated, logout } = useAuth();
+  if (!isAuthenticated) return null;
+  return (
+    <IconButton
+      sx={{
+        width: '100%',
+        justifyContent: 'flex-start',
+        gap: 2,
+        py: 1.5,
+        px: 2,
+        borderRadius: '12px',
+        color: 'text.secondary',
+        '&:hover': {
+          backgroundColor: 'action.hover',
+          color: 'error.main',
+        },
+      }}
+      onClick={logout}
+    >
+      <LogoutIcon />
+      <Typography variant="body2">Logout</Typography>
+    </IconButton>
+  );
+})()}
+
         </Box>
       </Box>
     </Drawer>
