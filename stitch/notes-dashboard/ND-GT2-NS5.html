@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NoteHub - Notes Dashboard</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style type="text/tailwindcss">
+      :root {
+        --ash-white: #F3F4F6;--brownish-white: #EFEBE9;
+        --text-color: #5D4037;--text-muted: #8D6E63;
+        --surface-color: #D7CCC8;
+        --primary-color: #A1887F;
+        --accent-color: #795548;
+        --border-color: #BCAAA4;
+      }
+      body {
+        font-family: 'Manrope', 'Noto Sans', sans-serif;
+        background-color: var(--ash-white);
+        color: var(--text-color);
+      }
+      .gt2-text {
+        font-family: 'GT2', sans-serif;}
+      .ns5-text {
+        font-family: 'NS5', sans-serif;}
+      .neumorphic-shadow-sm {
+        box-shadow: 4px 4px 8px #d1d9e6, -4px -4px 8px #ffffff;
+      }
+      .neumorphic-shadow-inset {
+        box-shadow: inset 4px 4px 8px #d1d9e6, inset -4px -4px 8px #ffffff;
+      }
+      .neumorphic-shadow-hard {
+        box-shadow: 7px 7px 15px rgba(0,0,0,0.1), -7px -7px 15px rgba(255,255,255,0.7), inset 2px 2px 4px rgba(0,0,0,0.05), inset -2px -2px 4px rgba(255,255,255,0.7);
+      }
+      .neumorphic-shadow-interactive:hover {
+        box-shadow: 2px 2px 5px #d1d9e6, -2px -2px 5px #ffffff;
+      }
+      .neumorphic-shadow-interactive:active {
+        box-shadow: inset 2px 2px 5px #d1d9e6, inset -2px -2px 5px #ffffff;
+      }
+    </style>
+</head>
+<body class="bg-[var(--ash-white)] text-[var(--text-color)]">
+<div class="relative flex min-h-screen w-full flex-col">
+<div class="flex flex-1">
+<div class="flex-1 flex flex-col transition-all duration-300 ease-in-out">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[var(--border-color)] px-4 py-4 md:px-6">
+<div class="flex items-center gap-3">
+<div class="size-8 text-[var(--accent-color)]">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path></svg>
+</div>
+<h2 class="text-[var(--text-color)] text-xl font-extrabold leading-tight tracking-tighter">NoteHub</h2>
+</div>
+<div class="flex flex-1 justify-end gap-2">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 neumorphic-shadow-sm" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAaRu9LhBoeHgnL34jTrDe1jOKXuDqIgLWuQUkv2c_F4fn495nTf2gXeA42TNGBJkDc5tipHn8nVz4FsMnnCvJeuqD8vTCvv0o7hFGbIa9NAHMkmfvBotvJy0tRKwXAGMWgM-hDxo6gbNiyCAfGkL9ownhZ90EIszsEws9dWHTZUEIPop1XVZlVm6b7yrgYrhTKIzxL7wzZoRsPWcZ88ykkl3f5FY206V2L8vS-pvU6I3y3P-OasAT_k0-pZVv1MvP2-OVRY9X1_EFQ");'></div>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+<div class="flex items-center justify-between">
+<h1 class="text-3xl font-bold tracking-tight text-[var(--text-color)]">Notes</h1>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">search</span>
+<input class="form-input w-full rounded-full border-none bg-[var(--brownish-white)] py-3 pl-12 pr-4 text-[var(--text-color)] placeholder:text-[var(--text-muted)] focus:ring-2 focus:ring-[var(--primary-color)] focus:ring-offset-2 focus:ring-offset-[var(--ash-white)] neumorphic-shadow-inset" placeholder="Search notes" value=""/>
+</div>
+<div class="border-b border-[var(--border-color)]">
+<nav aria-label="Tabs" class="-mb-px flex space-x-6">
+<a class="shrink-0 border-b-2 border-[var(--accent-color)] px-1 py-3 text-sm font-semibold text-[var(--accent-color)]" href="#">All Notes</a>
+<a class="shrink-0 border-b-2 border-transparent px-1 py-3 text-sm font-medium text-[var(--text-muted)] hover:border-gray-300 hover:text-gray-700" href="#">Shared</a>
+</nav>
+</div>
+<div class="space-y-4">
+<div class="flex items-start gap-4 rounded-2xl bg-[var(--brownish-white)] p-4 neumorphic-shadow-hard transition-all duration-200 hover:scale-[1.02]">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-color)] text-[var(--accent-color)] neumorphic-shadow-sm">
+<span class="material-symbols-outlined text-3xl">description</span>
+</div>
+<div class="flex-1">
+<p class="text-base font-bold text-[var(--text-color)]">Project Kickoff Meeting Notes</p>
+<p class="text-sm text-[var(--text-muted)]">Updated 2d ago</p>
+</div>
+</div>
+<div class="flex items-start gap-4 rounded-2xl bg-[var(--brownish-white)] p-4 neumorphic-shadow-hard transition-all duration-200 hover:scale-[1.02]">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-color)] text-[var(--accent-color)] neumorphic-shadow-sm">
+<span class="material-symbols-outlined text-3xl">description</span>
+</div>
+<div class="flex-1">
+<p class="text-base font-bold text-[var(--text-color)]">Brainstorming Session</p>
+<p class="text-sm text-[var(--text-muted)]">Updated 3d ago</p>
+</div>
+</div>
+<div class="flex items-start gap-4 rounded-2xl bg-[var(--brownish-white)] p-4 neumorphic-shadow-hard transition-all duration-200 hover:scale-[1.02]">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-color)] text-[var(--accent-color)] neumorphic-shadow-sm">
+<span class="material-symbols-outlined text-3xl">description</span>
+</div>
+<div class="flex-1">
+<p class="text-base font-bold text-[var(--text-color)]">Client Feedback Review</p>
+<p class="text-sm text-[var(--text-muted)]">Updated 1w ago</p>
+</div>
+</div>
+<div class="flex items-start gap-4 rounded-2xl bg-[var(--brownish-white)] p-4 neumorphic-shadow-hard transition-all duration-200 hover:scale-[1.02]">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-color)] text-[var(--accent-color)] neumorphic-shadow-sm">
+<span class="material-symbols-outlined text-3xl">description</span>
+</div>
+<div class="flex-1">
+<p class="text-base font-bold text-[var(--text-color)]">Team Building Activities</p>
+<p class="text-sm text-[var(--text-muted)]">Updated 2w ago</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+<aside class="w-80 flex-shrink-0 border-l border-[var(--border-color)] bg-[var(--ash-white)] p-6 flex flex-col">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-bold text-[var(--text-color)]">Filters</h2>
+<button class="p-2 rounded-full hover:bg-[var(--surface-color)] neumorphic-shadow-interactive">
+<span class="material-symbols-outlined text-[var(--text-muted)]">close</span>
+</button>
+</div>
+<div class="space-y-8">
+<div>
+<h3 class="text-lg font-semibold text-[var(--text-color)] mb-4">Sort by</h3>
+<div class="space-y-3">
+<label class="flex items-center gap-3 cursor-pointer">
+<input checked="" class="form-radio h-5 w-5 text-[var(--accent-color)] bg-[var(--brownish-white)] border-[var(--border-color)] focus:ring-[var(--accent-color)] focus:ring-offset-[var(--ash-white)]" name="sort" type="radio"/>
+<span class="text-sm font-medium text-[var(--text-color)]">Last edited</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input class="form-radio h-5 w-5 text-[var(--accent-color)] bg-[var(--brownish-white)] border-[var(--border-color)] focus:ring-[var(--accent-color)] focus:ring-offset-[var(--ash-white)]" name="sort" type="radio"/>
+<span class="text-sm font-medium text-[var(--text-color)]">Alphabetical</span>
+</label>
+</div>
+</div>
+<div>
+<h3 class="text-lg font-semibold text-[var(--text-color)] mb-4">Date</h3>
+<div class="space-y-3">
+<label class="flex items-center gap-3 cursor-pointer">
+<input checked="" class="form-radio h-5 w-5 text-[var(--accent-color)] bg-[var(--brownish-white)] border-[var(--border-color)] focus:ring-[var(--accent-color)] focus:ring-offset-[var(--ash-white)]" name="date" type="radio"/>
+<span class="text-sm font-medium text-[var(--text-color)]">Any time</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input class="form-radio h-5 w-5 text-[var(--accent-color)] bg-[var(--brownish-white)] border-[var(--border-color)] focus:ring-[var(--accent-color)] focus:ring-offset-[var(--ash-white)]" name="date" type="radio"/>
+<span class="text-sm font-medium text-[var(--text-color)]">Past 24 hours</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input class="form-radio h-5 w-5 text-[var(--accent-color)] bg-[var(--brownish-white)] border-[var(--border-color)] focus:ring-[var(--accent-color)] focus:ring-offset-[var(--ash-white)]" name="date" type="radio"/>
+<span class="text-sm font-medium text-[var(--text-color)]">Past week</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input class="form-radio h-5 w-5 text-[var(--accent-color)] bg-[var(--brownish-white)] border-[var(--border-color)] focus:ring-[var(--accent-color)] focus:ring-offset-[var(--ash-white)]" name="date" type="radio"/>
+<span class="text-sm font-medium text-[var(--text-color)]">Past month</span>
+</label>
+</div>
+</div>
+<div>
+<h3 class="text-lg font-semibold text-[var(--text-color)] mb-4">Tags</h3>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 text-sm font-medium rounded-full bg-[var(--surface-color)] text-[var(--accent-color)] neumorphic-shadow-sm neumorphic-shadow-interactive">Project</button>
+<button class="px-4 py-2 text-sm font-medium rounded-full bg-[var(--surface-color)] text-[var(--accent-color)] neumorphic-shadow-sm neumorphic-shadow-interactive">Meeting</button>
+<button class="px-4 py-2 text-sm font-medium rounded-full bg-[var(--surface-color)] text-[var(--accent-color)] neumorphic-shadow-sm neumorphic-shadow-interactive">Ideas</button>
+<button class="px-4 py-2 text-sm font-medium rounded-full bg-[var(--surface-color)] text-[var(--accent-color)] neumorphic-shadow-sm neumorphic-shadow-interactive">Research</button>
+</div>
+</div>
+</div>
+<div class="mt-auto flex gap-4">
+<button class="flex-1 py-3 px-4 rounded-xl bg-transparent text-[var(--text-color)] border border-[var(--border-color)] font-semibold neumorphic-shadow-interactive">Clear</button>
+<button class="flex-1 py-3 px-4 rounded-xl bg-[var(--accent-color)] text-white font-semibold neumorphic-shadow-sm neumorphic-shadow-interactive">Apply</button>
+</div>
+</aside>
+</div>
+<footer class="fixed bottom-0 left-0 right-0 border-t border-[var(--border-color)] bg-[var(--brownish-white)] px-4 py-2 neumorphic-shadow-hard">
+<nav class="flex justify-around">
+<a class="flex flex-col items-center gap-1 p-2 rounded-lg text-[var(--accent-color)]" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--accent-color)]" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="text-xs font-medium">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center p-4 -mt-8 rounded-full bg-[var(--accent-color)] text-white neumorphic-shadow-hard" href="#">
+<span class="material-symbols-outlined">add</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--accent-color)]" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="text-xs font-medium">Alerts</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--accent-color)]" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</nav>
+</footer>
+</div>
+
+</body></html>

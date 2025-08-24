@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style type="text/tailwindcss">
+    :root {
+      --background: #F0F2F5;--text-color: #F8F4F0;--container-bg: #27272A;--border-color: #3F3F46;
+      --skeleton-bg: #3F3F46;
+      --nav-bg: #18181B;
+      --primary-accent: #A16207;
+      --shadow-color-start: rgba(0,0,0, 0.4);
+      --shadow-color-end: rgba(0,0,0, 0.0);
+    }
+    body {
+      background-color: var(--background);
+      font-family: 'Manrope', sans-serif;
+    }
+    .card-shadow {
+        box-shadow: 0 8px 16px -4px var(--shadow-color-start), 0 0 0 1px var(--border-color), inset 0 2px 4px var(--shadow-color-end);
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)]">
+<div class="max-w-sm mx-auto min-h-screen flex flex-col bg-[var(--container-bg)] text-[var(--text-color)] overflow-hidden">
+<header class="flex items-center justify-between p-4 border-b border-[var(--border-color)] shadow-md">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-3xl text-[var(--primary-accent)]">
+            bubble_chart
+        </span>
+<h1 class="text-xl font-bold">Notes</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full bg-black/20 hover:bg-black/40 transition-colors">
+<span class="material-symbols-outlined">search</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDXYN2m-IvrsO7u9HbWI4m5K_kuS0DVRIXVulGtgcCJynnczzhs9TbtLuKU1-0UjttjCpGvHhvE2nYWYgwCxoP0dVXz0c8Cr1XC11MxYOlnQibd0IAzflaLehXO9XUrwjEI_hgXUDSJmbcktE8nOG3H1qKscklWJdfh_1VIRMMblOlaLTvohI9rh0BfyBHnAvroVQGn0SBHPWV8gBIptgYn7fMB92Lswc-ZlKH31XdEw0MIktMuRX0s1us8iYiwT22iglOjdDR-2iu6");'></div>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto p-4 space-y-6 animate-pulse">
+<div class="space-y-4">
+<div class="bg-[var(--skeleton-bg)]/50 p-4 rounded-2xl card-shadow">
+<div class="h-6 bg-[var(--skeleton-bg)] rounded-lg w-3/4 mb-3"></div>
+<div class="h-4 bg-[var(--skeleton-bg)] rounded-lg w-full mb-2"></div>
+<div class="h-4 bg-[var(--skeleton-bg)] rounded-lg w-5/6"></div>
+</div>
+<div class="bg-[var(--skeleton-bg)]/50 p-4 rounded-2xl card-shadow">
+<div class="h-6 bg-[var(--skeleton-bg)] rounded-lg w-1/2 mb-3"></div>
+<div class="h-4 bg-[var(--skeleton-bg)] rounded-lg w-full"></div>
+</div>
+<div class="bg-[var(--skeleton-bg)]/50 p-4 rounded-2xl card-shadow">
+<div class="h-6 bg-[var(--skeleton-bg)] rounded-lg w-3/4 mb-3"></div>
+<div class="h-4 bg-[var(--skeleton-bg)] rounded-lg w-full mb-2"></div>
+<div class="h-4 bg-[var(--skeleton-bg)] rounded-lg w-full mb-2"></div>
+<div class="h-4 bg-[var(--skeleton-bg)] rounded-lg w-2/3"></div>
+</div>
+<div class="bg-[var(--skeleton-bg)]/50 p-4 rounded-2xl card-shadow">
+<div class="h-6 bg-[var(--skeleton-bg)] rounded-lg w-5/6 mb-3"></div>
+<div class="h-4 bg-[var(--skeleton-bg)] rounded-lg w-full"></div>
+</div>
+<div class="bg-[var(--skeleton-bg)]/50 p-4 rounded-2xl card-shadow">
+<div class="h-6 bg-[var(--skeleton-bg)] rounded-lg w-1/2 mb-3"></div>
+<div class="h-4 bg-[var(--skeleton-bg)] rounded-lg w-full mb-2"></div>
+<div class="h-4 bg-[var(--skeleton-bg)] rounded-lg w-4/6"></div>
+</div>
+</div>
+</main>
+<footer class="bg-[var(--nav-bg)] border-t border-[var(--border-color)] shadow-[0_-4px_12px_rgba(0,0,0,0.2)]">
+<nav class="flex justify-around items-center h-20">
+<a class="flex flex-col items-center gap-1 text-[var(--text-color)]/70 hover:text-[var(--text-color)] transition-colors" href="#">
+<span class="material-symbols-outlined text-3xl">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[var(--text-color)] transition-colors" href="#">
+<span class="material-symbols-outlined text-3xl">description</span>
+<span class="text-xs font-bold">Notes</span>
+</a>
+<a class="flex flex-col items-center justify-center -mt-12" href="#">
+<div class="w-16 h-16 rounded-full bg-[var(--primary-accent)] flex items-center justify-center shadow-lg shadow-black/50 border-4 border-[var(--nav-bg)]">
+<span class="material-symbols-outlined text-4xl text-white">add</span>
+</div>
+</a>
+<a class="flex flex-col items-center gap-1 text-[var(--text-color)]/70 hover:text-[var(--text-color)] transition-colors" href="#">
+<span class="material-symbols-outlined text-3xl">notifications</span>
+<span class="text-xs font-medium">Updates</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[var(--text-color)]/70 hover:text-[var(--text-color)] transition-colors" href="#">
+<span class="material-symbols-outlined text-3xl">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</nav>
+</footer>
+</div>
+
+</body></html>

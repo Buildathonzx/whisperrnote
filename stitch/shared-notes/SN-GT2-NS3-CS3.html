@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NoteShare - Shared Notes</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --bg-color: #F8F7F4;--text-color: #D7CCC8;--card-bg: #EFEBE9;
+            --primary-text: #4E342E;
+            --secondary-text: #795548;
+            --accent-color: #6D4C41;
+            --border-color: #D7CCC8;
+            --shadow-light: #FFFFFF;
+            --shadow-dark: #BEBEBE;
+        }
+        body {
+            font-family: 'Newsreader', serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+        }
+        .font-noto {
+            font-family: 'Noto Sans', sans-serif;
+        }
+        .note-card {
+            background-color: var(--card-bg);
+            border-radius: 1.5rem;box-shadow: 
+                -8px -8px 16px var(--shadow-light), 
+                8px 8px 16px var(--shadow-dark),
+                inset -2px -2px 4px var(--shadow-light),
+                inset 2px 2px 4px var(--shadow-dark);
+            transition: all 0.3s ease-in-out;
+            transform-style: preserve-3d;
+        }
+        .note-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                -12px -12px 24px var(--shadow-light), 
+                12px 12px 24px var(--shadow-dark),
+                inset -2px -2px 4px var(--shadow-light),
+                inset 2px 2px 4px var(--shadow-dark);
+        }
+        .button-3d {
+            background: var(--card-bg);
+            border-radius: 0.75rem;
+            box-shadow:
+                -4px -4px 8px var(--shadow-light), 
+                4px 4px 8px var(--shadow-dark);
+            transition: all 0.2s ease-in-out;
+        }
+        .button-3d:active {
+            box-shadow:
+                inset -3px -3px 6px var(--shadow-light), 
+                inset 3px 3px 6px var(--shadow-dark);
+        }
+        .button-3d-active {
+            background: var(--card-bg);
+            border-radius: 0.75rem;
+            box-shadow:
+                inset -3px -3px 6px var(--shadow-light), 
+                inset 3px 3px 6px var(--shadow-dark);
+        }
+        .search-bar {
+            background-color: var(--card-bg);
+            border-radius: 0.75rem;
+            box-shadow:
+                inset -3px -3px 6px var(--shadow-light), 
+                inset 3px 3px 6px var(--shadow-dark);
+        }
+        .header {
+            background-color: var(--bg-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="antialiased">
+<div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="header flex items-center justify-between whitespace-nowrap px-10 py-4">
+<div class="flex items-center gap-10">
+<div class="flex items-center gap-3 text-2xl font-bold text-[var(--primary-text)]">
+<svg class="h-8 w-8" fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M12.0799 24L4 19.2479L9.95537 8.75216L18.04 13.4961L18.0446 4H29.9554L29.96 13.4961L38.0446 8.75216L44 19.2479L35.92 24L44 28.7521L38.0446 39.2479L29.96 34.5039L29.9554 44H18.0446L18.04 34.5039L9.95537 39.2479L4 28.7521L12.0799 24Z" fill-rule="evenodd"></path>
+</svg>
+<h1 class="tracking-tight">NoteShare</h1>
+</div>
+<nav class="font-noto flex items-center gap-9 text-base font-medium text-[var(--secondary-text)]">
+<a class="hover:text-[var(--primary-text)] transition-colors" href="#">Home</a>
+<a class="hover:text-[var(--primary-text)] transition-colors" href="#">My Notes</a>
+<a class="text-[var(--primary-text)] font-bold" href="#">Shared</a>
+<a class="hover:text-[var(--primary-text)] transition-colors" href="#">Explore</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end items-center gap-6">
+<div class="search-bar flex items-center w-full max-w-sm px-3">
+<svg class="text-[var(--secondary-text)] mr-2" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px" xmlns="http://www.w3.org/2000/svg">
+<path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+</svg>
+<input class="font-noto form-input w-full min-w-0 flex-1 resize-none overflow-hidden bg-transparent text-[var(--primary-text)] focus:outline-none focus:ring-0 border-none h-12 placeholder:text-[var(--secondary-text)] text-base" placeholder="Search notes..." value=""/>
+</div>
+<button class="button-3d flex items-center justify-center size-12 text-[var(--accent-color)]">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"></path>
+</svg>
+</button>
+<div class="size-12 rounded-full overflow-hidden" style="box-shadow: -4px -4px 8px var(--shadow-light), 4px 4px 8px var(--shadow-dark);">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBLNl1swBzxabP4s_CQVi_wZuYeuY5xXK37V0Of3JMjwp2ja-f02D4J3re9I7YYUTcKK4tQA8Ep5VbRV_VQD3YW58BjhDFCdGmaNQpF4ZOlFsIP2B4adx9jWSyUd_vCJ13yu-v67NV1MLdk8HDEMGqgenOyJTQIXn0VCnTm6-wGEH51Gf-aVJKeTJnBLXIjExcHIzfSYlsgAmaYRVTqgnQwScr9eUE3PkmF92kMdxdJH7zovtnXOHDbLwdGbBY_-x4URfTJUQqlUClw");'></div>
+</div>
+</div>
+</header>
+<main class="px-20 lg:px-40 py-10">
+<div class="max-w-7xl mx-auto">
+<header class="mb-12">
+<h2 class="text-5xl font-bold text-[var(--primary-text)] tracking-tighter">Shared Notes</h2>
+<p class="text-xl text-[var(--secondary-text)] mt-2 font-noto">Notes collaborated on with your team.</p>
+</header>
+<div class="font-noto flex gap-4 mb-10">
+<button class="button-3d-active text-[var(--primary-text)] text-sm font-bold py-3 px-6">All</button>
+<button class="button-3d text-[var(--secondary-text)] text-sm font-medium py-3 px-6 hover:text-[var(--primary-text)] transition-colors">Shared with me</button>
+<button class="button-3d text-[var(--secondary-text)] text-sm font-medium py-3 px-6 hover:text-[var(--primary-text)] transition-colors">Shared by me</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+<div class="note-card flex flex-col justify-between p-6 aspect-[4/5] transform-gpu">
+<div class="flex-grow">
+<h3 class="text-2xl font-bold text-[var(--primary-text)] tracking-tight leading-snug">Project Kickoff Meeting Notes</h3>
+<p class="font-noto text-base text-[var(--secondary-text)] mt-3 line-clamp-3">A summary of the main points, action items, and decisions from our initial project kickoff...</p>
+</div>
+<div class="flex items-center mt-6 -space-x-3">
+<img alt="Collaborator 1" class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6Gi_IjDYfWW_JOUaB3kMrGArlBwODTOD4i0FsuG6cpC8yPlJO8xpDy5P75hMUZ84u6wu-5nKva9Q9NHxITTUeUmBkHkqfWfOo2T7z-2m59hnJKkX1YvAALcNTGVIyC5EfUR0rbio7lEC6OPjffGD4bgaQM-XST3z5krAFw9pTiigr0ydBlqhlJDn4eiFPdT5eGSSMSyzF3ThDWiTQV4UGn8EJEh0AFbh8EkxdVKSfk0U6OqYF3JATuU9-did3yjGnkBE4lZMXrnn1"/>
+<img alt="Collaborator 2" class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDd5bL6fbT0_0QOx9fcDHz_YHwpL5ITZ7jxjK_hRHAGkekmcag3z4hVfFxxdjSKJJT4uDUtFHRYRob1mbRxLu3vcA4DjtYmF_sOszWlSNgS7YzkTV-1QgKMeXA79XyifpsK9p64CyXEAGnpoomA5eyiJQ2yt4NzBmaKxINdDZc-eqOgYeqAonnrOHZMKGzzpS3exv8Q2GF-WeDR5ZB_Jooj7_ndI7nffbIh_0YH3COV58WoqqJDic2H_gt_wVcBk9avXAbOOFZjj_Lz"/>
+<div class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] bg-[var(--accent-color)] flex items-center justify-center text-sm font-bold text-[var(--text-color)]">+3</div>
+</div>
+</div>
+<div class="note-card flex flex-col justify-between p-6 aspect-[4/5] transform-gpu">
+<div class="flex-grow">
+<h3 class="text-2xl font-bold text-[var(--primary-text)] tracking-tight leading-snug">Marketing Strategy Brainstorm</h3>
+<p class="font-noto text-base text-[var(--secondary-text)] mt-3 line-clamp-3">Ideas for the upcoming quarter's marketing campaigns, including social media, content, and paid ads.</p>
+</div>
+<div class="flex items-center mt-6 -space-x-3">
+<img alt="Collaborator 1" class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCURun0ZjGaRcE1safC89ECTzTUi4EawD5cmIE2oRmitS9fygVh67YIc7qQiLEneJ7rS8No8FyTDn9xLrQEyDWGa3puemUfsEtJN8fjArt-gPUG7QRj5z3uy1QN9hcohxsxyHB11BkVDVJbMX9ilcVdRtBkK2BD38dmCYtFOrsBpU_QxFtT5yn3LMtVm6fVhpIYnk0Bp_rB_J3Zh8IGfXPaohMFUd_5PEVtamoZvDB_1dQUwuDRJXL_X3vpW0S_PglCiyPkAhUelZ6w"/>
+<img alt="Collaborator 2" class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVOZu3eDaeZQIeIxrSfNn1G0NcMP6QwfTEheM3dAcUQPTqQW4EeNAfNScn7ggtRynmF-9EPP_KhvWQLFQ48LuD53yRP98__jDbNliCXTrh1CIvHCcHJ63YPuv9IXk38JXA01yB-H74FwIHvlPThGOPZGbrs7vIxvP6QBHXOdqtyMGDMlnjw4rmNwQL0Hn_JJjANQGhFFEHdK91Zgkek5Z48xcxjbtBdF2wp7chZbhBrlloyJESnvjBYNHIKFtxAiDN5h6ZtzKKp7i-"/>
+</div>
+</div>
+<div class="note-card flex flex-col justify-between p-6 aspect-[4/5] transform-gpu">
+<div class="flex-grow">
+<h3 class="text-2xl font-bold text-[var(--primary-text)] tracking-tight leading-snug">Client Feedback Session</h3>
+<p class="font-noto text-base text-[var(--secondary-text)] mt-3 line-clamp-3">Compiled feedback from the latest client presentation. Key takeaways and areas for improvement.</p>
+</div>
+<div class="flex items-center mt-6 -space-x-3">
+<img alt="Collaborator 1" class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBr9PHTipkHPntsppkAC1-q50FmfKmtdoG4LiBF1ux9-levQIKBBBiYDwJJ2srkXDVM94zSYBQbJiCmpaoaZ-zzTzObGm2zp5Y68ShLo_DQ4E2-wFwJGMpypPvNkwjAPt-wOMZC-fb0r0diatA-UpbkVHed0riq6r4Gw5q5W4xpgJAPd5OtJg8tWYupGyK7a0tMhHcjlkbNSC_50ddpRrJh-dQd0L4RVa1XY5qNw4VwYJrIj2zvyhs5lNGXC7kRdjQu_DyKqy9dgRzZ"/>
+</div>
+</div>
+<div class="note-card flex flex-col justify-between p-6 aspect-[4/5] transform-gpu">
+<div class="flex-grow">
+<h3 class="text-2xl font-bold text-[var(--primary-text)] tracking-tight leading-snug">Product Roadmap Discussion</h3>
+<p class="font-noto text-base text-[var(--secondary-text)] mt-3 line-clamp-3">Planning the feature development for the next 6 months. Prioritization and resource allocation.</p>
+</div>
+<div class="flex items-center mt-6 -space-x-3">
+<img alt="Collaborator 1" class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9FxXDFFNvGS1pkXoF3tBvGsqoXOMegxd5dw6-vuBWFrUg-wHGWup8UZeI4Czbs7OLboN0ruuttvXzF-Tlxue_JYRChQjYV0M6rjd8UiHIHkvHVDU-UZCN1e4vbsRCQV4Nn4p1W4GYO8kl1CMky0udv1pyMo13JZXfKneUYHwPhF2N8rtPUN9V7IjhojqNCKKfIVjuPhY8i8LpxluggxbCrazZN6wneubr8IqzdcdvoREiGb10xHK13n7kSS4Zt6fDb438EwN7r9wg"/>
+<img alt="Collaborator 2" class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArmp--bUqGbb1ISeMgDYYeGGhngj5jgzvaFLWaty9GIaCIhrAhvCIgjNsW2RIujaII9mrIW6GBNsneff59DGbB6pYURt7KscVnqcBnwKqGJPCfYRq0kKP9FT9gpLzCsS8hkOIQXzipNXUknbdYQxWzuAapho1iPy7ZJe5gqxOUw5Nu6iRWoKKBPCFXJbHsIyuHd-68KK0x4XBdA1K5WvweZaSdsXXOuUSIPeGJUiowLPrJTtDejzQmfeNWRxt1VLfeVdTlrRBsODfB"/>
+<img alt="Collaborator 3" class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbkmiQwfMA_dvQ5Z4T-7oWsCGW865nZW0isqb7mdMWDrwcYuy4djKlOgLquzeGYmGP6W-ys1kjlTNoAxI31ehJYtY5yDlO69kbvLCqHdqp_iJHDTc7mngtMb2gAT6EjBdSukgd9UL17JSfbSDzg89ktX9Y9EEQs3_nIQdbgYF4u3paf54bjgXSk1HPA6cQt2fspAXVliibjm97pmJ58Bdgi6vV6cMzPx_XC567-wtggyroFWQhMb_Y-65Dfc5EsxQMo0eHVHCP6oYT"/>
+</div>
+</div>
+<div class="note-card flex flex-col justify-between p-6 aspect-[4/5] transform-gpu">
+<div class="flex-grow">
+<h3 class="text-2xl font-bold text-[var(--primary-text)] tracking-tight leading-snug">Team Building Retreat</h3>
+<p class="font-noto text-base text-[var(--secondary-text)] mt-3 line-clamp-3">Logistics, schedule, and ideas for our upcoming team retreat.</p>
+</div>
+<div class="flex items-center mt-6 -space-x-3">
+<img alt="Collaborator 1" class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdiUwYiGzB1YdHsIblQYj2Ya15WTVMh2-OnypfpBYABfUIKGjwQXZTmazooOJ21kxAgNMKyf4sI9q7qzCfjtAZIV6HqTdAr60G0LgLPwzBIxdEceBu0LgVrQ6iQc5WXm674RmNQtu-TEzRmjtql7XLjowYCeZ_Cv7JYog2ftpjkbKtW4N9KmFUdGtVPd9lYgtcVG8bEisydUenbjxw_cYkI1BuxLKLEG_hQnI6AWRbEuvRA9Tal4-Y1dStc4B2VJthEoq_vA5DyWc-"/>
+<div class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] bg-[var(--accent-color)] flex items-center justify-center text-sm font-bold text-[var(--text-color)]">+5</div>
+</div>
+</div>
+<div class="note-card flex flex-col justify-between p-6 aspect-[4/5] transform-gpu">
+<div class="flex-grow">
+<h3 class="text-2xl font-bold text-[var(--primary-text)] tracking-tight leading-snug">Quarterly Review Summary</h3>
+<p class="font-noto text-base text-[var(--secondary-text)] mt-3 line-clamp-3">Key performance indicators and achievements from the last quarter. Goals for the next one.</p>
+</div>
+<div class="flex items-center mt-6 -space-x-3">
+<img alt="Collaborator 1" class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCS0LZoJpGa17oFa0XZHT9iQNyby9EJyyl-IKI5OmRaNJlPMs3Jjx3kw4xBicm0lGzbZA9fD2OauN6u0wy9enfKgKdEs526MUfPYSfccQir9JWFz_M-V0E-y8wxL9A6cFKo4ztlwTCGCBQLmbh616E3hIjY-INmV7zyKg27sLc86GNH9FRv_MpiVhLy-vljz-Swv4hI2qUDkdxgrhyM1ZeT3Vh-zKAB2UjWPGTewsm4NkOanp7EMb_I-311Cdehiidm5e3I6Nsd5J2r"/>
+<img alt="Collaborator 2" class="h-10 w-10 rounded-full border-2 border-[var(--card-bg)] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVDXgCseLRnKZcvYg1yzTqlFlbNsTPHf9VgaHpHI_HoWnV-dRFMWhOJIchZQB5i1wJbUHQQPtxBmNuZbAeRcxyR3khFiKOS1HyZ9IHGrZaM_oEtrkMd-i0MREJc11pHxFF7KkYStQzy7DffNo6fyg2faiXwFg-wQbPv5Tie-uo9OPGFrvlEU-LXE4F-Ds6Z6-2lW5fj-66lrCuv9gMSStecEIUMHy_rfXjpkwvQQ0jXQR8Ig-PaM_-lLScOdtlzbkdOen0Dpa_yw_0"/>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NoteSphere - Notes Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --ash-white: #F0F2F5;
+            --brownish-white: #EAE6E1;
+            --dark-bg: #1C1C1C;
+            --sidebar-bg: #262626;
+            --card-bg: #333333;
+            --accent-color: #4F4F4F;
+            --primary-blue: #1979e6;
+            --text-primary: var(--brownish-white);
+            --text-secondary: #A0A0A0;
+            --gt2-font: 'Manrope', sans-serif;}
+        body {
+            background-color: var(--ash-white);
+            color: var(--brownish-white);
+            font-family: var(--gt2-font);
+        }
+        .bg-ash-white { background-color: var(--ash-white); }
+        .text-brownish-white { color: var(--brownish-white); }
+        .bg-dark-bg { background-color: var(--dark-bg); }
+        .bg-sidebar-bg { background-color: var(--sidebar-bg); }
+        .bg-card-bg { background-color: var(--card-bg); }
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .border-accent { border-color: var(--accent-color); }
+        .bg-primary-blue { background-color: var(--primary-blue); }
+        .note-card {
+            background-color: var(--card-bg);
+            border-radius: 0.75rem;box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1), 0 10px 15px -3px rgba(0,0,0,0.2), inset 0 2px 4px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease-in-out;
+            transform-style: preserve-3d;
+        }
+        .note-card:hover {
+            transform: translateY(-5px) perspective(1000px) rotateX(2deg);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3), 0 10px 15px -3px rgba(0,0,0,0.2), inset 0 2px 4px 0 rgba(255, 255, 255, 0.05);
+        }
+        .sidebar {
+             background-color: var(--sidebar-bg);
+             border-right: 1px solid var(--accent-color);
+             box-shadow: 4px 0px 15px rgba(0,0,0,0.2);
+        }
+        .btn-3d {
+            background-color: var(--primary-blue);
+            border-bottom: 4px solid #1159b3;
+            transition: all 0.1s ease-in-out;
+        }
+        .btn-3d:hover {
+            transform: translateY(-2px);
+            border-bottom-width: 6px;
+        }
+        .btn-3d:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+    </style>
+</head>
+<body class="bg-ash-white">
+<div class="flex h-screen w-full bg-dark-bg text-brownish-white">
+<aside class="sidebar w-80 flex flex-col justify-between p-6 shrink-0">
+<div class="flex flex-col gap-8">
+<h1 class="text-2xl font-bold text-brownish-white">NoteSphere</h1>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-accent/30 transition-colors" href="#">
+<svg class="text-brownish-white" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+<span class="text-base font-medium">Home</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg bg-primary-blue/20 text-primary-blue border border-primary-blue/50" href="#">
+<svg class="text-primary-blue" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 12H16c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h5.5c1.1 0 2-.9 2-2v-4c0-1.1-.9-2-2-2zM8.5 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7.5M8.5 2V8c0 1.1.9 2 2 2h5.5"></path><path d="M8 2H2v6"></path></svg>
+<span class="text-base font-medium">Notes</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-accent/30 transition-colors" href="#">
+<svg class="text-brownish-white" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
+<span class="text-base font-medium">Notebooks</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-accent/30 transition-colors" href="#">
+<svg class="text-brownish-white" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M4 9h16"></path><path d="M4 15h16"></path><path d="M10 3L8 21"></path><path d="M16 3l-2 18"></path></svg>
+<span class="text-base font-medium">Tags</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-accent/30 transition-colors" href="#">
+<svg class="text-brownish-white" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+<span class="text-base font-medium">Shared</span>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<button class="btn-3d w-full rounded-lg h-12 text-lg font-bold text-white">New Note</button>
+<a class="flex items-center gap-3 px-4 py-2 text-text-secondary hover:text-brownish-white transition-colors" href="#">
+<svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+<span class="text-sm font-medium">Upgrade to Pro</span>
+</a>
+</div>
+</aside>
+<main class="flex-1 overflow-y-auto">
+<div class="p-8">
+<header class="flex items-center justify-between mb-8">
+<h2 class="text-4xl font-bold text-brownish-white tracking-tight">Notes</h2>
+<div class="flex items-center gap-4">
+<div class="relative w-72">
+<svg class="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="8"></circle><line x1="21" x2="16.65" y1="21" y2="16.65"></line></svg>
+<input class="w-full h-12 pl-12 pr-4 rounded-lg bg-sidebar-bg border-2 border-accent focus:border-primary-blue focus:ring-primary-blue/50 focus:outline-none transition-colors text-base placeholder:text-text-secondary" placeholder="Search notes..." type="text"/>
+</div>
+<button class="flex items-center gap-2 h-12 px-6 rounded-lg bg-sidebar-bg border-2 border-accent hover:border-primary-blue transition-colors">
+<svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="m3 16 4 4 4-4"></path><path d="M7 20V4"></path><path d="m21 8-4-4-4 4"></path><path d="M17 4v16"></path></svg>
+<span class="font-medium">Sort</span>
+</button>
+</div>
+</header>
+<div class="flex gap-3 mb-8">
+<button class="h-10 px-5 rounded-lg bg-primary-blue/20 text-primary-blue font-semibold">All Notes</button>
+<button class="h-10 px-5 rounded-lg bg-sidebar-bg hover:bg-accent/50 font-medium transition-colors">Favorites</button>
+<button class="h-10 px-5 rounded-lg bg-sidebar-bg hover:bg-accent/50 font-medium transition-colors">Shared</button>
+<button class="h-10 px-5 rounded-lg bg-sidebar-bg hover:bg-accent/50 font-medium transition-colors">Archived</button>
+</div>
+<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-8">
+<div class="note-card flex flex-col group">
+<div class="relative aspect-video w-full">
+<div class="absolute inset-0 bg-cover bg-center rounded-t-xl" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCtedI5-PGmXkvFada_w2koBXNRmVGYaKhZ3FfDuNpudpDAPu1NfmzZAFojPsYwLMCbus7RRsiLKfQ1B3PhdiEmuQIwymUMmPSas_N1hSHI0HjuxzIru0-2gzNH1L0yU5Sotweh-ntxjLZp44ZO67E8__aTX9xt4fyrXJXL0HXp-6Sa4UafKPfrLBIJbgw_lGehXrN6nlzJJbwdaE13B7OBPPsEx_O-peucNLCS4LPZUIupP43TdcUuT3IO5jioxnYsLO0cEYlDG-A5");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-card-bg via-card-bg/70 to-transparent"></div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="text-xl font-bold text-primary mb-2">Project Alpha</h3>
+<p class="text-secondary text-sm flex-1">Summary of the project's initial phase. Diving deep into user personas and journey mapping.</p>
+<div class="flex items-center gap-2 mt-4">
+<span class="text-xs font-semibold px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full">#design</span>
+<span class="text-xs font-semibold px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full">#ux</span>
+</div>
+</div>
+</div>
+<div class="note-card flex flex-col group">
+<div class="relative aspect-video w-full">
+<div class="absolute inset-0 bg-cover bg-center rounded-t-xl" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDHi--DwHMjNv0WcjRAq7dZ4fSmJMDETGk-6ABgHGH6LnGHVxRW1WJJWfGswgbrbJRBe4h9G4FGXtn2doOa-lG6fD96zyDLDNeqB-cZO40qItqUAUmJHdZ84waASdTSki8Rda4BoKh1E2DFuG0ic29IeYhImhvsDATmDb39-vq9lShUISNfrtv7XMzb_LscFXrJzyuiqgsm35_HaGOq6oqMHsrtj40-KKCWPRgI4v8TRg13qP_0TwZ-lVOeOwYKRtU-KzWqAVpbQnzN");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-card-bg via-card-bg/70 to-transparent"></div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="text-xl font-bold text-primary mb-2">Meeting Notes</h3>
+<p class="text-secondary text-sm flex-1">Key takeaways from the team meeting on Q3 roadmap planning.</p>
+<div class="flex items-center gap-2 mt-4">
+<span class="text-xs font-semibold px-2 py-1 bg-green-500/20 text-green-300 rounded-full">#planning</span>
+<span class="text-xs font-semibold px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded-full">#q3</span>
+</div>
+</div>
+</div>
+<div class="note-card flex flex-col group">
+<div class="relative aspect-video w-full">
+<div class="absolute inset-0 bg-cover bg-center rounded-t-xl" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBhVvNDYfHkMbfR_-743x708BkhsUo7yoR0aCrVKMuDo_KgncKD9ff0uufQeRSUvJghUOnxqeEfeweJ2S7zezB9oWoUXDSJ-v0lquwXHCENRdqZIcd5-LzRwVTVN7MwQH00zTIuwZHCRTD4A5IfnwWkig1saAmtwAZewSEseRVe7cJNQ1lnbNDTvTK4DMVcpCRjumcilzOFOELMrCB9BFXFkpjhFUbJTGv3mdpkx1NxSVAHRuLFpe3jZgYonxoK_y1n69_lHM3ZtwYX");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-card-bg via-card-bg/70 to-transparent"></div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="text-xl font-bold text-primary mb-2">Research Findings</h3>
+<p class="text-secondary text-sm flex-1">Detailed analysis of the research outcomes from the latest user survey.</p>
+<div class="flex items-center gap-2 mt-4">
+<span class="text-xs font-semibold px-2 py-1 bg-red-500/20 text-red-300 rounded-full">#research</span>
+</div>
+</div>
+</div>
+<div class="note-card flex flex-col group">
+<div class="relative aspect-video w-full">
+<div class="absolute inset-0 bg-cover bg-center rounded-t-xl" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDeWlqbsHWI9Xff7y6K1LzhEdMtNTTM0vTqXaePM1Hwh6l-DHRv1xR3RIQnJ-V225gyDh3YH_qnc_3qouKbPmGqai8H7bzpLYf80tkFhJB3GFk1Mi-14gw66V6_wwrUzK1U1zv2KVQntQmGZ5hctRBIIMdmrrXsMHZ-Dx8CiC0rjGe1JsyKFVn74v2tZo8WyQhHGvORGQmRzsaTeCKftqtCQPTJgQQ5gh3Y8MeiMrsByIMbGei1ZWZ1l8RK4mZr-vY3UGcR7PkJaiVp");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-card-bg via-card-bg/70 to-transparent"></div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="text-xl font-bold text-primary mb-2">Client Feedback</h3>
+<p class="text-secondary text-sm flex-1">Collected feedback from the client regarding the new prototype.</p>
+<div class="flex items-center gap-2 mt-4">
+<span class="text-xs font-semibold px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded-full">#feedback</span>
+</div>
+</div>
+</div>
+<div class="note-card flex flex-col group">
+<div class="relative aspect-video w-full">
+<div class="absolute inset-0 bg-cover bg-center rounded-t-xl" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC3oyiSBjKULAVqBZP2qqR_SUi96gAMgntN-OlhqQNV_RUMye_hB0L1TgAPNUucr_a1QztVc2YbOUMJ0kkMXuCOl_MaT-ZhmJfyld9ZZG35KKLNT2GuiFFx_J_NwAsq6h5UMVn-nlTFi-ZjbUUXjCUjobo5kKkAJah0ZfWBuuPJZ1bGGuVgHBA7MmsRs0hSSIxs3fdxm7YHWo2EaucszbU-ByI7otjvqoIx4dB5mYneN9RVh9jhucwAp6xEQbN9jIqCSM5r6Kv6Ysb-");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-card-bg via-card-bg/70 to-transparent"></div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="text-xl font-bold text-primary mb-2">Brainstorming</h3>
+<p class="text-secondary text-sm flex-1">Ideas generated for the next feature release.</p>
+<div class="flex items-center gap-2 mt-4">
+<span class="text-xs font-semibold px-2 py-1 bg-pink-500/20 text-pink-300 rounded-full">#ideas</span>
+</div>
+</div>
+</div>
+<div class="note-card flex flex-col group">
+<div class="relative aspect-video w-full">
+<div class="absolute inset-0 bg-cover bg-center rounded-t-xl" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBicK6g3irxzAPCZYGlhGjj6hvjahjweMttXk76gV--pBUHgRYbU-NA-xrYJZnG-JKo81KN4NtnQhqooqEbB7AWMACl3W9hjM09n5mCu7ygA65EmcA8RTC_p3kCZbjp1rvgCo6ajoZhMXf2YhuhHIuQPZfXJICzCAhj6KHcoTPhqrJSUBLMnCNNoRO3G7vS5wnqDGPZNLAvflpOJ9q7tWv3NdePPxSeZhbdHf0pMtMjA2zfn2vSu9B66sM8kvvEvzDJrTuyeBhV7n0Q");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-card-bg via-card-bg/70 to-transparent"></div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="text-xl font-bold text-primary mb-2">Action Items</h3>
+<p class="text-secondary text-sm flex-1">List of tasks and responsibilities for the upcoming sprint.</p>
+<div class="flex items-center gap-2 mt-4">
+<span class="text-xs font-semibold px-2 py-1 bg-green-500/20 text-green-300 rounded-full">#tasks</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

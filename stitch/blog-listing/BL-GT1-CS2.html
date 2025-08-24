@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NoteSphere - Blog</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+    :root {
+      --bg-ash-white: #F0F2F5;
+      --text-brownish-white: #E6E1DC;
+      --border-color: #DCD7D1;
+      --skeleton-bg: #EAE8E4;
+      --skeleton-highlight: #F5F3F1;
+      --header-bg: #FFFFFF;
+      --text-primary: #3B2E26;
+      --text-secondary: #7A6C63;
+      --accent-color: #A3968C;
+    }
+    body {
+      background-color: var(--bg-ash-white);
+      color: var(--text-brownish-white);
+      font-family: 'Noto Sans', sans-serif;
+    }
+    .font-gt1 {
+      font-family: 'Newsreader', serif;
+    }
+    .font-cs2 {
+      font-family: 'Noto Sans', sans-serif;
+    }
+    .btn-3d {
+      @apply transition-all duration-200 ease-in-out;
+      border-bottom-width: 4px;
+    }
+    .btn-3d:hover {
+      transform: translateY(-2px);
+      border-bottom-width: 6px;
+    }
+    .btn-3d:active {
+      transform: translateY(1px);
+      border-bottom-width: 2px;
+    }
+    .card-3d {
+      @apply bg-[var(--header-bg)] rounded-2xl shadow-lg transition-all duration-300 ease-in-out;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1), 0 10px 20px -5px rgba(59, 46, 38, 0.2);
+    }
+    .card-3d:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.1), 0 20px 30px -10px rgba(59, 46, 38, 0.3);
+    }
+    .skeleton-box {
+        @apply bg-[var(--skeleton-bg)] relative overflow-hidden;
+    }
+    .skeleton-box::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        transform: translateX(-100%);
+        background-image: linear-gradient(90deg, transparent, var(--skeleton-highlight), transparent);
+        animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+        100% {
+            transform: translateX(100%);
+        }
+    }
+  </style>
+</head>
+<body class="bg-[var(--bg-ash-white)]">
+<div class="relative flex size-full min-h-screen flex-col overflow-x-hidden font-cs2">
+<div class="flex-grow">
+<header class="sticky top-0 z-20 bg-[var(--header-bg)]/80 backdrop-blur-lg border-b border-[var(--border-color)]">
+<div class="container mx-auto px-6 lg:px-10">
+<div class="flex items-center justify-between h-20">
+<div class="flex items-center gap-8">
+<a class="flex items-center gap-3 text-[var(--text-primary)]" href="#">
+<svg class="h-8 w-8 text-[var(--text-primary)]" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z" fill="currentColor"></path></svg>
+<h1 class="text-2xl font-bold font-gt1">NoteSphere</h1>
+</a>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium text-base transition-colors" href="#">Home</a>
+<a class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium text-base transition-colors" href="#">My Notes</a>
+<a class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium text-base transition-colors" href="#">Shared</a>
+<a class="text-[var(--text-primary)] font-bold text-base" href="#">Blog</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="btn-3d flex items-center justify-center rounded-xl h-12 w-12 bg-[var(--skeleton-bg)] border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--text-brownish-white)] hover:text-[var(--text-primary)]">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg"><path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"></path></svg>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 border-2 border-[var(--border-color)]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCzyg7L1SmEiPqLiJpjOjaH5Oe1V1ElDSpc_Cwrrj3oylOoRfycIyv75s0oLtddmwzTBsDn_gabmt4MX-ep1bWsiR0iRvy-n5ChkABUZsv07LtQYwcRr1hoRiqQlbmngNuBT-j2g8_9UXKYkcH-FTDruIiFkLS7Sybq64O94Wmbaxq1pdBPrE7uVEXI6P8DsO1Ah241pzq7-ASyyof23Sv2h542ko70dxccDGpD2Ta-wjCpzohIyui7Vd_Hw8wuBUKkt7G5FjEKlLCu");'></div>
+</div>
+</div>
+</div>
+</header>
+<main class="container mx-auto px-6 lg:px-10 py-12">
+<div class="max-w-4xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+<h2 class="text-5xl md:text-6xl font-bold text-[var(--text-primary)] font-gt1 tracking-tight">From Our Blog</h2>
+<div class="relative w-full md:w-72">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[var(--accent-color)]">
+<svg fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px" xmlns="http://www.w3.org/2000/svg"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
+</div>
+<input class="w-full h-14 pl-12 pr-4 rounded-xl border-2 border-[var(--border-color)] bg-white/50 focus:ring-2 focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] transition-all text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] shadow-inner" placeholder="Search articles..." type="text"/>
+</div>
+</div>
+<div class="space-y-16">
+<div class="card-3d">
+<div class="p-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+<div class="skeleton-box rounded-xl aspect-w-4 aspect-h-3"></div>
+<div class="flex flex-col gap-4">
+<div class="skeleton-box h-4 w-1/4 rounded"></div>
+<div class="skeleton-box h-8 w-full rounded"></div>
+<div class="skeleton-box h-6 w-3/4 rounded"></div>
+<div class="skeleton-box h-12 w-full rounded mt-2"></div>
+</div>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-3xl font-bold text-[var(--text-primary)] font-gt1 mb-8">Latest Posts</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="card-3d">
+<div class="p-5">
+<div class="skeleton-box rounded-lg aspect-w-16 aspect-h-9 mb-5"></div>
+<div class="space-y-3">
+<div class="skeleton-box h-6 w-3/4 rounded"></div>
+<div class="skeleton-box h-4 w-full rounded"></div>
+<div class="skeleton-box h-4 w-5/6 rounded"></div>
+</div>
+</div>
+</div>
+<div class="card-3d">
+<div class="p-5">
+<div class="skeleton-box rounded-lg aspect-w-16 aspect-h-9 mb-5"></div>
+<div class="space-y-3">
+<div class="skeleton-box h-6 w-3/4 rounded"></div>
+<div class="skeleton-box h-4 w-full rounded"></div>
+<div class="skeleton-box h-4 w-5/6 rounded"></div>
+</div>
+</div>
+</div>
+<div class="card-3d">
+<div class="p-5">
+<div class="skeleton-box rounded-lg aspect-w-16 aspect-h-9 mb-5"></div>
+<div class="space-y-3">
+<div class="skeleton-box h-6 w-3/4 rounded"></div>
+<div class="skeleton-box h-4 w-full rounded"></div>
+<div class="skeleton-box h-4 w-5/6 rounded"></div>
+</div>
+</div>
+</div>
+<div class="card-3d">
+<div class="p-5">
+<div class="skeleton-box rounded-lg aspect-w-16 aspect-h-9 mb-5"></div>
+<div class="space-y-3">
+<div class="skeleton-box h-6 w-3/4 rounded"></div>
+<div class="skeleton-box h-4 w-full rounded"></div>
+<div class="skeleton-box h-4 w-5/6 rounded"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+</body></html>

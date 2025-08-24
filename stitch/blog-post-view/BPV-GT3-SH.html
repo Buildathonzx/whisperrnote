@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-color: #F8F5F2;
+            --text-color: #6B4F4B;
+            --overlay-bg: #EFEBE9;
+            --icon-bg: #D7CCC8;
+            --button-bg: #D7CCC8;
+            --button-text-color: #4E342E;
+            --border-color: #BCAAA4;
+        }
+        body {
+            font-family: 'Newsreader', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        .share-overlay {
+            background-color: var(--overlay-bg);
+            border: 2px solid var(--border-color);
+            box-shadow: 8px 8px 0px 0px var(--border-color);
+        }
+        .share-option {
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s ease-in-out;
+        }
+        .share-option:last-child {
+            border-bottom: none;
+        }
+        .share-option:hover {
+            background-color: #E0D9D5;
+        }
+        .icon-container {
+            background-color: var(--icon-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 3px 3px 0px 0px var(--border-color);
+        }
+        .action-icon {
+            transition: transform 0.2s ease-in-out;
+        }
+        .share-option:hover .action-icon {
+            transform: translateX(2px);
+        }
+        .cancel-button {
+            background-color: var(--button-bg);
+            color: var(--button-text-color);
+            border: 2px solid var(--border-color);
+            box-shadow: 4px 4px 0px 0px var(--border-color);
+            transition: all 0.2s ease-in-out;
+        }
+        .cancel-button:hover {
+            background-color: #C8BDBD;
+            box-shadow: 2px 2px 0px 0px var(--border-color);
+            transform: translate(2px, 2px);
+        }
+        .cancel-button:active {
+            box-shadow: none;
+            transform: translate(4px, 4px);
+        }
+    </style>
+</head>
+<body class="bg-[var(--bg-color)]">
+<div class="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="w-full max-w-md">
+<div class="share-overlay rounded-xl overflow-hidden">
+<div class="p-6">
+<h2 class="text-3xl font-bold text-[var(--text-color)] text-center mb-6">Share This Post</h2>
+<div class="space-y-2">
+<a class="share-option flex items-center justify-between p-4 rounded-lg" href="#">
+<div class="flex items-center gap-4">
+<div class="icon-container flex items-center justify-center shrink-0 size-12 rounded-lg">
+<svg class="text-[var(--button-text-color)]" fill="currentColor" height="28px" viewBox="0 0 256 256" width="28px" xmlns="http://www.w3.org/2000/svg"><path d="M137.54,186.36a8,8,0,0,1,0,11.31l-9.94,10A56,56,0,0,1,48.38,128.4L72.5,104.28A56,56,0,0,1,149.31,102a8,8,0,1,1-10.64,12,40,40,0,0,0-54.85,1.63L59.7,139.72a40,40,0,0,0,56.58,56.58l9.94-9.94A8,8,0,0,1,137.54,186.36Zm70.08-138a56.08,56.08,0,0,0-79.22,0l-9.94,9.95a8,8,0,0,0,11.32,11.31l9.94-9.94a40,40,0,0,1,56.58,56.58L172.18,140.4A40,40,0,0,1,117.33,142,8,8,0,1,0,106.69,154a56,56,0,0,0,76.81-2.26l24.12-24.12A56.08,56.08,0,0,0,207.62,48.38Z"></path></svg>
+</div>
+<p class="text-[var(--text-color)] text-lg font-medium">Copy Link</p>
+</div>
+<div class="action-icon text-[var(--button-text-color)]">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"></path></svg>
+</div>
+</a>
+<a class="share-option flex items-center justify-between p-4 rounded-lg" href="#">
+<div class="flex items-center gap-4">
+<div class="icon-container flex items-center justify-center shrink-0 size-12 rounded-lg">
+<svg class="text-[var(--button-text-color)]" fill="currentColor" height="28px" viewBox="0 0 256 256" width="28px" xmlns="http://www.w3.org/2000/svg"><path d="M244.8,150.4a8,8,0,0,1-11.2-1.6A51.6,51.6,0,0,0,192,128a8,8,0,0,1-7.37-4.89,8,8,0,0,1,0-6.22A8,8,0,0,1,192,112a24,24,0,1,0-23.24-30,8,8,0,1,1-15.5-4A40,40,0,1,1,219,117.51a67.94,67.94,0,0,1,27.43,21.68A8,8,0,0,1,244.8,150.4ZM190.92,212a8,8,0,1,1-13.84,8,57,57,0,0,0-98.16,0,8,8,0,1,1-13.84-8,72.06,72.06,0,0,1,33.74-29.92,48,48,0,1,1,58.36,0A72.06,72.06,0,0,1,190.92,212ZM128,176a32,32,0,1,0-32-32A32,32,0,0,0,128,176ZM72,120a8,8,0,0,0-8-8A24,24,0,1,1,87.24,82a8,8,0,1,0,15.5-4A40,40,0,1,0,37,117.51,67.94,67.94,0,0,0,9.6,139.19a8,8,0,1,0,12.8,9.61A51.6,51.6,0,0,1,64,128,8,8,0,0,0,72,120Z"></path></svg>
+</div>
+<p class="text-[var(--text-color)] text-lg font-medium">Share to Social</p>
+</div>
+<div class="action-icon text-[var(--button-text-color)]">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
+</div>
+</a>
+<a class="share-option flex items-center justify-between p-4 rounded-lg" href="#">
+<div class="flex items-center gap-4">
+<div class="icon-container flex items-center justify-center shrink-0 size-12 rounded-lg">
+<svg class="text-[var(--button-text-color)]" fill="currentColor" height="28px" viewBox="0 0 256 256" width="28px" xmlns="http://www.w3.org/2000/svg"><path d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48Zm-96,85.15L52.57,64H203.43ZM98.71,128,40,181.81V74.19Zm11.84,10.85,12,11.05a8,8,0,0,0,10.82,0l12-11.05,58,53.15H52.57ZM157.29,128,216,74.18V181.82Z"></path></svg>
+</div>
+<p class="text-[var(--text-color)] text-lg font-medium">Share via Email</p>
+</div>
+<div class="action-icon text-[var(--button-text-color)]">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
+</div>
+</a>
+<a class="share-option flex items-center justify-between p-4 rounded-lg" href="#">
+<div class="flex items-center gap-4">
+<div class="icon-container flex items-center justify-center shrink-0 size-12 rounded-lg">
+<svg class="text-[var(--button-text-color)]" fill="currentColor" height="28px" viewBox="0 0 256 256" width="28px" xmlns="http://www.w3.org/2000/svg"><path d="M229.66,109.66l-48,48a8,8,0,0,1-11.32-11.32L204.69,112H165a88,88,0,0,0-85.23,66,8,8,0,0,1-15.5-4A103.94,103.94,0,0,1,165,96h39.71L170.34,61.66a8,8,0,0,1,11.32-11.32l48,48A8,8,0,0,1,229.66,109.66ZM192,208H40V88a8,8,0,0,0-16,0V208a16,16,0,0,0,16,16H192a8,8,0,0,0,0-16Z"></path></svg>
+</div>
+<p class="text-[var(--text-color)] text-lg font-medium">More Options</p>
+</div>
+<div class="action-icon text-[var(--button-text-color)]">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
+</div>
+</a>
+</div>
+</div>
+<div class="p-6 bg-[var(--overlay-bg)] border-t-2 border-[var(--border-color)]">
+<button class="cancel-button w-full h-12 rounded-lg text-lg font-bold">
+                        Cancel
+                    </button>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

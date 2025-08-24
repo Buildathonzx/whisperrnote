@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NoteSphere Blog</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --background-color: #F8F7F4;
+            --text-color: #D3CFC6;
+            --card-bg-color: #FFFFFF;
+            --card-shadow-color: #00000026;
+            --card-border-color: #E5E7EB;
+            --tag-bg-color: #ECEAE7;
+            --tag-text-color: #6B6258;
+            --header-border-color: #E5E2DE;
+            --search-bg-color: #ECEAE7;
+            --search-text-color: #6B6258;
+            --primary-accent: #A67B5B;
+            --secondary-accent: #D3CFC6;
+            --heading-color: #4A443D;
+        }
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'Newsreader', serif;
+        }
+        .text-brownish-white {
+            color: var(--text-color);
+        }
+        .bg-ash-white {
+            background-color: var(--background-color);
+        }
+        .gt1-font {
+             font-family: 'Newsreader', serif;
+        }
+        .cs3-font {
+            font-family: 'Noto Sans', sans-serif;
+        }
+        .card {
+            background-color: var(--card-bg-color);
+            border-radius: 0.75rem;
+            border: 1px solid var(--card-border-color);
+            box-shadow: 0 10px 15px -3px var(--card-shadow-color), 0 4px 6px -4px var(--card-shadow-color);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            transform-style: preserve-3d;
+        }
+        .card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 25px -5px var(--card-shadow-color), 0 8px 10px -6px var(--card-shadow-color);
+        }
+        .card-image {
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
+            border-bottom: 2px solid var(--card-border-color);
+            transform: translateZ(20px);
+        }
+        .card-content {
+            padding: 1.5rem;
+            transform: translateZ(10px);
+        }
+    </style>
+</head>
+<body class="bg-ash-white text-brownish-white">
+<div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[var(--header-border-color)] px-10 py-4">
+<div class="flex items-center gap-10">
+<div class="flex items-center gap-3 text-[var(--heading-color)]">
+<div class="size-6">
+<svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-2xl font-bold tracking-tight gt1-font">NoteSphere</h2>
+</div>
+<nav class="flex items-center gap-8 cs3-font">
+<a class="text-base font-medium text-[var(--heading-color)] hover:text-[var(--primary-accent)] transition-colors" href="#">Home</a>
+<a class="text-base font-medium text-[var(--heading-color)] hover:text-[var(--primary-accent)] transition-colors" href="#">My Notes</a>
+<a class="text-base font-medium text-[var(--heading-color)] hover:text-[var(--primary-accent)] transition-colors" href="#">Shared</a>
+<a class="text-base font-medium text-[var(--primary-accent)]" href="#">Blog</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<label class="relative flex items-center">
+<div class="absolute left-3 text-[var(--search-text-color)]">
+<svg fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px" xmlns="http://www.w3.org/2000/svg">
+<path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+</svg>
+</div>
+<input class="form-input w-full min-w-48 rounded-lg border-none bg-[var(--search-bg-color)] py-2 pl-10 pr-4 text-base text-[var(--heading-color)] placeholder:text-[var(--search-text-color)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-accent)] focus:ring-opacity-50 cs3-font" placeholder="Search" type="text"/>
+</label>
+<button class="flex items-center justify-center rounded-full size-10 bg-[var(--search-bg-color)] text-[var(--heading-color)] hover:bg-[var(--secondary-accent)] transition-colors">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"></path>
+</svg>
+</button>
+<div class="size-12 rounded-full bg-cover bg-center border-2 border-[var(--secondary-accent)]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCHLPEFT_fA91e9dOi_eCVZJ--iiTuaBGFBfhn4moy-JI8KvVjt8vpd4fBtA7URYygyk7IMXb2e2bJrR-YE7B3DhnxiWh2jx8dZBl10EW9OJ-XJbOr5ufkCGk0JNQReL8J8S9XiH4dbj1PuS3MfMN0JhPf2FNkbKxcgxkTpp9sy5Hj0M-D4QFgNAOOT1e5rGyL6QkSu5xJbmbn78ITG20yVTgoA1kSyU8sWyMzyMvTho9qLC8BBrn310WcCJX_f2DiJ-QnEwa6r-PTD");'></div>
+</div>
+</header>
+<main class="flex-1 px-8 py-12 lg:px-24 xl:px-40">
+<div class="mx-auto max-w-7xl">
+<div class="mb-12 text-center">
+<h1 class="text-6xl font-extrabold tracking-tighter text-[var(--heading-color)] gt1-font">From Our Blog</h1>
+<p class="mt-4 text-xl text-[var(--tag-text-color)] cs3-font">Insights and stories from the NoteSphere community.</p>
+</div>
+<div class="mb-12 flex flex-wrap justify-center gap-3 cs3-font">
+<button class="rounded-full bg-[var(--primary-accent)] px-5 py-2 text-sm font-bold text-white shadow-md transition hover:bg-opacity-90">All Posts</button>
+<button class="rounded-full bg-[var(--tag-bg-color)] px-5 py-2 text-sm font-medium text-[var(--tag-text-color)] transition hover:bg-[var(--secondary-accent)]">Productivity</button>
+<button class="rounded-full bg-[var(--tag-bg-color)] px-5 py-2 text-sm font-medium text-[var(--tag-text-color)] transition hover:bg-[var(--secondary-accent)]">Writing</button>
+<button class="rounded-full bg-[var(--tag-bg-color)] px-5 py-2 text-sm font-medium text-[var(--tag-text-color)] transition hover:bg-[var(--secondary-accent)]">Note-taking</button>
+<button class="rounded-full bg-[var(--tag-bg-color)] px-5 py-2 text-sm font-medium text-[var(--tag-text-color)] transition hover:bg-[var(--secondary-accent)]">Collaboration</button>
+<button class="rounded-full bg-[var(--tag-bg-color)] px-5 py-2 text-sm font-medium text-[var(--tag-text-color)] transition hover:bg-[var(--secondary-accent)]">Tips</button>
+</div>
+<div class="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
+<div class="card group flex flex-col">
+<div class="overflow-hidden">
+<div class="card-image w-full aspect-video bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDXy28wztzu5kJ9GoCBLFgboT6zqjW141gMg3qm8BQG5lsB5f3ZBxHx1z0iNsPnxbPE8pO6uBURjCc_0a3bOIf2BjYsJ5IPidOgEAFLLNbma5ESGAWnjsUmvamDTJuDvk5jgVHBYgx_p8oInFiISMHYrKx4Y255CBDPQYyAbCCTXGrgUc8aQlroTF-pezt9h-xgiownZGzhM3hbS3VEUoPNNgd8YurnvKPPvXF_3yeRkty1QRLw3fMOQjoeUEQ7dMof-WzBxxEF4LLv");'></div>
+</div>
+<div class="card-content flex flex-col flex-grow">
+<h3 class="text-2xl font-bold text-[var(--heading-color)] gt1-font mb-2">The Ultimate Guide to Effective Note-Taking</h3>
+<p class="text-[var(--tag-text-color)] cs3-font text-base leading-relaxed mb-4 flex-grow">Learn how to take effective notes to boost your productivity and achieve your goals.</p>
+<div class="flex gap-2 cs3-font mt-auto">
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">Note-taking</span>
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">Productivity</span>
+</div>
+</div>
+</div>
+<div class="card group flex flex-col">
+<div class="overflow-hidden">
+<div class="card-image w-full aspect-video bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB8fBY1gRx19Es8FkqnQoqbxtHyZQ5S-wCalGn_T9IgY6u0h45oZ43gJlgQ9YwPXrOG8SnPivokKQLjk8rxlk5WUuHMT_qQI1ijtcyCwdj6QYTghyEQNMzSHtESSQJh-PSMTD5SXyKtj-sSw-Zxtw1X1VF21S3b7rl0cxQdgXAmLPQ3XuoBErpV7lzIm9DhwgqKqX0GDxnr_4EpMdcYUeQZYvAOMPCMWge52bU53RpmO4DgK1tCHC_akGBIJK2NTLLEfxKt-x4jzyVh");'></div>
+</div>
+<div class="card-content flex flex-col flex-grow">
+<h3 class="text-2xl font-bold text-[var(--heading-color)] gt1-font mb-2">Boosting Productivity with Collaborative Tools</h3>
+<p class="text-[var(--tag-text-color)] cs3-font text-base leading-relaxed mb-4 flex-grow">Discover how collaborative tools can enhance your productivity and teamwork.</p>
+<div class="flex gap-2 cs3-font mt-auto">
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">Collaboration</span>
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">Tips</span>
+</div>
+</div>
+</div>
+<div class="card group flex flex-col">
+<div class="overflow-hidden">
+<div class="card-image w-full aspect-video bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCzqrlJw6SX6HKvMsqg0gnvxvUQEnMUjyig8eXAwNj_h9BiH_ig33_Hi3d5zcFu6Vv0YbVFyMamqBClVS1BP84bXjzD-sNQA_YuYisyO3ePTerpZNoL70G9WGjKT6bNwbRp77scd3hi9zWVubFCofKPBiEdLIFReO-rsANttRXSLJ2B_iY_SGilp3MGaRZ1nQu-DijoD7VjJSFkQ7lGrV8FLIbwkuGjPsDdZIgxw4sIe13gcYF6Q87Hq7redYWd7NXng_RvPHZ0BjGW");'></div>
+</div>
+<div class="card-content flex flex-col flex-grow">
+<h3 class="text-2xl font-bold text-[var(--heading-color)] gt1-font mb-2">Mastering the Art of Writing: Tips and Techniques</h3>
+<p class="text-[var(--tag-text-color)] cs3-font text-base leading-relaxed mb-4 flex-grow">Improve your writing skills with these expert tips and techniques.</p>
+<div class="flex gap-2 cs3-font mt-auto">
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">Writing</span>
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">Tips</span>
+</div>
+</div>
+</div>
+<div class="card group flex flex-col">
+<div class="overflow-hidden">
+<div class="card-image w-full aspect-video bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD9Ygj-SL_oKQPJ0r76tCNFb9u2RAFu8sfHDT3AfvL32S89lnXIoCr4yBAKWhNIKLyLFZ7ZkNYU7OvK3_MMd5DyrYgR2xMPZG66DWgry4LFxxBAVh9Q9ImCX_ECjLXPAVgKbVkk1enzDptuGcr0R3B5aVOn2Ghbdfl-jHf0mEcMRdvAt4JhZVEJUdyadyxaqc8qWwXlhjZPhCMtFqsdfX6FO-Q6z4SiKSEf8HBeE-wlfq0YXfDUZFQfNxHDJzcGkP0xYg4UhFwrLaJA");'></div>
+</div>
+<div class="card-content flex flex-col flex-grow">
+<h3 class="text-2xl font-bold text-[var(--heading-color)] gt1-font mb-2">Unlocking Creativity: Innovative Note-Taking Methods</h3>
+<p class="text-[var(--tag-text-color)] cs3-font text-base leading-relaxed mb-4 flex-grow">Explore innovative methods for note-taking that can unlock your creativity.</p>
+<div class="flex gap-2 cs3-font mt-auto">
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">Note-taking</span>
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">Creativity</span>
+</div>
+</div>
+</div>
+<div class="card group flex flex-col">
+<div class="overflow-hidden">
+<div class="card-image w-full aspect-video bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCnNyKsL49OGToq7bzEGSPdSVhDYtL_VllujW3__pag55eUJqJ8re152veTPSfgqaRyHtu6lS3Z_gdTba8KSXa75sfjhChA_rq7VC_Lf0LtkepG5YW-ehgOMvfpvDrrlaI1aV8BxbcKKCgIA4JRQXdYOaokGPuCkLO_EILzFlVFSjZBGLm5vTZe4rKzcFVpJTVsRevHmRdq7GEXjxcQ8q92c-lhvCmbyW3JYxBCpVrNatte2_wGQcQ8edDsmu3UgX_hpJKQYhxths8O");'></div>
+</div>
+<div class="card-content flex flex-col flex-grow">
+<h3 class="text-2xl font-bold text-[var(--heading-color)] gt1-font mb-2">The Future of Collaboration: Trends and Insights</h3>
+<p class="text-[var(--tag-text-color)] cs3-font text-base leading-relaxed mb-4 flex-grow">Stay ahead of the curve with the latest trends and insights in collaboration.</p>
+<div class="flex gap-2 cs3-font mt-auto">
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">Collaboration</span>
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">Future</span>
+</div>
+</div>
+</div>
+<div class="card group flex flex-col">
+<div class="overflow-hidden">
+<div class="card-image w-full aspect-video bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDb2Tusz0I1qkOX18dMp9imVnxfUGqRRRZHm2ec4e1r_i3a0t8gSBj0QQErlqn3hSjp0mEHGslsbcFelyz68x2Q0gEpDFoqibty94436P67AvDsGtFRSX5Vej6eqrjQTSVpED-49Hg0sI7jbDcOmwU5QVv9X9YwyvINdWR6K0Kzc-GRlMIiVPj9MtP3v_jWbf7Cb4GmhPn7mt2iG6C2seN_gLg9DJl-Pc7TswXoNqA6NZyZ8N18OCqsLs2oQPb2-W8GbJh047Fp7Oez");'></div>
+</div>
+<div class="card-content flex flex-col flex-grow">
+<h3 class="text-2xl font-bold text-[var(--heading-color)] gt1-font mb-2">AI in Note-Taking: The Next Revolution</h3>
+<p class="text-[var(--tag-text-color)] cs3-font text-base leading-relaxed mb-4 flex-grow">How artificial intelligence is changing the way we capture and organize information.</p>
+<div class="flex gap-2 cs3-font mt-auto">
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">AI</span>
+<span class="text-xs font-semibold bg-[var(--tag-bg-color)] text-[var(--tag-text-color)] px-3 py-1 rounded-full">Note-taking</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-16 flex items-center justify-center space-x-2 cs3-font">
+<a class="flex h-10 w-10 items-center justify-center rounded-full text-[var(--tag-text-color)] hover:bg-[var(--secondary-accent)] transition-colors" href="#">
+<svg fill="currentColor" height="18px" viewBox="0 0 256 256" width="18px" xmlns="http://www.w3.org/2000/svg">
+<path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path>
+</svg>
+</a>
+<a class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary-accent)] text-sm font-bold text-white shadow-md" href="#">1</a>
+<a class="flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium text-[var(--tag-text-color)] hover:bg-[var(--secondary-accent)] transition-colors" href="#">2</a>
+<a class="flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium text-[var(--tag-text-color)] hover:bg-[var(--secondary-accent)] transition-colors" href="#">3</a>
+<span class="text-sm font-medium text-[var(--tag-text-color)]">...</span>
+<a class="flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium text-[var(--tag-text-color)] hover:bg-[var(--secondary-accent)] transition-colors" href="#">8</a>
+<a class="flex h-10 w-10 items-center justify-center rounded-full text-[var(--tag-text-color)] hover:bg-[var(--secondary-accent)] transition-colors" href="#">
+<svg fill="currentColor" height="18px" viewBox="0 0 256 256" width="18px" xmlns="http://www.w3.org/2000/svg">
+<path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+</svg>
+</a>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Manrope%3Awght%40400%3B500%3B700%3B800&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --background-color: #F8F7F5;
+            --text-color: #D3C9C9;--drawer-bg: #EAE5E5; 
+            --main-bg: #F8F7F5;--primary-text: #4C4242;--border-color: #DCD7D7;
+            --hover-bg: #DCD7D7;
+            --active-bg: #C9C0C0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --highlight-color: #A49797;
+        }
+        .btn-3d {
+            @apply transform transition-transform duration-150 ease-in-out;
+        }
+        .btn-3d:active {
+            @apply translate-y-0.5;
+        }
+    </style>
+</head>
+<body class="bg-[var(--background-color)]" style='font-family: Manrope, "Noto Sans", sans-serif;'>
+<div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
+<div class="flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[var(--border-color)] px-8 py-4 shadow-sm">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3 text-[var(--primary-text)]">
+<div class="size-6 text-[var(--highlight-color)]">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z" fill="currentColor"></path></svg>
+</div>
+<h1 class="text-xl font-bold tracking-tight">NoteSphere</h1>
+</div>
+</div>
+<div class="flex flex-1 justify-end items-center gap-4">
+<div class="relative w-full max-w-sm">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--primary-text)] opacity-60">search</span>
+<input class="form-input w-full rounded-full border-2 border-[var(--border-color)] bg-white/50 py-2.5 pl-10 pr-4 text-sm text-[var(--primary-text)] shadow-[inset_0_1px_3px_var(--shadow-color)] transition-all duration-200 focus:border-[var(--highlight-color)] focus:ring-2 focus:ring-[var(--highlight-color)]/50" placeholder="Search notes..." value=""/>
+</div>
+<button class="btn-3d flex items-center justify-center size-10 rounded-full bg-[var(--drawer-bg)] text-[var(--primary-text)] shadow-md shadow-[var(--shadow-color)] hover:bg-[var(--hover-bg)]">
+<span class="material-symbols-outlined text-2xl">notifications</span>
+</button>
+<div class="size-10 rounded-full bg-cover bg-center shadow-md shadow-[var(--shadow-color)]" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBld0-BXxNaNb9YoR-dZnOI6aKnIrjpbE2jVvEHDwvzraFDwtyLSMLORlfK4UtZPsqTNIwyR65FRm0pOCvAMZJGBYevFYmJpxqbQlHNjmBCmfV05O69TjsXoWg9D4ngDsGdK-42a3jWNuOsYFFKD8r3u2ZfaFC0SLOshFu-mfzR8YpsjGUfLY-lx9kdnajiLc-eha9MnB2C7U2iwcs8sK8slVrBiWgFOxkvbqwaV_cLvZt6AZtOJNot8En5wgjiIxIiTeECVhx6KZKe");'></div>
+</div>
+</header>
+<main class="flex flex-1">
+<aside class="w-80 flex-shrink-0 bg-[var(--drawer-bg)] border-r border-[var(--border-color)] p-6 shadow-[5px_0_15px_-5px_var(--shadow-color)] z-10">
+<h2 class="text-xl font-bold text-[var(--primary-text)] mb-6">Outline</h2>
+<nav class="space-y-2">
+<a class="flex items-center gap-3 rounded-lg bg-[var(--active-bg)] px-4 py-3 text-[var(--primary-text)] font-semibold shadow-[inset_0_1px_2px_var(--shadow-color)]" href="#">
+<span class="material-symbols-outlined text-xl">description</span>
+<span class="flex-1 truncate">Introduction</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-4 py-3 text-[var(--primary-text)] hover:bg-[var(--hover-bg)] hover:shadow-[inset_0_1px_2px_var(--shadow-color)] transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-xl opacity-70">psychology</span>
+<span class="flex-1 truncate">Key Concepts</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-4 py-3 text-[var(--primary-text)] hover:bg-[var(--hover-bg)] hover:shadow-[inset_0_1px_2px_var(--shadow-color)] transition-all duration-150 pl-8" href="#">
+<span class="material-symbols-outlined text-xl opacity-70">lightbulb</span>
+<span class="flex-1 truncate">The Cornell Method</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-4 py-3 text-[var(--primary-text)] hover:bg-[var(--hover-bg)] hover:shadow-[inset_0_1px_2px_var(--shadow-color)] transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-xl opacity-70">data_object</span>
+<span class="flex-1 truncate">Examples</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-4 py-3 text-[var(--primary-text)] hover:bg-[var(--hover-bg)] hover:shadow-[inset_0_1px_2px_var(--shadow-color)] transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-xl opacity-70">flag</span>
+<span class="flex-1 truncate">Conclusion</span>
+</a>
+</nav>
+</aside>
+<div class="flex-1 bg-[var(--main-bg)] p-8 md:p-12 overflow-y-auto">
+<div class="max-w-4xl mx-auto">
+<div class="mb-8">
+<h1 class="text-4xl font-extrabold text-[var(--primary-text)] mb-2 tracking-tight">The Art of Effective Note-Taking</h1>
+<p class="text-[var(--text-color)] text-lg">A guide to enhancing productivity and information retention.</p>
+</div>
+<div class="prose prose-lg max-w-none text-[var(--text-color)] prose-headings:text-[var(--primary-text)] prose-strong:text-[var(--primary-text)] prose-a:text-[var(--highlight-color)]">
+<p>
+                                Effective note-taking is a crucial skill for students, professionals, and anyone looking to retain information and enhance productivity. This guide explores various techniques and tools to help you master the art of note-taking.
+                            </p>
+<h3 class="font-bold">Key Concepts</h3>
+<p>
+                                Note-taking involves actively listening or reading, summarizing key points, and organizing information in a structured manner. Effective notes should be concise, clear, and easily retrievable. The goal is not just to transcribe, but to understand and internalize the material.
+                            </p>
+<div class="bg-[var(--drawer-bg)] p-6 rounded-xl border border-[var(--border-color)] shadow-inner my-8">
+<h4 class="font-bold text-[var(--primary-text)] mt-0 mb-4">Focus on The Cornell Method</h4>
+<p class="text-sm">The Cornell Method provides a systematic format for condensing and organizing notes without laborious recopying. To use it, divide your paper into three sections: a main note-taking column (usually on the right), a smaller cues column (on the left), and a summary area at the bottom.</p>
+</div>
+<h3 class="font-bold">Examples</h3>
+<p>
+                                Consider using bullet points, mind maps, or the Cornell method to structure your notes. For instance, when attending a lecture, focus on capturing main ideas and supporting details rather than transcribing every word. Use abbreviations and symbols to speed up the process.
+                            </p>
+<ul>
+<li><strong>Main Ideas:</strong> Use headings or larger text.</li>
+<li><strong>Supporting Details:</strong> Indent or use sub-bullets.</li>
+<li><strong>Questions:</strong> Mark them clearly for follow-up.</li>
+</ul>
+<h3 class="font-bold">Conclusion</h3>
+<p>
+                                By practicing different note-taking methods and adapting them to your learning style, you can significantly improve your ability to absorb and recall information. Remember, the goal is to create a valuable resource for future reference, a personal knowledge base that grows with you.
+                            </p>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+</body></html>

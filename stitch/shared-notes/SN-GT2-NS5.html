@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --background-color: #F8F7F4;
+            --text-color: #6B4F4B;
+            --container-bg: #FFFFFF;
+            --input-bg: #EAEAEA;
+            --primary-accent: #C89F9C;
+            --secondary-accent: #A28A88;
+            --shadow-color: #DDC8C4;
+            --bottom-nav-bg: #FFFFFF;
+        }
+        body {
+            font-family: 'Noto Sans', sans-serif;
+        }
+        .gt2-font {
+             font-family: 'Newsreader', serif;
+        }
+        .ns5-font {
+            font-family: 'Noto Sans', sans-serif;
+        }
+        .solid-shadow {
+            box-shadow: 4px 4px 0px 0px var(--shadow-color);
+            border: 2px solid var(--text-color);
+        }
+        .solid-shadow-sm {
+            box-shadow: 2px 2px 0px 0px var(--shadow-color);
+            border: 1px solid var(--text-color);
+        }
+        .solid-shadow-icon {
+            filter: drop-shadow(2px 2px 0px var(--shadow-color));
+        }
+    </style>
+</head>
+<body class="bg-[var(--background-color)] text-[var(--text-color)]">
+<div class="flex flex-col min-h-screen">
+<main class="flex-grow pb-24">
+<div class="fixed inset-0 bg-black bg-opacity-30 z-40"></div>
+<div class="fixed top-0 right-0 h-full w-full max-w-sm bg-[var(--container-bg)] z-50 transform translate-x-0 transition-transform duration-300 ease-in-out">
+<div class="p-6 h-full flex flex-col">
+<div class="flex items-center justify-between mb-8">
+<h2 class="gt2-font text-3xl font-bold">Collaboration</h2>
+<button class="p-2 rounded-full hover:bg-gray-100">
+<span class="material-symbols-outlined text-[var(--text-color)]"> close </span>
+</button>
+</div>
+<div class="space-y-6">
+<div>
+<h3 class="gt2-font text-xl font-semibold mb-3">Invite Collaborators</h3>
+<div class="flex items-center gap-2">
+<input class="form-input flex-grow rounded-lg border-2 border-[var(--text-color)] bg-[var(--input-bg)] p-3 placeholder:text-[var(--secondary-accent)] focus:ring-0 focus:border-[var(--primary-accent)] solid-shadow-sm" placeholder="Enter email address" type="email"/>
+<button class="bg-[var(--primary-accent)] text-white p-3 rounded-lg solid-shadow-sm border-2 border-[var(--text-color)]">
+<span class="material-symbols-outlined"> send </span>
+</button>
+</div>
+</div>
+<div>
+<h3 class="gt2-font text-xl font-semibold mb-4">Manage Permissions</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-3 rounded-lg bg-white solid-shadow-sm">
+<div class="flex items-center gap-4">
+<img alt="Sophia Clark" class="size-12 rounded-full border-2 border-[var(--text-color)]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrtqU0UU8FF17mZDzHfJLYXGeXfZIZCoOeY1omS5XrvSAliqnpFxrxXzdE0lYe_NrFRYGGoMsvftv9_5PqxUMGxKsHqY0PrKYuB_3r54FXrQpTMSJEnfZr977r0GP3L7ZyRdgqy4dGkiH8Qmw17q3rCmeMe25xCrO_u_rYoNBJf7O1rcmRfK1YG2ZepTImHnCV3LL4wf402gwks5UB8kb68olfFXGpbujDorXn6_omFk-zjVPAfIOiQSXg4wXrgvD8fS9HIVHgKwV3"/>
+<div>
+<p class="font-bold">Sophia Clark</p>
+<p class="text-sm text-[var(--secondary-accent)]">Owner</p>
+</div>
+</div>
+<div class="relative">
+<select class="appearance-none bg-transparent border-none text-[var(--text-color)] font-medium pr-6 focus:outline-none">
+<option>Can edit</option>
+<option>Can view</option>
+</select>
+<span class="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"> expand_more </span>
+</div>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-white solid-shadow-sm">
+<div class="flex items-center gap-4">
+<img alt="Ethan Carter" class="size-12 rounded-full border-2 border-[var(--text-color)]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQpJ7hm3mXjPiMmP5Han34U7dVluOgXrsnfaPzQnnYGs-B0ClZF-cLvA0Re4lU1RWj6mPDuoxuGPF24GOWWdDzTANOBoRwiCUTEqakjdnPmHR4U9aLbPwqUgBImDJZpxV_rVdKAdBry1LIpIC4fEocQPbXJftMf4icUaWzxPtfU8M9GgQ2rnJJFYGR-TawEoPKnJWKycUkvpouQ5zNfFDORwgoONGuDhrRJijK_qrR8zZA4XSHpzp4En2ydFz2gphfFK3Jd7y2m793"/>
+<div>
+<p class="font-bold">Ethan Carter</p>
+<p class="text-sm text-[var(--secondary-accent)]">Collaborator</p>
+</div>
+</div>
+<div class="relative">
+<select class="appearance-none bg-transparent border-none text-[var(--text-color)] font-medium pr-6 focus:outline-none">
+<option>Can edit</option>
+<option selected="">Can view</option>
+<option>Remove</option>
+</select>
+<span class="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"> expand_more </span>
+</div>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-white solid-shadow-sm">
+<div class="flex items-center gap-4">
+<img alt="Olivia Bennett" class="size-12 rounded-full border-2 border-[var(--text-color)]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4oUNcLBlNaQj6jeVQUW-8wQ_PbyRwx47OlbsLDQfYyFHzVlDaTm0KjXqRkODN7bKVYu5OfW0fue8zJiJmP5Q0KREs9Q-yAnJD56K1ROTp78eXCVxtTDaHJJnaJNY9XAp34cYYcPnvNwJZuUwtxZAkcHdJGTFR4Os5VWK2I9NicD3nNi2fQIfn_7Qq4tzmT4pBK2cVLXFK9R_YHN7Oic9yJmOpAymGseUHegE3uHWeAatDFbJNpAkAnPiyuhiD3CM3Ah1hBEE0arQV"/>
+<div>
+<p class="font-bold">Olivia Bennett</p>
+<p class="text-sm text-[var(--secondary-accent)]">Collaborator</p>
+</div>
+</div>
+<div class="relative">
+<select class="appearance-none bg-transparent border-none text-[var(--text-color)] font-medium pr-6 focus:outline-none">
+<option>Can edit</option>
+<option selected="">Can view</option>
+<option>Remove</option>
+</select>
+<span class="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"> expand_more </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<header class="p-4 flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="size-8 text-[var(--text-color)]">
+<svg class="solid-shadow-icon" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M12.0799 24L4 19.2479L9.95537 8.75216L18.04 13.4961L18.0446 4H29.9554L29.96 13.4961L38.0446 8.75216L44 19.2479L35.92 24L44 28.7521L38.0446 39.2479L29.96 34.5039L29.9554 44H18.0446L18.04 34.5039L9.95537 39.2479L4 28.7521L12.0799 24Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h1 class="gt2-font text-2xl font-bold">NoteFlow</h1>
+</div>
+<div class="flex items-center gap-2">
+<img alt="User avatar" class="size-10 rounded-full border-2 border-[var(--text-color)]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZdqyQ78LvaMiH5pVT-5gc6ZvIEMuAvIfrOyHuN6FmWvFIQzSDSndmyZvYD2_-lN0bstd6xTi1K51kOYbqqCF-LJoX3mIpet9fR1MZrZmkgwSQwvILekU-oq08oioXvByKjzRmh3JPj30cQSoQlT_otRGbiDwZ2-N3EAefZk3hqc4_0dRlCS7o40edfBc80eQ_Hg5R2L2t_gfnYpjiewLj9T26PInvtO6E7eYFppGiE5zjDEN4ORgtjdu7Q8wLN2p92o5xrwrgLaWK"/>
+</div>
+</header>
+<div class="px-5 mt-4">
+<div class="bg-[var(--container-bg)] p-6 rounded-xl solid-shadow">
+<h2 class="gt2-font text-4xl font-bold mb-4">Project Brainstorm</h2>
+<p class="text-base leading-relaxed">
+                        This is a collaborative space for brainstorming ideas for our upcoming project. Feel free to add your thoughts, suggestions, and any relevant information. Let's work together to create something amazing!
+                    </p>
+</div>
+</div>
+</main>
+<footer class="fixed bottom-0 left-0 right-0 bg-[var(--bottom-nav-bg)] border-t-2 border-[var(--text-color)] px-4 py-2 flex justify-around items-center">
+<button class="flex flex-col items-center gap-1 text-[var(--primary-accent)]">
+<span class="material-symbols-outlined text-3xl"> home </span>
+<span class="text-xs font-bold">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-[var(--secondary-accent)]">
+<span class="material-symbols-outlined text-3xl"> search </span>
+<span class="text-xs font-bold">Search</span>
+</button>
+<button class="p-4 bg-[var(--primary-accent)] text-white rounded-full solid-shadow-sm border-2 border-[var(--text-color)] -mt-8">
+<span class="material-symbols-outlined text-3xl"> add </span>
+</button>
+<button class="flex flex-col items-center gap-1 text-[var(--secondary-accent)]">
+<span class="material-symbols-outlined text-3xl"> notifications </span>
+<span class="text-xs font-bold">Activity</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-[var(--secondary-accent)]">
+<span class="material-symbols-outlined text-3xl"> group </span>
+<span class="text-xs font-bold">Share</span>
+</button>
+</footer>
+</div>
+
+</body></html>

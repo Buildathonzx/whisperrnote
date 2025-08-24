@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NoteSphere - Blog Post</title>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,700;0,800;1,400&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --background-color: #f8f7f4;--text-color: #f2f1ef;--primary-text: #4a413b;--accent-color: #9d8778;
+            --container-bg: #ffffff;
+            --border-color: #e5e1dc;
+            --shadow-start: #d1ccc7;
+            --shadow-end: #ffffff;
+        }
+        body {
+            background-color: var(--background-color);
+            color: var(--primary-text);
+            font-family: 'Newsreader', serif;
+        }
+        .text-brownish-white {
+            color: var(--text-color);
+        }
+        .bg-ash-white {
+             background-color: var(--background-color);
+        }
+        .solid-shadow {
+            box-shadow: 6px 6px 0px 0px var(--shadow-start);
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        .solid-shadow:hover {
+            box-shadow: 8px 8px 0px 0px var(--shadow-start);
+        }
+        .solid-shadow-sm {
+            box-shadow: 4px 4px 0px 0px var(--shadow-start);
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        .solid-shadow-sm:hover {
+            box-shadow: 6px 6px 0px 0px var(--shadow-start);
+        }
+        .solid-border {
+            border: 2px solid var(--primary-text);
+        }
+    </style>
+</head>
+<body class="bg-ash-white">
+<div class="flex flex-col min-h-screen">
+<header class="sticky top-0 z-10 bg-ash-white/80 backdrop-blur-sm border-b-2 border-primary-text">
+<div class="container mx-auto px-10 py-4 flex items-center justify-between">
+<div class="flex items-center gap-12">
+<div class="flex items-center gap-3 text-primary-text">
+<svg class="w-8 h-8" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z" fill="currentColor"></path></svg>
+<h1 class="text-2xl font-bold tracking-tight">NoteSphere</h1>
+</div>
+<nav class="hidden md:flex items-center gap-8 font-semibold text-primary-text/80">
+<a class="hover:text-primary-text transition-colors" href="#">Home</a>
+<a class="hover:text-primary-text transition-colors" href="#">My Notes</a>
+<a class="hover:text-primary-text transition-colors" href="#">Explore</a>
+<a class="text-primary-text font-bold" href="#">Blog</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary-text/60">search</span>
+<input class="form-input w-48 rounded-lg pl-10 pr-4 py-2 bg-white/50 border-2 border-primary-text focus:ring-2 focus:ring-accent-color focus:border-accent-color transition placeholder:text-primary-text/60 solid-shadow-sm" placeholder="Search" value=""/>
+</div>
+<button class="p-2 rounded-full hover:bg-primary-text/10 transition-colors">
+<span class="material-symbols-outlined text-primary-text">notifications</span>
+</button>
+<div class="size-12 rounded-full border-2 border-primary-text solid-shadow-sm bg-center bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC4JaSLf3YfCJ5RYVq2OJ99AcM1jfaMqKFJdhsQ5wMHYLVTJohbMJvQfCwT_uICxw5aBgj_b-bxsnOl79vsuCmNb0yC_zAHPIWQJh78k_QgdHdZQ8PDgWdMPVQ4r4WM5Kiz6bunYf90WNsic2Gq2fCF1AhkQhVdt3Xv4i4vfbezKce8k7X9iC2y1E-_W9SErThKcW4MJsh-JIE_KNDlWln2XgtVzxdIRdD2Mxg7ECW5McM9JhWB2ZG-3OrxQno7rMqFUOZHAj9CgM_K");'></div>
+</div>
+</div>
+</header>
+<main class="container mx-auto px-4 sm:px-10 py-12 flex-grow">
+<article class="max-w-4xl mx-auto">
+<div class="mb-12">
+<div class="w-full h-[400px] bg-center bg-cover rounded-lg solid-border solid-shadow overflow-hidden mb-6" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAlxgIPWQplcgB8dhZgh3TNvgouX_FsaZjlI3F6qZ1jtDjpnqgBhSwuGXTpmIRo_4vaKw2BkSrDAb6vHAGtpyRMoYATin7s--w-42pKwtInwVr36q11kRTX1Bpq4ruKMxa5gMCyqnxTevTN0PV7abPyWkPcPXFxBobpVYOhDBKQ6efjhPXoYnXkJigMTGL6qWPOZUFMa7rgYT72vAQa6qkcpEemtHtomrHHNCA5D-aemVNB9-ixPWOZhyh88MGItDcU2Y1SXphQViHq");'>
+<div class="w-full h-full bg-black/20"></div>
+</div>
+<h1 class="text-5xl font-extrabold text-primary-text mb-4" style="text-shadow: 2px 2px 0px var(--shadow-start);">The Art of Effective Note-Taking</h1>
+<div class="flex items-center gap-4 text-accent-color font-medium">
+<p>By Amelia Harper</p>
+<span>•</span>
+<p>Published on January 15, 2024</p>
+</div>
+<div class="flex gap-3 mt-6 flex-wrap">
+<div class="flex h-10 items-center justify-center rounded-lg bg-white solid-border solid-shadow-sm px-5"><p class="text-primary-text font-bold">Productivity</p></div>
+<div class="flex h-10 items-center justify-center rounded-lg bg-white solid-border solid-shadow-sm px-5"><p class="text-primary-text font-bold">Note-Taking</p></div>
+<div class="flex h-10 items-center justify-center rounded-lg bg-white solid-border solid-shadow-sm px-5"><p class="text-primary-text font-bold">Study Tips</p></div>
+</div>
+</div>
+<div class="prose prose-lg max-w-none text-primary-text/90 prose-headings:text-primary-text prose-headings:font-bold prose-strong:text-primary-text prose-strong:font-semibold">
+<p class="lead text-xl">
+                        Effective note-taking is a skill that can significantly enhance learning and productivity. It's not just about jotting down words; it's about actively engaging with the material and synthesizing information in a way that makes sense to you. This article explores various note-taking methods and strategies to help you capture and retain information more effectively.
+                    </p>
+<h2 class="mt-12 mb-6">Different Note-Taking Methods</h2>
+<p>
+                        There are several popular note-taking methods, each with its own strengths. The best method for you will depend on your learning style and the type of content you're working with. Here are a few to consider:
+                    </p>
+<ul class="space-y-4 list-none p-0">
+<li class="flex items-start gap-4 p-4 bg-white rounded-lg solid-border solid-shadow-sm">
+<span class="material-symbols-outlined text-accent-color mt-1">check_box_outline_blank</span>
+<div><strong>Linear Note-Taking:</strong> This is the most traditional method, involving writing notes in a sequential, paragraph-like format. It's suitable for lectures and discussions where information is presented in a structured manner.</div>
+</li>
+<li class="flex items-start gap-4 p-4 bg-white rounded-lg solid-border solid-shadow-sm">
+<span class="material-symbols-outlined text-accent-color mt-1">check_box_outline_blank</span>
+<div><strong>Cornell Method:</strong> This method divides your notes into three sections: notes, cues, and summary. The notes section is for main content, the cues section is for keywords and questions, and the summary section is for a brief overview of the material.</div>
+</li>
+<li class="flex items-start gap-4 p-4 bg-white rounded-lg solid-border solid-shadow-sm">
+<span class="material-symbols-outlined text-accent-color mt-1">check_box_outline_blank</span>
+<div><strong>Mind Mapping:</strong> This visual method uses a central idea and branches out with related concepts and details. It's excellent for brainstorming and understanding complex relationships between ideas.</div>
+</li>
+</ul>
+<h2 class="mt-12 mb-6">Tips for Effective Note-Taking</h2>
+<p>
+                        Regardless of the method you choose, these tips can help you take more effective notes:
+                    </p>
+<ul class="space-y-4 list-none p-0">
+<li class="flex items-start gap-4 p-4 bg-white rounded-lg solid-border solid-shadow-sm">
+<span class="material-symbols-outlined text-accent-color mt-1">check_box_outline_blank</span>
+<div><strong>Be Active:</strong> Don't just passively write down what you hear or read. Actively listen, think, and synthesize the information in your own words.</div>
+</li>
+<li class="flex items-start gap-4 p-4 bg-white rounded-lg solid-border solid-shadow-sm">
+<span class="material-symbols-outlined text-accent-color mt-1">check_box_outline_blank</span>
+<div><strong>Use Abbreviations and Symbols:</strong> Develop a system of abbreviations and symbols to save time and keep up with the pace of the content.</div>
+</li>
+<li class="flex items-start gap-4 p-4 bg-white rounded-lg solid-border solid-shadow-sm">
+<span class="material-symbols-outlined text-accent-color mt-1">check_box_outline_blank</span>
+<div><strong>Review and Revise:</strong> Regularly review and revise your notes to reinforce your understanding and identify any gaps in your knowledge.</div>
+</li>
+<li class="flex items-start gap-4 p-4 bg-white rounded-lg solid-border solid-shadow-sm">
+<span class="material-symbols-outlined text-accent-color mt-1">check_box_outline_blank</span>
+<div><strong>Keep it Organized:</strong> Use a consistent format and organization system to make your notes easy to navigate and reference later.</div>
+</li>
+</ul>
+<h2 class="mt-12 mb-6">Conclusion</h2>
+<p>
+                        Effective note-taking is a valuable skill that can improve your learning and productivity. Experiment with different methods and tips to find what works best for you, and make note-taking an active and engaging part of your learning process.
+                    </p>
+</div>
+</article>
+<section class="max-w-4xl mx-auto mt-20">
+<div class="flex items-center gap-6 pb-6 border-b-2 border-dashed border-primary-text/30">
+<h3 class="text-3xl font-bold text-primary-text">Share &amp; Comment</h3>
+<div class="flex gap-2">
+<button class="w-12 h-12 flex items-center justify-center rounded-lg bg-white solid-border solid-shadow-sm hover:bg-primary-text/5 transition-all">
+<span class="material-symbols-outlined text-primary-text">ios_share</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-lg bg-white solid-border solid-shadow-sm hover:bg-primary-text/5 transition-all">
+<span class="material-symbols-outlined text-primary-text">bookmark_add</span>
+</button>
+</div>
+</div>
+<div class="mt-8">
+<div class="flex items-start gap-4">
+<div class="size-12 rounded-full border-2 border-primary-text solid-shadow-sm bg-center bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC4JaSLf3YfCJ5RYVq2OJ99AcM1jfaMqKFJdhsQ5wMHYLVTJohbMJvQfCwT_uICxw5aBgj_b-bxsnOl79vsuCmNb0yC_zAHPIWQJh78k_QgdHdZQ8PDgWdMPVQ4r4WM5Kiz6bunYf90WNsic2Gq2fCF1AhkQhVdt3Xv4i4vfbezKce8k7X9iC2y1E-_W9SErThKcW4MJsh-JIE_KNDlWln2XgtVzxdIRdD2Mxg7ECW5McM9JhWB2ZG-3OrxQno7rMqFUOZHAj9CgM_K");'></div>
+<div class="flex-1">
+<textarea class="w-full p-4 rounded-lg bg-white border-2 border-primary-text solid-shadow-sm focus:ring-2 focus:ring-accent-color focus:border-accent-color transition placeholder:text-primary-text/60 min-h-[120px]" placeholder="Add a public comment..."></textarea>
+<button class="mt-4 px-6 py-3 rounded-lg bg-primary-text text-white font-bold solid-shadow-sm hover:bg-primary-text/90 transition-colors">Post Comment</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-primary-text text-brownish-white py-12 mt-20">
+<div class="container mx-auto px-10 text-center">
+<p>© 2024 NoteSphere. All rights reserved.</p>
+</div>
+</footer>
+</div>
+
+</body></html>

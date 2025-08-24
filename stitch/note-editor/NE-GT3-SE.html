@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Manrope:wght@400;500;700;800&amp;family=Noto+Sans:wght@400;500;700;900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+    :root {
+      --brand-color: #3d3b38;
+      --background-color: #f5f3f1;
+      --overlay-background: #e9e7e5;
+      --text-primary: #fdfcfb;
+      --text-secondary: #a39e99;
+      --border-color: #d1cbc5;
+      --accent-color: #6c6661;
+      --primary-action: #a78b5e;
+      --shadow-sm: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+      --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      --inner-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+    }
+    body {
+      font-family: 'Manrope', 'Noto Sans', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background-color)] text-[var(--brand-color)]">
+<div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+<div class="absolute inset-0 bg-[var(--background-color)] p-8">
+<h1 class="text-4xl font-bold text-[#b5a794]">My Awesome Note</h1>
+<div class="mt-4 space-y-4 text-lg text-[#6c6661]">
+<p>This is the content of the note. It is visible in the background, behind the settings overlay. The user can see a preview of how their settings changes will affect the note's appearance.</p>
+<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+</div>
+</div>
+<div class="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+<div class="w-full max-w-2xl rounded-2xl bg-[var(--overlay-background)] text-[#4a4643] shadow-2xl" style="box-shadow: 0 0 0 1px var(--border-color), 0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -2px rgba(0,0,0,0.05), 0 0 0 8px var(--overlay-background), 0 0 0 9px var(--border-color);">
+<div class="flex flex-col">
+<header class="flex items-center justify-between border-b border-[var(--border-color)] px-6 py-4">
+<h2 class="text-xl font-bold tracking-[-0.015em] text-[var(--brand-color)]">Note Settings</h2>
+<button class="text-[var(--accent-color)] hover:text-[var(--brand-color)] transition-colors">
+<svg class="lucide lucide-x" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+</button>
+</header>
+<div class="p-6 space-y-8">
+<div>
+<h3 class="text-base font-semibold leading-tight tracking-tight text-[var(--brand-color)] mb-4">Appearance</h3>
+<div class="grid grid-cols-3 gap-3">
+<label class="group relative cursor-pointer">
+<input checked="" class="sr-only peer" name="text-size" type="radio"/>
+<div class="flex items-center justify-center h-20 rounded-lg border-2 border-transparent bg-[var(--background-color)] text-[var(--brand-color)] shadow-[var(--inner-shadow)] peer-checked:border-[var(--primary-action)] peer-checked:ring-2 peer-checked:ring-[var(--primary-action)] peer-checked:ring-offset-2 peer-checked:ring-offset-[var(--overlay-background)] transition-all" style="box-shadow: 0 2px 5px rgba(0,0,0,0.05) inset, 0 1px 1px rgba(255,255,255,0.2);">
+<span class="text-sm font-bold">Small</span>
+</div>
+</label>
+<label class="group relative cursor-pointer">
+<input class="sr-only peer" name="text-size" type="radio"/>
+<div class="flex items-center justify-center h-20 rounded-lg border-2 border-transparent bg-[var(--background-color)] text-[var(--brand-color)] shadow-[var(--inner-shadow)] peer-checked:border-[var(--primary-action)] peer-checked:ring-2 peer-checked:ring-[var(--primary-action)] peer-checked:ring-offset-2 peer-checked:ring-offset-[var(--overlay-background)] transition-all" style="box-shadow: 0 2px 5px rgba(0,0,0,0.05) inset, 0 1px 1px rgba(255,255,255,0.2);">
+<span class="text-base font-bold">Medium</span>
+</div>
+</label>
+<label class="group relative cursor-pointer">
+<input class="sr-only peer" name="text-size" type="radio"/>
+<div class="flex items-center justify-center h-20 rounded-lg border-2 border-transparent bg-[var(--background-color)] text-[var(--brand-color)] shadow-[var(--inner-shadow)] peer-checked:border-[var(--primary-action)] peer-checked:ring-2 peer-checked:ring-[var(--primary-action)] peer-checked:ring-offset-2 peer-checked:ring-offset-[var(--overlay-background)] transition-all" style="box-shadow: 0 2px 5px rgba(0,0,0,0.05) inset, 0 1px 1px rgba(255,255,255,0.2);">
+<span class="text-lg font-bold">Large</span>
+</div>
+</label>
+</div>
+</div>
+<div>
+<h3 class="text-base font-semibold leading-tight tracking-tight text-[var(--brand-color)] mb-4">Behavior</h3>
+<div class="space-y-2">
+<div class="flex items-center justify-between rounded-lg bg-[var(--background-color)] p-4 shadow-[var(--inner-shadow)]" style="box-shadow: 0 2px 5px rgba(0,0,0,0.05) inset, 0 1px 1px rgba(255,255,255,0.2);">
+<div>
+<p class="font-medium text-[var(--brand-color)]">Auto-save</p>
+<p class="text-sm text-[var(--accent-color)]">Automatically save your changes.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-[var(--border-color)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary-action)]"></div>
+</label>
+</div>
+<div class="flex items-center justify-between rounded-lg bg-[var(--background-color)] p-4 shadow-[var(--inner-shadow)]" style="box-shadow: 0 2px 5px rgba(0,0,0,0.05) inset, 0 1px 1px rgba(255,255,255,0.2);">
+<div>
+<p class="font-medium text-[var(--brand-color)]">Word count</p>
+<p class="text-sm text-[var(--accent-color)]">Display a running word count.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-[var(--border-color)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary-action)]"></div>
+</label>
+</div>
+<div class="flex items-center justify-between rounded-lg bg-[var(--background-color)] p-4 shadow-[var(--inner-shadow)]" style="box-shadow: 0 2px 5px rgba(0,0,0,0.05) inset, 0 1px 1px rgba(255,255,255,0.2);">
+<div>
+<p class="font-medium text-[var(--brand-color)]">Show timestamps</p>
+<p class="text-sm text-[var(--accent-color)]">Show creation and modified dates.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-[var(--border-color)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary-action)]"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<footer class="flex justify-end gap-3 border-t border-[var(--border-color)] bg-white/5 px-6 py-4 rounded-b-2xl">
+<button class="h-10 px-5 rounded-lg text-sm font-bold text-[var(--accent-color)] bg-[var(--background-color)] hover:bg-[#e9e7e5] transition-colors" style="box-shadow: 0 2px 5px rgba(0,0,0,0.05) inset, 0 1px 1px rgba(255,255,255,0.2);">
+              Cancel
+            </button>
+<button class="h-10 px-5 rounded-lg text-sm font-bold text-white bg-[var(--primary-action)] hover:opacity-90 transition-opacity" style="box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05), 0 1px 3px 1px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.05) inset;">
+              Save Changes
+            </button>
+</footer>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

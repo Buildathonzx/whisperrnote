@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WhisperNote - Collaborative Note-Taking</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-color: #2D2A26;--text-color: #40342B;--primary-accent: #E5A54B;--secondary-accent: #5A524C;
+            --overlay-bg: #1a1816e6;}
+        body {
+            font-family: 'Manrope', 'Noto Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        .text-3d {
+            text-shadow: 
+                -1px -1px 0 #000,  
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000,
+                2px 4px 6px rgba(0,0,0,0.4);
+        }
+        .box-3d {
+            box-shadow: 
+                inset 0 2px 4px rgba(255,255,255,0.05),
+                0 10px 20px rgba(0,0,0,0.3),
+                0 6px 6px rgba(0,0,0,0.25);
+        }
+        .input-3d {
+             box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+             border-color: #1a1816;
+        }
+        .btn-primary {
+            @apply bg-[var(--primary-accent)] text-[var(--text-color)] font-bold py-3 px-6 rounded-lg transition-transform duration-200 ease-in-out transform hover:scale-105;
+        }
+         .btn-primary:active {
+             transform: scale(0.98) translateY(1px);
+             box-shadow: inset 0 3px 5px rgba(0,0,0,0.4);
+         }
+         .btn-secondary {
+             @apply bg-[var(--secondary-accent)] text-white font-bold py-3 px-6 rounded-lg transition-transform duration-200 ease-in-out transform hover:scale-105;
+         }
+         .btn-secondary:active {
+             transform: scale(0.98) translateY(1px);
+             box-shadow: inset 0 3px 5px rgba(0,0,0,0.4);
+         }
+    </style>
+</head>
+<body class="bg-[var(--bg-color)]">
+<div class="relative min-h-screen">
+<div class="absolute top-0 left-0 w-full h-full bg-cover bg-center opacity-10" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA6NH_ViMJwOsMgxhxuGl2lwULAR1GhJSXCVKfR4-O-fpE7MijKrKP4tAYq_b6dp8MFZXC__AoFUSBVjuLgjkjJFtm2vA9_h0ki5OM4il3qNTzVyJf6jNhRfNOOkmy0jO5yyQJxU3DNDO7VVfGSaTAAek2WRQQVlcRGHwb0DP27sbbkFlrJ-BYu7lvNZGrf5Sqj6xtLNqB45_6KkwiCkcQhmRPizlyM2FC3atLQ0hyc88lcKR7Mo0JmyHv0YR7AxWg_hz_52kZxTTmw");'></div>
+<div class="relative z-10 flex flex-col min-h-screen text-white">
+<header class="px-10 py-5">
+<div class="flex items-center justify-between">
+<h1 class="text-4xl font-black tracking-tighter text-white text-3d">WhisperNote</h1>
+<nav class="hidden md:flex items-center gap-6 text-lg font-bold">
+<a class="hover:text-[var(--primary-accent)] transition-colors" href="#">Features</a>
+<a class="hover:text-[var(--primary-accent)] transition-colors" href="#">Pricing</a>
+<a class="hover:text-[var(--primary-accent)] transition-colors" href="#">About</a>
+</nav>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center text-center px-4">
+<div class="max-w-4xl">
+<h2 class="text-5xl md:text-7xl font-black tracking-tighter text-white text-3d leading-tight">
+                        Your Ideas, <span class="text-[var(--primary-accent)]">Synchronized.</span>
+</h2>
+<p class="mt-6 text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">
+                        WhisperNote is the fluid space for your team's thoughts. Capture, collaborate, and create with frictionless real-time note-taking.
+                    </p>
+</div>
+</main>
+<footer class="p-10 text-center text-gray-400">
+<p>© 2024 WhisperNote. All rights reserved.</p>
+</footer>
+</div>
+<div class="absolute inset-0 z-20 flex items-center justify-center bg-[var(--overlay-bg)] backdrop-blur-sm" id="login-overlay">
+<div class="w-full max-w-md p-8 md:p-12 rounded-2xl bg-[var(--bg-color)] border border-[#40342B] box-3d transform transition-all duration-300 ease-in-out">
+<h2 class="text-3xl font-black text-center text-white text-3d mb-2">Welcome Back</h2>
+<p class="text-center text-gray-400 mb-8">Log in to continue to WhisperNote</p>
+<form class="space-y-6">
+<div>
+<label class="block text-sm font-bold text-gray-300 mb-2" for="email">Email or Phone</label>
+<input class="w-full bg-[#1a1816] text-white p-4 rounded-lg border-2 border-transparent focus:border-[var(--primary-accent)] focus:outline-none focus:ring-0 input-3d transition-colors" id="email" name="email" placeholder="you@example.com" type="email"/>
+</div>
+<div>
+<label class="block text-sm font-bold text-gray-300 mb-2" for="password">Password</label>
+<input class="w-full bg-[#1a1816] text-white p-4 rounded-lg border-2 border-transparent focus:border-[var(--primary-accent)] focus:outline-none focus:ring-0 input-3d transition-colors" id="password" name="password" placeholder="••••••••" type="password"/>
+</div>
+<button class="w-full btn-primary box-3d text-lg" type="submit">
+                        Log In
+                    </button>
+<div class="relative flex items-center py-2">
+<div class="flex-grow border-t border-gray-600"></div>
+<span class="flex-shrink mx-4 text-gray-400 text-sm">OR</span>
+<div class="flex-grow border-t border-gray-600"></div>
+</div>
+<div class="space-y-4">
+<button class="w-full btn-secondary box-3d" type="button">
+                            Send a Magic Link
+                        </button>
+<button class="w-full text-center text-gray-300 hover:text-white font-semibold py-2 rounded-lg transition-colors" type="button">
+                            Continue as Anonymous
+                        </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+
+</body></html>

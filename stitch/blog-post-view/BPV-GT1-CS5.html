@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --background: #F8F7F4;--text-color: #F8F7F4;--text-main: #4d443c;--text-muted: #8c7f73;--accent: #D2B48C;--shadow-color-light: rgba(255, 255, 255, 0.8);
+            --shadow-color-dark: rgba(186, 172, 159, 0.6);
+        }
+        body {
+            font-family: 'Newsreader', serif;
+            background-color: var(--background);
+            color: var(--text-main);
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Noto Sans', sans-serif;
+            font-weight: 700;
+        }
+        .text-brownish-white {
+            color: var(--text-color);
+        }
+        .bg-ash-white {
+            background-color: var(--background);
+        }
+        .solid-3d-button {
+            background-color: #EAE8E3;
+            border: 1px solid #DCD9D4;
+            box-shadow: 
+                inset 0 2px 2px 0 var(--shadow-color-light), 
+                inset 0 -2px 2px 0 var(--shadow-color-dark),
+                0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            transition: all 0.2s ease-in-out;
+        }
+        .solid-3d-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 
+                inset 0 2px 2px 0 var(--shadow-color-light), 
+                inset 0 -2px 2px 0 var(--shadow-color-dark),
+                0 7px 10px -1px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.1);
+        }
+        .solid-3d-button:active {
+            transform: translateY(1px);
+            box-shadow: 
+                inset 0 3px 3px 0 var(--shadow-color-dark),
+                inset 0 -1px 1px 0 var(--shadow-color-light);
+        }
+        .solid-3d-card {
+            background-color: #F1EFEC;
+            border-radius: 12px;
+            border: 1px solid #E5E2DD;
+            box-shadow: 
+                -8px -8px 16px var(--shadow-color-light),
+                8px 8px 16px var(--shadow-color-dark),
+                inset -2px -2px 4px var(--shadow-color-dark),
+                inset 2px 2px 4px var(--shadow-color-light);
+        }
+        .content-card {
+             background-color: var(--background);
+             border-radius: 16px;
+             border: 1px solid #E5E2DD;
+             box-shadow:
+                -10px -10px 20px -5px var(--shadow-color-light),
+                10px 10px 20px -5px var(--shadow-color-dark),
+                inset 0 0 10px rgba(186, 172, 159, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-ash-white">
+<div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#DCD9D4] px-10 py-4">
+<div class="flex items-center gap-10">
+<div class="flex items-center gap-3 text-2xl font-bold text-[var(--text-main)]">
+<div class="size-7 text-[var(--accent)]">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="tracking-[-0.02em]">NoteSphere</h2>
+</div>
+<nav class="flex items-center gap-8">
+<a class="text-base font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors" href="#">Home</a>
+<a class="text-base font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors" href="#">My Notes</a>
+<a class="text-base font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors" href="#">Explore</a>
+<a class="text-base font-bold text-[var(--text-main)]" href="#">Blog</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<label class="relative flex">
+<input class="form-input flex w-full min-w-48 max-w-64 resize-none overflow-hidden rounded-lg border-none bg-transparent py-2.5 pl-10 pr-4 text-base font-normal text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-0 solid-3d-button" placeholder="Search" value=""/>
+<div class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" data-icon="MagnifyingGlass" data-size="20px" data-weight="regular">
+<svg fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px" xmlns="http://www.w3.org/2000/svg">
+<path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+</svg>
+</div>
+</label>
+<button class="flex size-11 cursor-pointer items-center justify-center overflow-hidden rounded-lg solid-3d-button text-[var(--text-muted)] hover:text-[var(--text-main)]">
+<div data-icon="Bell" data-size="24px" data-weight="regular">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"></path>
+</svg>
+</div>
+</button>
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-11 border-2 border-[#DCD9D4] p-px" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCaPxaTQZqtR61RDOrCjM-SVrGyRJm4ESHxRM23rcgwHN727sLtsNa9x7d3u0tPsn9_bBWSvIciow_lnZT7Fs46il-5WlEkdKdFOsBtJTYZ6D-aAj9tvGA05ftR4Jmx0eY2s7lN2A2YbXg4SXWHZz1nIyMRHjfXTcDPKbkCSf5Y61dXpVo_BAjccmpflyQay4ulGbgpQmV7vWEKtWCOaP7oWLgR09Qa2oeOdwYlnISKy1Vc8YTZsIMh1nfK5XjK_OOZ3P6sNS-3HkFI");'></div>
+<div class="absolute bottom-0 right-0 size-3 rounded-full bg-green-500 border-2 border-[var(--background)]"></div>
+</div>
+</div>
+</header>
+<main class="flex flex-1 justify-center py-12 px-8">
+<div class="w-full max-w-4xl">
+<article class="content-card p-6 sm:p-10">
+<div class="mb-8">
+<div class="w-full aspect-[16/9] bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden solid-3d-card" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDHKMi5wRVltBAy2WYEkMNs3EroQA_rGfTSweWdO_wZe53X_p1K_gA1mRd9yV_g4bD_w5OZLiCmYiy_KylGB7A15ugEJ9OyEX8OyHxbCdymAdX9xtp7v-4fEJ7nnM3QhoNBs_MafZtcK6CxUV7vi4a735C6A-YdtOy5mgLfE1J1oCuW7Sva_PzAp9k6KmkGkJzJkkWYGKEL178bYOW3_d0yiZtVA2Bn_zalsjyy6ogwJEa70BFxOL_9SZzSNKThLCmreikoVnBnS6PR");'>
+<div class="w-full h-full bg-gradient-to-t from-black/50 to-transparent p-6 flex flex-col justify-end">
+<h1 class="text-brownish-white text-4xl lg:text-5xl font-extrabold !font-['Newsreader'] tracking-tighter leading-tight" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">The Art of Mindful Note-Taking</h1>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mb-6 text-sm text-[var(--text-muted)]">
+<p>By Amelia Harper</p>
+<p>Published on July 15, 2024</p>
+</div>
+<div class="flex gap-3 mb-8 flex-wrap">
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg pl-4 pr-4 solid-3d-button">
+<p class="text-[var(--text-main)] text-sm font-medium">Productivity</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg pl-4 pr-4 solid-3d-button">
+<p class="text-[var(--text-main)] text-sm font-medium">Mindfulness</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg pl-4 pr-4 solid-3d-button">
+<p class="text-[var(--text-main)] text-sm font-medium">Note-Taking</p>
+</div>
+</div>
+<div class="prose prose-lg max-w-none text-[var(--text-main)] leading-relaxed space-y-6">
+<p class="text-xl !leading-relaxed !font-serif text-[var(--text-main)]">
+                                In today's fast-paced world, where information overload is the norm, the ability to capture and organize thoughts effectively is more crucial than ever. Mindful
+                                note-taking goes beyond simply jotting down information; it's about actively engaging with the content, fostering deeper understanding, and creating a personal
+                                knowledge base that serves as a valuable resource for future reference. This approach transforms note-taking from a passive activity into a dynamic process of
+                                learning and self-discovery.
+                            </p>
+<p>
+                                Mindful note-taking involves being fully present and attentive during the process. It's about actively listening or reading, identifying key concepts, and summarizing
+                                information in your own words. This active engagement helps to solidify understanding and improve retention. Instead of transcribing every word, focus on capturing
+                                the essence of the information and connecting it to your existing knowledge. This approach not only saves time but also encourages critical thinking and synthesis of
+                                ideas.
+                            </p>
+<p>
+                                Experiment with different note-taking methods to find what works best for you. Whether it's the Cornell method, mind mapping, or a more free-form approach, the key is
+                                to find a system that aligns with your learning style and helps you organize information effectively. Regularly review and refine your notes to reinforce learning and
+                                identify areas for further exploration. This iterative process ensures that your notes remain relevant and useful over time.
+                            </p>
+<p>
+                                Mindful note-taking is a powerful tool for personal and professional growth. By actively engaging with information, organizing thoughts effectively, and regularly
+                                reviewing your notes, you can enhance your learning, improve your productivity, and unlock your full potential. Embrace the art of mindful note-taking and transform
+                                the way you capture and utilize knowledge.
+                            </p>
+</div>
+</article>
+</div>
+</main>
+</div>
+</div>
+
+</body></html>

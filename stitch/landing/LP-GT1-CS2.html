@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WhisperNote</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Noto+Sans:wght@900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --background-color: #1a1816;--text-color: #443833;--primary-color: #3b82f6;--progress-bg-color: #312b28;
+            --container-bg-color: #26221f;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: var(--background-color);
+        }
+        .font-brand {
+            font-family: 'Noto Sans', sans-serif;
+        }
+        .loading-bar-container {
+            perspective: 500px;
+        }
+        .loading-bar {
+            animation: progress-animation 2s ease-in-out infinite;
+        }
+        @keyframes progress-animation {
+            0% {
+                width: 0%;
+            }
+            50% {
+                width: 100%;
+            }
+            100% {
+                width: 0%;
+            }
+        }
+        .card {
+            background-color: var(--container-bg-color);
+            border-radius: 1rem;
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.3), 
+                0 8px 10px -6px rgba(0, 0, 0, 0.3),
+                inset 0 -1px 2px 0 rgba(255, 255, 255, 0.05);
+            transform: rotateX(10deg) rotateY(-5deg);
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease-out;
+        }
+        .card:hover {
+            transform: rotateX(0deg) rotateY(0deg) scale(1.02);
+        }
+    </style>
+</head>
+<body class="bg-[var(--background-color)] text-[var(--text-color)]">
+<div class="relative flex size-full min-h-screen flex-col items-center justify-center p-4">
+<div class="card w-full max-w-md p-8 md:p-12">
+<div class="text-center mb-8">
+<h1 class="font-brand text-5xl font-black tracking-tighter text-white drop-shadow-lg">WhisperNote</h1>
+</div>
+<div class="space-y-4">
+<p class="text-center text-lg font-medium text-gray-400">Loading your creative space...</p>
+<div class="loading-bar-container w-full rounded-full bg-[var(--progress-bg-color)] h-3 overflow-hidden shadow-inner">
+<div class="loading-bar h-full rounded-full bg-[var(--primary-color)]"></div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-4 text-center w-full text-xs text-gray-600">
+<p>© 2024 WhisperNote. All Rights Reserved.</p>
+</div>
+</div>
+
+</body></html>
