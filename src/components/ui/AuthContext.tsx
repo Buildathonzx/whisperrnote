@@ -90,7 +90,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Show initial loading screen during auth check
   if (showInitialLoading) {
-    return <InitialLoadingScreen show={true} />;
+    return (
+      <>
+        {children}
+        <InitialLoadingScreen show={true} />
+      </>
+    );
   }
 
   return (
