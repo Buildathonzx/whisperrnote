@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { createNote as appwriteCreateNote } from '@/lib/appwrite';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import type { Notes } from '@/types/appwrite.d';
+import { Status } from '@/types/appwrite.d';
 import { 
   XMarkIcon, 
   DocumentTextIcon, 
@@ -24,7 +25,7 @@ export default function CreateNoteForm({ onNoteCreated }: CreateNoteFormProps) {
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
   const [isPublic, setIsPublic] = useState(false);
-  const [status, setStatus] = useState<'draft' | 'published'>('draft');
+  const [status, setStatus] = useState<Status>(Status.DRAFT);
   const [isLoading, setIsLoading] = useState(false);
   const { closeOverlay } = useOverlay();
 
@@ -215,9 +216,9 @@ export default function CreateNoteForm({ onNoteCreated }: CreateNoteFormProps) {
             <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Status</label>
             <div className="flex gap-2">
               <button
-                onClick={() => setStatus('draft')}
+                onClick={() => setStatus(Status.DRAFT)}
                 className={`flex-1 p-3 rounded-xl font-medium transition-all duration-200 ${
-                  status === 'draft' 
+                  status === Status.DRAFT 
                     ? 'bg-accent text-white shadow-lg' 
                     : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
                 }`}
@@ -225,9 +226,9 @@ export default function CreateNoteForm({ onNoteCreated }: CreateNoteFormProps) {
                 Draft
               </button>
               <button
-                onClick={() => setStatus('published')}
+                onClick={() => setStatus(Status.PUBLISHED)}
                 className={`flex-1 p-3 rounded-xl font-medium transition-all duration-200 ${
-                  status === 'published' 
+                  status === Status.PUBLISHED 
                     ? 'bg-accent text-white shadow-lg' 
                     : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
                 }`}

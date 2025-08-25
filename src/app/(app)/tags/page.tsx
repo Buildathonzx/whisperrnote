@@ -276,7 +276,7 @@ export default function TagsPage() {
                     <div className="flex items-center gap-3">
                       <div
                         className="w-6 h-6 rounded-lg shadow-sm"
-                        style={{ backgroundColor: tag.color }}
+                        style={{ backgroundColor: tag.color || '#ffc700' }}
                       />
                       <h3 className="font-semibold text-foreground text-lg">{tag.name}</h3>
                     </div>

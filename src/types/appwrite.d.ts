@@ -9,12 +9,6 @@ export enum Status {
     ARCHIVED = "archived"
 }
 
-export enum Status {
-    DRAFT = "draft",
-    PUBLISHED = "published",
-    ARCHIVED = "archived"
-}
-
 export enum TargetType {
     NOTE = "note",
     COMMENT = "comment"
