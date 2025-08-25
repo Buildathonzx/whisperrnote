@@ -19,6 +19,10 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  showAuthModal: (mode?: 'login' | 'signup') => void;
+  hideAuthModal: () => void;
+  authModalOpen: boolean;
+  authModalMode: 'login' | 'signup';
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +35,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showInitialLoading, setShowInitialLoading] = useState(true);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
 
   const refreshUser = async () => {
     try {
@@ -60,6 +66,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
+  const showAuthModal = (mode: 'login' | 'signup' = 'login') => {
+    setAuthModalMode(mode);
+    setAuthModalOpen(true);
+  };
+
+  const hideAuthModal = () => {
+    setAuthModalOpen(false);
+  };
+
   const value = {
     user,
     isLoading,
@@ -67,6 +82,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     refreshUser,
+    showAuthModal,
+    hideAuthModal,
+    authModalOpen,
+    authModalMode,
   };
 
   // Show initial loading screen during auth check

@@ -7,7 +7,7 @@ import QuickCreateFab from "./QuickCreateFab";
 import { Box, CircularProgress, Typography } from "@mui/material";
 
 const PUBLIC_ROUTES = [
-  "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/login", "/signup", "/landing"
+  "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/landing"
 ];
 
 function isPublicRoute(path: string) {

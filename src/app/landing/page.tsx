@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { useAuth } from '@/components/ui/AuthContext';
 import {
   UserGroupIcon,
   RectangleStackIcon,
@@ -32,6 +33,8 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const { showAuthModal } = useAuth();
+
   return (
     <div className="flex min-h-screen flex-col overflow-x-hidden bg-dark-bg text-dark-fg">
       <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-dark-border bg-dark-bg/80 px-10 py-4 backdrop-blur-sm">
@@ -74,11 +77,14 @@ export default function LandingPage() {
           </a>
         </nav>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" asChild>
-            <Link href="/login">Log in</Link>
+          <Button 
+            variant="ghost" 
+            onClick={() => showAuthModal('login')}
+          >
+            Log in
           </Button>
-          <Button asChild>
-            <Link href="/signup">Sign Up</Link>
+          <Button onClick={() => showAuthModal('signup')}>
+            Sign Up
           </Button>
         </div>
       </header>

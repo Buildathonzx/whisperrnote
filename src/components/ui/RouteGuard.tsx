@@ -13,9 +13,7 @@ const PUBLIC_ROUTES = [
   '/',
   '/blog',
   '/reset',
-  '/verify',
-  '/login',
-  '/signup'
+  '/verify'
 ];
 
 const BLOG_POST_PATTERN = /^\/blog\/[^\/]+$/;
@@ -25,7 +23,7 @@ function isPublicRoute(path: string): boolean {
 }
 
 export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, showAuthModal } = useAuth();
   const { showLoading, hideLoading } = useLoading();
   const pathname = usePathname();
   const router = useRouter();
@@ -42,21 +40,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
     
     // If user is not authenticated and trying to access protected route
     if (!isAuthenticated && !publicRoute) {
-      showLoading('Redirecting to login...');
-      setTimeout(() => {
-        router.replace('/login');
-        hideLoading();
-      }, 200);
-      return;
-    }
-
-    // If user is authenticated and trying to access auth routes, redirect to notes
-    if (isAuthenticated && (pathname === '/login' || pathname === '/signup')) {
-      showLoading('Redirecting to your notes...');
-      setTimeout(() => {
-        router.replace('/notes');
-        hideLoading();
-      }, 200);
+      showAuthModal('login');
       return;
     }
 
@@ -77,13 +61,14 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
     return null; // Loading overlay will be shown by useEffect
   }
 
-  // Show loading while redirecting
+  // Show loading while redirecting for authenticated users on auth pages
   const publicRoute = isPublicRoute(pathname);
   if (!isAuthenticated && !publicRoute) {
-    return null; // Will redirect to login
+    // Auth modal will be shown, render children normally
+    return <>{children}</>;
   }
 
-  if (isAuthenticated && (pathname === '/login' || pathname === '/signup' || pathname === '/')) {
+  if (isAuthenticated && pathname === '/') {
     return null; // Will redirect to notes
   }
 
