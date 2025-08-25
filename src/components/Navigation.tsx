@@ -1,442 +1,245 @@
 'use client';
 
-import {
-  AppBar,
-  Box,
-  Drawer,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Switch,
-  Toolbar,
-  Typography,
-  useMediaQuery,
-  useTheme,
-  Fab,
-  Badge,
-  Avatar,
-  Paper,
-} from '@mui/material';
-import {
-  Note as NoteIcon,
-  Search as SearchIcon,
-  Share as SharedIcon,
-  Person as ProfileIcon,
-  Settings as SettingsIcon,
-  Add as AddIcon,
-  Menu as MenuIcon,
-  Brightness4,
-  Brightness7,
-  Logout as LogoutIcon,
-  Notifications as NotificationsIcon,
-} from '@mui/icons-material';
+import React, { useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { useNavigationWithLoading } from '@/lib/useNavigationWithLoading';
-import { useAuth } from './ui/AuthContext';
-
-// Mobile bottom navigation items following ui.md spec
-const mobileNavItems = [
-  { text: 'Notes', href: '/notes', icon: <NoteIcon />, id: 'notes' },
-  { text: 'Search', href: '/search', icon: <SearchIcon />, id: 'search' },
-  { text: 'Create', href: '/create', icon: <AddIcon />, id: 'create', isAction: true },
-  { text: 'Shared', href: '/shared', icon: <SharedIcon />, id: 'shared' },
-  { text: 'More', href: '/profile', icon: <ProfileIcon />, id: 'more' },
-];
-
-// Desktop sidebar items
-const sidebarItems = [
-  { text: 'Notes', href: '/notes', icon: <NoteIcon /> },
-  { text: 'Shared', href: '/shared', icon: <SharedIcon /> },
-  { text: 'Profile', href: '/profile', icon: <ProfileIcon /> },
-  { text: 'Settings', href: '/settings', icon: <SettingsIcon /> },
-];
+import { 
+  HomeIcon, 
+  MagnifyingGlassIcon, 
+  PlusCircleIcon, 
+  ShareIcon, 
+  UserIcon,
+  TagIcon,
+  Cog6ToothIcon,
+  PuzzlePieceIcon,
+  DocumentTextIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  SunIcon,
+  MoonIcon,
+  PowerIcon,
+} from '@heroicons/react/24/outline';
+import { useOverlay } from '@/components/ui/OverlayContext';
+import { useAuth } from '@/components/ui/AuthContext';
 
 interface NavigationProps {
-  toggleTheme: () => void;
-  isDarkMode: boolean;
+  toggleTheme?: () => void;
+  isDarkMode?: boolean;
+  className?: string;
 }
 
-export default function Navigation({ toggleTheme, isDarkMode }: NavigationProps) {
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) => {
   const pathname = usePathname();
-  const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
-  const { navigateTo } = useNavigationWithLoading();
+  const { openOverlay } = useOverlay();
 
-  const handleCreateAction = () => {
-    // Handle create action - could open modal or navigate
-    console.log('Create action triggered');
+  const handleCreateClick = () => {
+    // This will open the note creation overlay
+    openOverlay(<div>Create Note Overlay</div>);
   };
 
-  // Mobile Bottom Navigation with 3D design
-  const MobileBottomNav = () => (
-    <Paper
-      sx={{
-        position: 'fixed',
-        bottom: 16,
-        left: 16,
-        right: 16,
-        zIndex: 1000,
-        borderRadius: '20px',
-        backgroundColor: 'background.paper',
-        border: `2px solid ${theme.palette.divider}`,
-        boxShadow: `
-          0 8px 32px rgba(0, 0, 0, 0.12),
-          0 4px 8px rgba(0, 0, 0, 0.08),
-          inset 0 1px 1px rgba(255, 255, 255, 0.1)
-        `,
-        display: { md: 'none' },
-      }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          py: 1,
-          px: 2,
-        }}
-      >
-        {mobileNavItems.map((item) => {
-          const isActive = pathname.startsWith(item.href);
-          const isCreateButton = item.isAction;
+  const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 
-          if (isCreateButton) {
-            return (
-              <Fab
-                key={item.id}
-                size="medium"
-                color="primary"
-                onClick={() => handleCreateAction()}
-                sx={{
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: `
-                      0 6px 20px rgba(255, 193, 7, 0.4),
-                      0 2px 8px rgba(0, 0, 0, 0.2)
-                    `,
-                  },
-                }}
-              >
-                {item.icon}
-              </Fab>
-            );
-          }
+  return (
+    <footer className={`fixed bottom-4 left-4 right-4 z-50 md:hidden ${className}`}>
+      <nav className="bg-light-card dark:bg-dark-card border-2 border-light-border dark:border-dark-border rounded-2xl px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.12),0_4px_8px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+        <div className="flex justify-around items-center">
+          <a 
+            href="/notes" 
+            className={`flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-200 ${
+              isActive('/notes') 
+                ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
+                : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
+            }`}
+          >
+            <HomeIcon className="h-6 w-6" />
+            <span className="text-xs font-semibold">Notes</span>
+          </a>
+          
+          <button 
+            onClick={() => {/* Open search drawer */}}
+            className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg transition-all duration-200 hover:transform hover:-translate-y-0.5"
+          >
+            <MagnifyingGlassIcon className="h-6 w-6" />
+            <span className="text-xs font-semibold">Search</span>
+          </button>
+          
+          <button 
+            onClick={handleCreateClick}
+            className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-accent to-accent/80 text-white rounded-2xl shadow-lg hover:shadow-xl hover:transform hover:-translate-y-1 transition-all duration-200"
+          >
+            <PlusCircleIcon className="h-7 w-7" />
+          </button>
+          
+          <a 
+            href="/shared" 
+            className={`flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-200 ${
+              isActive('/shared') 
+                ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
+                : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
+            }`}
+          >
+            <ShareIcon className="h-6 w-6" />
+            <span className="text-xs font-semibold">Shared</span>
+          </a>
+          
+          <a 
+            href="/profile" 
+            className={`flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-200 ${
+              isActive('/profile') 
+                ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
+                : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
+            }`}
+          >
+            <UserIcon className="h-6 w-6" />
+            <span className="text-xs font-semibold">Profile</span>
+          </a>
+        </div>
+      </nav>
+    </footer>
+  );
+};
 
+export const DesktopSidebar: React.FC<NavigationProps> = ({ 
+  toggleTheme, 
+  isDarkMode, 
+  className = '' 
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
+  const { openOverlay } = useOverlay();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleCreateClick = () => {
+    openOverlay(<div>Create Note Overlay</div>);
+  };
+
+  const isActive = (path: string) => pathname === path || pathname.startsWith(path);
+
+  const navItems = [
+    { icon: HomeIcon, label: 'My Notes', path: '/notes' },
+    { icon: ShareIcon, label: 'Shared with Me', path: '/shared' },
+    { icon: TagIcon, label: 'Tags', path: '/tags' },
+    { icon: DocumentTextIcon, label: 'Blog', path: '/blog' },
+    { icon: PuzzlePieceIcon, label: 'Extensions', path: '/extensions' },
+    { icon: Cog6ToothIcon, label: 'Settings', path: '/settings' },
+  ];
+
+  return (
+    <aside className={`hidden md:flex flex-col fixed left-0 top-0 h-full bg-light-card dark:bg-dark-card border-r-2 border-light-border dark:border-dark-border shadow-[inset_-1px_0_0_rgba(255,255,255,0.1),2px_0_8px_rgba(0,0,0,0.08)] z-40 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-72'} ${className}`}>
+      
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b-2 border-light-border dark:border-dark-border">
+        {!isCollapsed && (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center shadow-lg">
+              <DocumentTextIcon className="h-5 w-5 text-white" />
+            </div>
+            <h2 className="text-xl font-black text-light-fg dark:text-dark-fg bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
+              WhisperNote
+            </h2>
+          </div>
+        )}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-2 rounded-xl hover:bg-light-bg dark:hover:bg-dark-bg text-light-fg dark:text-dark-fg transition-all duration-200 hover:shadow-md"
+        >
+          {isCollapsed ? <ChevronRightIcon className="h-5 w-5" /> : <ChevronLeftIcon className="h-5 w-5" />}
+        </button>
+      </div>
+
+      {/* Create Button */}
+      <div className="p-6 border-b border-light-border dark:border-dark-border">
+        <button
+          onClick={handleCreateClick}
+          className={`w-full flex items-center justify-center gap-3 px-4 py-4 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white rounded-2xl font-bold transition-all duration-200 shadow-lg hover:shadow-xl hover:transform hover:-translate-y-0.5 ${isCollapsed ? 'px-3' : ''}`}
+        >
+          <PlusCircleIcon className="h-6 w-6" />
+          {!isCollapsed && <span>Create Note</span>}
+        </button>
+      </div>
+
+      {/* Navigation Items */}
+      <nav className="flex-1 p-6 space-y-2">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.path);
+          
           return (
-            <IconButton
-              key={item.id}
-              onClick={() => {
-                if (item.isAction) {
-                  handleCreateAction();
-                } else {
-                  navigateTo(item.href, `Loading ${item.text.toLowerCase()}...`);
-                }
-              }}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 0.5,
-                borderRadius: '12px',
-                p: 1.5,
-                transition: 'all 0.2s ease-in-out',
-                color: isActive ? 'primary.main' : 'text.secondary',
-                backgroundColor: isActive ? 'action.selected' : 'transparent',
-                transform: isActive ? 'translateY(-2px)' : 'none',
-                boxShadow: isActive 
-                  ? `0 4px 12px ${theme.palette.primary.main}20`
-                  : 'none',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  backgroundColor: 'action.hover',
-                },
-              }}
+            <a
+              key={item.path}
+              href={item.path}
+              className={`flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-200 group ${
+                active 
+                  ? 'bg-accent text-white shadow-lg transform translate-x-1' 
+                  : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:translate-x-0.5'
+              } ${isCollapsed ? 'justify-center px-3' : ''}`}
             >
-              {item.icon}
-              <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 600 }}>
-                {item.text}
-              </Typography>
-            </IconButton>
+              <Icon className="h-6 w-6 flex-shrink-0" />
+              {!isCollapsed && <span className="font-semibold">{item.label}</span>}
+              {active && !isCollapsed && (
+                <div className="w-1 h-6 bg-white rounded-full ml-auto"></div>
+              )}
+            </a>
           );
         })}
-      </Box>
-    </Paper>
+      </nav>
+
+      {/* User Profile & Controls */}
+      <div className="p-6 border-t border-light-border dark:border-dark-border space-y-4">
+        {/* Theme Toggle */}
+        {toggleTheme && (
+          <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+            {!isCollapsed && (
+              <span className="text-sm font-medium text-light-fg dark:text-dark-fg">Theme</span>
+            )}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl hover:bg-light-bg dark:hover:bg-dark-bg text-light-fg dark:text-dark-fg transition-all duration-200"
+            >
+              {isDarkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+            </button>
+          </div>
+        )}
+
+        {/* User Info */}
+        {isAuthenticated && user && (
+          <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
+            <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center text-white font-bold">
+              {user.name ? user.name[0].toUpperCase() : user.email ? user.email[0].toUpperCase() : 'U'}
+            </div>
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-light-fg dark:text-dark-fg truncate">
+                  {user.name || user.email || 'User'}
+                </p>
+                <p className="text-xs text-light-fg/70 dark:text-dark-fg/70 truncate">
+                  {user.email}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Logout */}
+        {isAuthenticated && (
+          <button
+            onClick={logout}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-light-fg dark:text-dark-fg hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 ${isCollapsed ? 'justify-center px-3' : ''}`}
+          >
+            <PowerIcon className="h-5 w-5" />
+            {!isCollapsed && <span className="font-medium">Logout</span>}
+          </button>
+        )}
+      </div>
+    </aside>
   );
+};
 
-  // Desktop Sidebar with 3D design
-  const DesktopSidebar = () => (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: 280,
-        flexShrink: 0,
-        display: { xs: 'none', md: 'block' },
-        [`& .MuiDrawer-paper`]: {
-          width: 280,
-          boxSizing: 'border-box',
-          backgroundColor: 'background.paper',
-          borderRight: `2px solid ${theme.palette.divider}`,
-          boxShadow: `
-            inset -1px 0 0 rgba(255, 255, 255, 0.1),
-            2px 0 8px rgba(0, 0, 0, 0.08)
-          `,
-        },
-      }}
-    >
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        {/* Logo Header */}
-        <Toolbar sx={{ borderBottom: `1px solid ${theme.palette.divider}`, mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: '8px',
-                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: `0 4px 12px ${theme.palette.primary.main}40`,
-              }}
-            >
-              <NoteIcon sx={{ color: 'white', fontSize: 20 }} />
-            </Box>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                fontWeight: 800, 
-                color: 'text.primary',
-                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              WhisperNote
-            </Typography>
-          </Box>
-        </Toolbar>
-
-        {/* Navigation Items */}
-        <List sx={{ flexGrow: 1, px: 2 }}>
-          {sidebarItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            return (
-              <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
-                <ListItemButton 
-                  onClick={() => navigateTo(item.href, `Loading ${item.text.toLowerCase()}...`)}
-                  sx={{
-                    borderRadius: '12px',
-                    py: 1.5,
-                    px: 2,
-                    transition: 'all 0.2s ease-in-out',
-                    backgroundColor: isActive ? 'action.selected' : 'transparent',
-                    transform: isActive ? 'translateX(4px)' : 'none',
-                    boxShadow: isActive 
-                      ? `
-                        4px 0 0 ${theme.palette.primary.main},
-                        0 2px 8px rgba(0, 0, 0, 0.1)
-                      `
-                      : 'none',
-                    '&:hover': {
-                      backgroundColor: 'action.hover',
-                      transform: 'translateX(2px)',
-                      boxShadow: `
-                        2px 0 0 ${theme.palette.primary.main}40,
-                        0 2px 8px rgba(0, 0, 0, 0.05)
-                      `,
-                    },
-                  }}
-                >
-                  <ListItemIcon 
-                    sx={{ 
-                      color: isActive ? 'primary.main' : 'text.secondary',
-                      minWidth: 40,
-                    }}
-                  >
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={item.text}
-                    sx={{
-                      '& .MuiTypography-root': {
-                        fontWeight: isActive ? 600 : 500,
-                        color: isActive ? 'text.primary' : 'text.secondary',
-                      },
-                    }}
-                  />
-                  {item.text === 'Shared' && (
-                    <Badge badgeContent={3} color="primary" />
-                  )}
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
-
-        {/* User Section & Theme Toggle */}
-        <Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-{(() => {
-  const { user, isAuthenticated, logout } = useAuth();
-  if (!isAuthenticated || !user) {
-    return (
-      <Box sx={{ flex: 1 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-          Guest
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Not logged in
-        </Typography>
-      </Box>
-    );
-  }
+// Default export that includes both components
+export default function Navigation({ toggleTheme, isDarkMode }: NavigationProps) {
   return (
     <>
-      <Avatar sx={{ width: 40, height: 40 }}>{user.name ? user.name[0] : user.email ? user.email[0] : 'U'}</Avatar>
-      <Box sx={{ flex: 1 }}>
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-          {user.name || user.email || 'User'}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          {user.email}
-        </Typography>
-      </Box>
-    </>
-  );
-})()}
-
-          </Box>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Theme
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <IconButton size="small" onClick={toggleTheme}>
-                {isDarkMode ? <Brightness7 /> : <Brightness4 />}
-              </IconButton>
-              <Switch checked={isDarkMode} onChange={toggleTheme} size="small" />
-            </Box>
-          </Box>
-
-{(() => {
-  const { isAuthenticated, logout } = useAuth();
-  if (!isAuthenticated) return null;
-  return (
-    <IconButton
-      sx={{
-        width: '100%',
-        justifyContent: 'flex-start',
-        gap: 2,
-        py: 1.5,
-        px: 2,
-        borderRadius: '12px',
-        color: 'text.secondary',
-        '&:hover': {
-          backgroundColor: 'action.hover',
-          color: 'error.main',
-        },
-      }}
-      onClick={logout}
-    >
-      <LogoutIcon />
-      <Typography variant="body2">Logout</Typography>
-    </IconButton>
-  );
-})()}
-
-        </Box>
-      </Box>
-    </Drawer>
-  );
-
-  // Mobile Header
-  const MobileHeader = () => (
-    <AppBar
-      position="sticky"
-      sx={{
-        display: { md: 'none' },
-        backgroundColor: 'background.paper',
-        color: 'text.primary',
-        boxShadow: `
-          0 2px 8px rgba(0, 0, 0, 0.08),
-          inset 0 -1px 0 ${theme.palette.divider}
-        `,
-      }}
-    >
-      <Toolbar>
-        <IconButton
-          edge="start"
-          onClick={() => setLeftDrawerOpen(true)}
-          sx={{ mr: 2 }}
-        >
-          <MenuIcon />
-        </IconButton>
-        
-        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
-          WhisperNote
-        </Typography>
-        
-        <IconButton>
-          <Badge badgeContent={3} color="primary">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
-      </Toolbar>
-    </AppBar>
-  );
-
-  // Left Drawer for Mobile
-  const LeftDrawer = () => (
-    <Drawer
-      anchor="left"
-      open={leftDrawerOpen}
-      onClose={() => setLeftDrawerOpen(false)}
-      sx={{
-        display: { md: 'none' },
-        '& .MuiDrawer-paper': {
-          width: 280,
-          backgroundColor: 'background.paper',
-        },
-      }}
-    >
-      <Box sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
-          Navigation
-        </Typography>
-        
-        <List>
-          {sidebarItems.map((item) => (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton 
-                onClick={() => {
-                  navigateTo(item.href, `Loading ${item.text.toLowerCase()}...`);
-                  setLeftDrawerOpen(false);
-                }}
-                sx={{ borderRadius: '8px', mb: 1 }}
-              >
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-    </Drawer>
-  );
-
-  return (
-    <>
-      {isDesktop ? <DesktopSidebar /> : <MobileHeader />}
-      {!isDesktop && <MobileBottomNav />}
-      <LeftDrawer />
+      <DesktopSidebar toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
+      <MobileBottomNav />
     </>
   );
 }
