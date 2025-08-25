@@ -20,6 +20,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useAuth } from '@/components/ui/AuthContext';
+import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 
 interface NavigationProps {
   toggleTheme?: () => void;
@@ -32,8 +33,15 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
   const { openOverlay } = useOverlay();
 
   const handleCreateClick = () => {
-    // This will open the note creation overlay
-    openOverlay(<div>Create Note Overlay</div>);
+    // Open the actual CreateNoteForm overlay
+    openOverlay(
+      <CreateNoteForm 
+        onNoteCreated={(newNote) => {
+          // Handle the note creation - could refresh a global state or navigate
+          console.log('Note created:', newNote);
+        }} 
+      />
+    );
   };
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
@@ -109,7 +117,14 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
   const { user, isAuthenticated, logout } = useAuth();
 
   const handleCreateClick = () => {
-    openOverlay(<div>Create Note Overlay</div>);
+    openOverlay(
+      <CreateNoteForm 
+        onNoteCreated={(newNote) => {
+          // Handle the note creation - could refresh a global state or navigate
+          console.log('Note created:', newNote);
+        }} 
+      />
+    );
   };
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
