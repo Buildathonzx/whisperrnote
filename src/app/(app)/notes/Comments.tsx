@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, List, ListItem, ListItemText, Divider } from '@mui/material';
 import { listComments, createComment } from '@/lib/appwrite';
-import type { Comments } from '@/types/appwrite.d';
+import type { Comments } from '@/types/appwrite-types';
 
 interface CommentsProps {
   noteId: string;

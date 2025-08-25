@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, List, ListItem, ListItemText, Divider, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { listCollaborators, createCollaborator, deleteCollaborator } from '@/lib/appwrite';
-import type { Collaborators, Users } from '@/types/appwrite.d';
+import type { Collaborators, Users } from '@/types/appwrite-types';
 import { listUsers } from '@/lib/appwrite';
 
 interface CollaboratorsProps {

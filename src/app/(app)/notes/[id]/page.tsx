@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { getNote } from '@/lib/appwrite';
-import type { Notes } from '@/types/appwrite.d';
+import type { Notes } from '@/types/appwrite-types';
 import { Button } from '@/components/ui/Button';
 import {
   ArrowLeftIcon,

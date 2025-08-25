@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { getNote, getUser } from '@/lib/appwrite';
-import type { Notes, Users } from '@/types/appwrite.d';
+import type { Notes, Users } from '@/types/appwrite-types';
 import { Button } from '@/components/ui/Button';
 
 export default function BlogDetailPage() {

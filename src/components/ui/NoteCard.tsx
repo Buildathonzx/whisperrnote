@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './Card';
-import type { Notes } from '@/types/appwrite.d';
+import type { Notes } from '@/types/appwrite-types';
 
 interface NoteCardProps {
   note: Notes;

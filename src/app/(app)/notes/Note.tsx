@@ -7,7 +7,7 @@ import {
   Button, Tooltip
 } from '@mui/material';
 import { Edit, Delete, Share, AccessTime, PushPin, Archive, Lock, LockOpen, Visibility, MoreVert, Analytics } from '@mui/icons-material';
-import type { Notes } from "@/types/appwrite.d";
+import type { Notes } from "@/types/appwrite-types";
 import { motion } from "framer-motion";
 const MotionCard = motion(Card);
 

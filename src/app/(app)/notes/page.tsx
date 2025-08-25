@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { listNotes as appwriteListNotes } from '@/lib/appwrite';
 import { useLoading } from '@/components/ui/LoadingContext';
-import type { Notes } from '@/types/appwrite.d';
+import type { Notes } from '@/types/appwrite-types';
 import NoteCard from '@/components/ui/NoteCard';
 import { Button } from '@/components/ui/Button';
 import { SearchBar } from '@/components/ui/SearchBar';

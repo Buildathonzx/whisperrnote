@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { listPublicNotes } from '@/lib/appwrite';
-import type { Notes } from '@/types/appwrite.d';
+import type { Notes } from '@/types/appwrite-types';
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';

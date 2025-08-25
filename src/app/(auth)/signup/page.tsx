@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signupEmailPassword, loginEmailPassword, getCurrentUser } from "@/lib/appwrite";
-import type { Users } from "@/types/appwrite.d";
+import type { Users } from "@/types/appwrite-types";
 import { motion } from "framer-motion";
 
 export default function SignupPage() {

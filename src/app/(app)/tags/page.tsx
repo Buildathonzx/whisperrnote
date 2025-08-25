@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Tags } from '@/types/appwrite.d';
+import { Tags } from '@/types/appwrite-types';
 import { listTags, createTag, updateTag, deleteTag } from '@/lib/appwrite';
 import { ID } from 'appwrite';
 

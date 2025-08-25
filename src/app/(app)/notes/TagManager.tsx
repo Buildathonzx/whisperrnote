@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, Chip, TextField, Button, Autocomplete } from '@mui/material';
 import { listTags, createTag } from '@/lib/appwrite';
-import type { Tags } from '@/types/appwrite.d';
+import type { Tags } from '@/types/appwrite-types';
 
 interface TagManagerProps {
   selectedTags: string[];
