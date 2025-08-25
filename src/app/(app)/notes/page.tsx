@@ -6,6 +6,9 @@ import { useLoading } from '@/components/ui/LoadingContext';
 import type { Notes } from '@/types/appwrite.d';
 import NoteCard from '@/components/ui/NoteCard';
 import { Button } from '@/components/ui/Button';
+import { SearchBar } from '@/components/ui/SearchBar';
+import { Pagination } from '@/components/ui/Pagination';
+import { useSearch } from '@/hooks/useSearch';
 import {
   MagnifyingGlassIcon,
   PlusCircleIcon,
@@ -15,21 +18,67 @@ import CreateNoteForm from './CreateNoteForm';
 import { MobileBottomNav } from '@/components/Navigation';
 
 export default function NotesPage() {
-  const [notes, setNotes] = useState<Notes[]>([]);
+  const [allNotes, setAllNotes] = useState<Notes[]>([]);
   const { showLoading, hideLoading } = useLoading();
   const { openOverlay } = useOverlay();
 
+  // Fetch notes action for the search hook
+  const fetchNotesAction = async (queries: string[]) => {
+    const result = await appwriteListNotes(queries);
+    return {
+      documents: result.documents as Notes[],
+      total: result.documents.length
+    };
+  };
+
+  // Search and pagination configuration
+  const searchConfig = {
+    searchFields: ['title', 'content', 'tags'],
+    localSearch: true, // Use frontend search for better UX with small datasets
+    threshold: 200, // Switch to backend search if more than 200 notes
+    debounceMs: 300
+  };
+
+  const paginationConfig = {
+    pageSize: 12 // Show 12 notes per page
+  };
+
+  // Use the search hook
+  const {
+    items: paginatedNotes,
+    totalCount,
+    isSearching,
+    error,
+    searchQuery,
+    setSearchQuery,
+    hasSearchResults,
+    currentPage,
+    totalPages,
+    hasNextPage,
+    hasPreviousPage,
+    goToPage,
+    nextPage,
+    previousPage,
+    refresh,
+    clearSearch
+  } = useSearch({
+    data: allNotes,
+    fetchDataAction: fetchNotesAction,
+    searchConfig,
+    paginationConfig
+  });
+
+  // Initial data fetch
   useEffect(() => {
     const fetchNotes = async () => {
-      // Only show loading if we don't already have notes
-      if (notes.length === 0) {
+      if (allNotes.length === 0) {
         showLoading('Loading your notes...');
       }
       try {
         const res = await appwriteListNotes();
-        setNotes(Array.isArray(res.documents) ? (res.documents as Notes[]) : []);
+        setAllNotes(Array.isArray(res.documents) ? (res.documents as Notes[]) : []);
       } catch (error) {
-        setNotes([]);
+        setAllNotes([]);
         console.error('Failed to fetch notes:', error);
       } finally {
         hideLoading();
@@ -39,16 +88,16 @@ export default function NotesPage() {
   }, []);
 
   const handleNoteCreated = (newNote: Notes) => {
-    setNotes((prevNotes) => [newNote, ...prevNotes]);
+    setAllNotes((prevNotes) => [newNote, ...prevNotes]);
   };
 
   const handleCreateNoteClick = () => {
     openOverlay(<CreateNoteForm onNoteCreated={handleNoteCreated} />);
   };
 
-  // Get tags from existing notes
-  const existingTags = Array.from(new Set(notes.flatMap(note => note.tags || [])));
-  const tags = existingTags.length > 0 ? existingTags : ['Personal', 'Work', 'Ideas', 'To-Do', 'Inspiration'];
+  // Get tags from existing notes for filtering
+  const existingTags = Array.from(new Set(allNotes.flatMap(note => note.tags || [])));
+  const tags = existingTags.length > 0 ? existingTags.slice(0, 8) : ['Personal', 'Work', 'Ideas', 'To-Do'];
 
   return (
     <div className="relative flex size-full min-h-screen flex-col overflow-x-hidden bg-light-bg dark:bg-dark-bg md:ml-72">
@@ -59,9 +108,6 @@ export default function NotesPage() {
             Notes
           </h1>
           <div className="flex items-center gap-3">
-            <Button size="icon" variant="secondary">
-              <MagnifyingGlassIcon className="h-6 w-6" />
-            </Button>
             <Button size="icon" onClick={handleCreateNoteClick}>
               <PlusCircleIcon className="h-6 w-6" />
             </Button>
@@ -75,14 +121,11 @@ export default function NotesPage() {
               My Notes
             </h1>
             <p className="text-lg text-light-fg/70 dark:text-dark-fg/70">
-              {notes.length} {notes.length === 1 ? 'note' : 'notes'} in your collection
+              {totalCount} {totalCount === 1 ? 'note' : 'notes'} in your collection
+              {hasSearchResults && ` (filtered from ${allNotes.length})`}
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="secondary" className="gap-2">
-              <MagnifyingGlassIcon className="h-5 w-5" />
-              Search Notes
-            </Button>
             <Button onClick={handleCreateNoteClick} className="gap-2">
               <PlusCircleIcon className="h-5 w-5" />
               Create Note
@@ -90,37 +133,118 @@ export default function NotesPage() {
           </div>
         </header>
 
-        {/* Tags Filter */}
-        <div className="mb-8 flex gap-3 overflow-x-auto pb-4">
-          {tags.map((tag, index) => (
-            <Button key={index} variant="secondary" size="sm" className="whitespace-nowrap">
-              {tag}
-            </Button>
-          ))}
+        {/* Search Bar */}
+        <div className="mb-6">
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            placeholder="Search notes by title, content, or tags..."
+            isSearching={isSearching}
+            onClear={clearSearch}
+          />
         </div>
 
+        {/* Tags Filter */}
+        {tags.length > 0 && (
+          <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
+            {tags.map((tag, index) => (
+              <Button 
+                key={index} 
+                variant="secondary" 
+                size="sm" 
+                className="whitespace-nowrap"
+                onClick={() => setSearchQuery(tag)}
+              >
+                {tag}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {/* Top Pagination */}
+        {totalPages > 1 && (
+          <div className="mb-6">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hasNextPage={hasNextPage}
+              hasPreviousPage={hasPreviousPage}
+              onPageChange={goToPage}
+              onNextPage={nextPage}
+              onPreviousPage={previousPage}
+              totalCount={totalCount}
+              pageSize={paginationConfig.pageSize}
+              compact={false}
+            />
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-2xl">
+            <p className="text-red-700 dark:text-red-300">{error}</p>
+          </div>
+        )}
+
         {/* Notes Grid */}
-        {notes.length === 0 ? (
+        {paginatedNotes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-24 h-24 bg-light-card dark:bg-dark-card rounded-3xl flex items-center justify-center mb-6 shadow-lg">
-              <PlusCircleIcon className="h-12 w-12 text-light-fg/50 dark:text-dark-fg/50" />
+              {hasSearchResults ? (
+                <MagnifyingGlassIcon className="h-12 w-12 text-light-fg/50 dark:text-dark-fg/50" />
+              ) : (
+                <PlusCircleIcon className="h-12 w-12 text-light-fg/50 dark:text-dark-fg/50" />
+              )}
             </div>
             <h3 className="text-2xl font-bold text-light-fg dark:text-dark-fg mb-3">
-              No notes yet
+              {hasSearchResults ? 'No notes found' : 'No notes yet'}
             </h3>
             <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6 max-w-md">
-              Start your knowledge journey by creating your first note. Capture ideas, thoughts, and insights.
+              {hasSearchResults 
+                ? `No notes match "${searchQuery}". Try different keywords or create a new note.`
+                : 'Start your knowledge journey by creating your first note. Capture ideas, thoughts, and insights.'
+              }
             </p>
-            <Button onClick={handleCreateNoteClick} className="gap-2">
-              <PlusCircleIcon className="h-5 w-5" />
-              Create Your First Note
-            </Button>
+            {hasSearchResults ? (
+              <div className="flex gap-3">
+                <Button variant="secondary" onClick={clearSearch}>
+                  Clear Search
+                </Button>
+                <Button onClick={handleCreateNoteClick} className="gap-2">
+                  <PlusCircleIcon className="h-5 w-5" />
+                  Create Note
+                </Button>
+              </div>
+            ) : (
+              <Button onClick={handleCreateNoteClick} className="gap-2">
+                <PlusCircleIcon className="h-5 w-5" />
+                Create Your First Note
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {notes.map((note) => (
+            {paginatedNotes.map((note) => (
               <NoteCard key={note.$id} note={note} />
             ))}
+          </div>
+        )}
+
+        {/* Bottom Pagination */}
+        {totalPages > 1 && paginatedNotes.length > 0 && (
+          <div className="mt-8">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hasNextPage={hasNextPage}
+              hasPreviousPage={hasPreviousPage}
+              onPageChange={goToPage}
+              onNextPage={nextPage}
+              onPreviousPage={previousPage}
+              totalCount={totalCount}
+              pageSize={paginationConfig.pageSize}
+              compact={false}
+            />
           </div>
         )}
       </div>
