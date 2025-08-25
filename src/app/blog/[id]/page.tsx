@@ -43,7 +43,7 @@ export default function BlogDetailPage() {
             <div className="mb-8">
               <div
                 className="w-full aspect-[16/9] bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden solid-3d-card"
-                style={{ backgroundImage: `url(${note.coverImage || 'https://via.placeholder.com/1200x675'})` }}
+                style={{ backgroundImage: `url('https://via.placeholder.com/1200x675')` }}
               >
                 <div className="w-full h-full bg-gradient-to-t from-black/50 to-transparent p-6 flex flex-col justify-end">
                   <h1

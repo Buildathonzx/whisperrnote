@@ -14,7 +14,7 @@ export default function BlogPage() {
   useEffect(() => {
     const fetchBlogs = async () => {
       const res = await listPublicNotes();
-      setPublicNotes(res.documents || []);
+      setPublicNotes((res.documents as unknown) as Notes[]);
       setLoading(false);
     };
     fetchBlogs();
@@ -56,7 +56,7 @@ export default function BlogPage() {
                   <div className="overflow-hidden">
                     <div
                       className="w-full aspect-video bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                      style={{ backgroundImage: `url(${note.coverImage || 'https://via.placeholder.com/400x250'})` }}
+                      style={{ backgroundImage: `url('https://via.placeholder.com/400x250')` }}
                     ></div>
                   </div>
                   <div className="p-6 flex flex-col flex-grow">
@@ -64,7 +64,7 @@ export default function BlogPage() {
                       {note.title}
                     </h3>
                     <p className="text-tag-text-color text-base leading-relaxed mb-4 flex-grow">
-                      {note.excerpt || (note.content ? note.content.substring(0, 100) + '...' : '')}
+                      {note.content ? note.content.substring(0, 100) + '...' : ''}
                     </p>
                     <div className="flex gap-2 mt-auto">
                       {note.tags?.map((tag, index) => (

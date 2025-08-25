@@ -358,7 +358,7 @@ export async function listActivityLogs() {
 
 // --- SETTINGS CRUD ---
 
-export async function createSettings(data: Partial<Settings>) {
+export async function createSettings(data: Pick<Settings, 'userId' | 'settings'>) {
   if (!data.userId) throw new Error("userId is required to create settings");
   return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, data.userId, data);
 }
@@ -429,7 +429,7 @@ export async function listNotesByUser(userId: string) {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, [Query.equal('userId', userId)]);
 }
 
-export async function listPublicNotes(p0: never[]) {
+export async function listPublicNotes() {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, [Query.equal('isPublic', true)]);
 }
 

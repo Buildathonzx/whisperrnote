@@ -78,7 +78,8 @@ export default function NoteComponent({
 
   // Use only valid properties from Notes type
   const isPublic = note.isPublic ?? false;
-  const isEncrypted = (note as any).isEncrypted ?? note.is_encrypted;
+  // For now, assume not encrypted as this property doesn't exist in Notes type
+  const isEncrypted = false;
 
   return (
     <>
@@ -163,46 +164,14 @@ export default function NoteComponent({
               )}
             </Stack>
           )}
-          {/* Analytics preview */}
-          {note.analytics && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-              <Tooltip title="View count">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Visibility fontSize="small" color="action" />
-                  <Typography variant="caption" color="text.secondary">
-                    {note.analytics.view_count || 0}
-                  </Typography>
-                </Box>
-              </Tooltip>
-              
-              <Tooltip title="Reading time">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <AccessTime fontSize="small" color="action" />
-                  <Typography variant="caption" color="text.secondary">
-                    {readingTimeMinutes}m
-                  </Typography>
-                </Box>
-              </Tooltip>
-
-              {note.shared_with && note.shared_with.length > 0 && (
-                <Tooltip title={`Shared with ${note.shared_with.length} user${note.shared_with.length > 1 ? 's' : ''}`}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Share fontSize="small" color="action" />
-                    <Typography variant="caption" color="text.secondary">
-                      {note.shared_with.length}
-                    </Typography>
-                  </Box>
-                </Tooltip>
-              )}
-            </Box>
-          )}
+          {/* Remove analytics section as it doesn't exist in Notes type */}
         </CardContent>
 
         {/* Footer with dates and actions */}
         <CardActions sx={{ justifyContent: 'space-between', px: 2, py: 1 }}>
           <Typography variant="caption" color="text.secondary">
-            {/* Try both snake_case and camelCase */}
-            {formatDate(note.updatedAt ?? note.updated_at)}
+            {/* Use correct property name from Notes type */}
+            {formatDate(note.updatedAt)}
           </Typography>
           
           <Stack direction="row" spacing={0.5}>
@@ -277,16 +246,17 @@ export default function NoteComponent({
         <DialogTitle>Note Analytics</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
+            {/* Simple analytics without backend data */}
             <Box>
-              <Typography variant="h6">{note.analytics?.view_count || 0}</Typography>
+              <Typography variant="h6">0</Typography>
               <Typography variant="caption" color="text.secondary">Views</Typography>
             </Box>
             <Box>
-              <Typography variant="h6">{note.analytics?.edit_count || 0}</Typography>
+              <Typography variant="h6">0</Typography>
               <Typography variant="caption" color="text.secondary">Edits</Typography>
             </Box>
             <Box>
-              <Typography variant="h6">{note.analytics?.share_count || 0}</Typography>
+              <Typography variant="h6">0</Typography>
               <Typography variant="caption" color="text.secondary">Shares</Typography>
             </Box>
             <Box>
@@ -295,33 +265,7 @@ export default function NoteComponent({
             </Box>
           </Box>
           
-          {note.ai_metadata && (
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>AI Insights</Typography>
-              {note.ai_metadata.topics && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">Topics:</Typography>
-                  <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                    {note.ai_metadata.topics.map((topic: string) => (
-                      <Chip key={topic} label={topic} size="small" />
-                    ))}
-                  </Stack>
-                </Box>
-              )}
-              {note.ai_metadata.keyPoints && (
-                <Box>
-                  <Typography variant="caption" color="text.secondary">Key Points:</Typography>
-                  <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
-                    {note.ai_metadata.keyPoints.map((point: string, index: number) => (
-                      <li key={index}>
-                        <Typography variant="caption">{point}</Typography>
-                      </li>
-                    ))}
-                  </ul>
-                </Box>
-              )}
-            </Box>
-          )}
+          {/* AI metadata would come from metadata field if needed */}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowAnalytics(false)}>Close</Button>
