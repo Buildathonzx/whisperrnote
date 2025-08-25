@@ -46,7 +46,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
       setTimeout(() => {
         router.replace('/login');
         hideLoading();
-      }, 200); // Reduced from 500ms
+      }, 200);
       return;
     }
 
@@ -56,7 +56,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
       setTimeout(() => {
         router.replace('/notes');
         hideLoading();
-      }, 200); // Reduced from 500ms
+      }, 200);
       return;
     }
 
@@ -66,11 +66,11 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
       setTimeout(() => {
         router.replace('/notes');
         hideLoading();
-      }, 200); // Reduced from 500ms
+      }, 200);
       return;
     }
 
-  }, [isLoading, isAuthenticated, pathname, router, showLoading, hideLoading]);
+  }, [isLoading, isAuthenticated, pathname, router]);
 
   // Show loading during initial auth check
   if (isLoading) {
