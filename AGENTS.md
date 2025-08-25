@@ -31,3 +31,9 @@
 - Return null for failed auth/data operations, log errors to console
 - Prefer async/await over Promises
 - Use loading states and error boundaries appropriately
+
+
+note:
+
+1. never edit appwrite.json
+2. never edit src/types/appwrite.d.ts
