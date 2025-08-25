@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAuth } from '@/components/ui/AuthContext';
@@ -107,8 +106,11 @@ export default function LandingPage() {
               team's best ideas take shape. Capture, organize, and act on
               inspiration, together in real-time.
             </p>
-            <Button size="lg" asChild>
-              <Link href="/signup">Sign up for free</Link>
+            <Button 
+              size="lg" 
+              onClick={() => showAuthModal('signup')}
+            >
+              Sign up for free
             </Button>
           </div>
         </section>
