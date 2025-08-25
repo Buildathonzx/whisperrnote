@@ -32,6 +32,12 @@ const config: Config = {
         // Accent
         'accent': '#ffc700', // sun-yellow
         'accent-dark': '#d9a900',
+
+        // CSS variable-based colors
+        'background': 'var(--background)',
+        'foreground': 'var(--foreground)',
+        'card': 'var(--card)',
+        'border': 'var(--border)',
       },
       borderRadius: {
         'xl': '1rem',
