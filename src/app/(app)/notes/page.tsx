@@ -11,7 +11,7 @@ import {
   MagnifyingGlassIcon,
   PlusCircleIcon,
   UserIcon,
-  BellIcon,
+  ShareIcon,
 } from '@heroicons/react/24/outline';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import CreateNoteForm from './CreateNoteForm';
@@ -81,23 +81,23 @@ export default function NotesPage() {
       </div>
       <footer className="fixed bottom-0 left-0 right-0 z-50 border-t-2 border-dark-border bg-dark-card py-2 shadow-[0px_-4px_10px_rgba(0,0,0,0.1)]">
         <nav className="flex justify-around">
-          <a href="#" className="flex flex-col items-center gap-1 text-dark-fg">
+          <a href="/notes" className="flex flex-col items-center gap-1 text-accent">
             <HomeIcon className="h-6 w-6" />
-            <span className="text-xs font-bold">Home</span>
-          </a>
-          <a href="#" className="flex flex-col items-center gap-1 text-accent">
-            <BellIcon className="h-6 w-6" />
             <span className="text-xs font-bold">Notes</span>
+          </a>
+          <a href="#" className="flex flex-col items-center gap-1 text-dark-fg">
+            <MagnifyingGlassIcon className="h-6 w-6" />
+            <span className="text-xs font-bold">Search</span>
           </a>
           <a href="#" className="flex flex-col items-center gap-1 text-dark-fg" onClick={handleCreateNoteClick}>
             <PlusCircleIcon className="h-6 w-6" />
-            <span className="text-xs font-bold">New</span>
+            <span className="text-xs font-bold">Create</span>
           </a>
-          <a href="#" className="flex flex-col items-center gap-1 text-dark-fg">
-            <BellIcon className="h-6 w-6" />
-            <span className="text-xs font-bold">Alerts</span>
+          <a href="/shared" className="flex flex-col items-center gap-1 text-dark-fg">
+            <ShareIcon className="h-6 w-6" />
+            <span className="text-xs font-bold">Shared</span>
           </a>
-          <a href="#" className="flex flex-col items-center gap-1 text-dark-fg">
+          <a href="/profile" className="flex flex-col items-center gap-1 text-dark-fg">
             <UserIcon className="h-6 w-6" />
             <span className="text-xs font-bold">Profile</span>
           </a>
