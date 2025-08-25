@@ -20,7 +20,7 @@ export default function CollaboratorsSection({ noteId }: CollaboratorsProps) {
     const fetchCollaborators = async () => {
       try {
         const res = await listCollaborators(noteId);
-        setCollaborators(res.documents as Collaborators[]);
+        setCollaborators(res.documents as unknown as Collaborators[]);
       } catch (error) {
         console.error('Failed to fetch collaborators:', error);
       }
@@ -29,7 +29,7 @@ export default function CollaboratorsSection({ noteId }: CollaboratorsProps) {
     const fetchUsers = async () => {
       try {
         const res = await listUsers();
-        setUsers(res.documents as Users[]);
+        setUsers(res.documents as unknown as Users[]);
       } catch (error) {
         console.error('Failed to fetch users:', error);
       }

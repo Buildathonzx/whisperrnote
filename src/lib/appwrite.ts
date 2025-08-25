@@ -90,8 +90,14 @@ export async function getEmailVerificationStatus(): Promise<boolean> {
 
 // --- USERS CRUD ---
 
+// Helper function to clean document properties
+function cleanDocumentData<T>(data: Partial<T>): Record<string, any> {
+  const { $id, $sequence, $collectionId, $databaseId, $createdAt, $updatedAt, $permissions, ...cleanData } = data as any;
+  return cleanData;
+}
+
 export async function createUser(data: Partial<Users>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_USERS, ID.unique(), data);
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_USERS, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getUser(userId: string): Promise<Users> {
@@ -99,7 +105,7 @@ export async function getUser(userId: string): Promise<Users> {
 }
 
 export async function updateUser(userId: string, data: Partial<Users>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_USERS, userId, data);
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_USERS, userId, cleanDocumentData(data));
 }
 
 export async function deleteUser(userId: string) {
@@ -117,12 +123,13 @@ export async function createNote(data: Partial<Notes>) {
   const user = await getCurrentUser();
   if (!user || !user.$id) throw new Error("User not authenticated");
   // Create note, set userId and id
+  const cleanData = cleanDocumentData(data);
   const doc = await databases.createDocument(
     APPWRITE_DATABASE_ID,
     APPWRITE_COLLECTION_ID_NOTES,
     ID.unique(),
     {
-      ...data,
+      ...cleanData,
       userId: user.$id,
       id: null // id will be set after creation
     }
@@ -161,13 +168,13 @@ export async function listNotes(queries: any[] = []) {
   }
   // Cast documents to Notes[]
   const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, queries);
-  return { ...res, documents: res.documents as Notes[] };
+  return { ...res, documents: res.documents as unknown as Notes[] };
 }
 
 // --- TAGS CRUD ---
 
 export async function createTag(data: Partial<Tags>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, ID.unique(), data);
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getTag(tagId: string): Promise<Tags> {
@@ -175,7 +182,7 @@ export async function getTag(tagId: string): Promise<Tags> {
 }
 
 export async function updateTag(tagId: string, data: Partial<Tags>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, tagId, data);
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, tagId, cleanDocumentData(data));
 }
 
 export async function deleteTag(tagId: string) {
@@ -189,7 +196,7 @@ export async function listTags(queries: any[] = []) {
 // --- APIKEYS CRUD ---
 
 export async function createApiKey(data: Partial<ApiKeys>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_APIKEYS, ID.unique(), data);
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_APIKEYS, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getApiKey(apiKeyId: string): Promise<ApiKeys> {
@@ -197,7 +204,7 @@ export async function getApiKey(apiKeyId: string): Promise<ApiKeys> {
 }
 
 export async function updateApiKey(apiKeyId: string, data: Partial<ApiKeys>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_APIKEYS, apiKeyId, data);
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_APIKEYS, apiKeyId, cleanDocumentData(data));
 }
 
 export async function deleteApiKey(apiKeyId: string) {
@@ -211,7 +218,7 @@ export async function listApiKeys(queries: any[] = []) {
 // --- BLOGPOSTS CRUD ---
 
 export async function createBlogPost(data: Partial<BlogPosts>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_BLOGPOSTS, ID.unique(), data);
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_BLOGPOSTS, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getBlogPost(blogPostId: string): Promise<BlogPosts> {
@@ -219,7 +226,7 @@ export async function getBlogPost(blogPostId: string): Promise<BlogPosts> {
 }
 
 export async function updateBlogPost(blogPostId: string, data: Partial<BlogPosts>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_BLOGPOSTS, blogPostId, data);
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_BLOGPOSTS, blogPostId, cleanDocumentData(data));
 }
 
 export async function deleteBlogPost(blogPostId: string) {
@@ -248,7 +255,7 @@ export async function getComment(commentId: string): Promise<Comments> {
 }
 
 export async function updateComment(commentId: string, data: Partial<Comments>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, commentId, data);
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, commentId, cleanDocumentData(data));
 }
 
 export async function deleteComment(commentId: string) {
@@ -262,7 +269,7 @@ export async function listComments(noteId: string) {
 // --- EXTENSIONS CRUD ---
 
 export async function createExtension(data: Partial<Extensions>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS, ID.unique(), data);
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getExtension(extensionId: string): Promise<Extensions> {
@@ -270,7 +277,7 @@ export async function getExtension(extensionId: string): Promise<Extensions> {
 }
 
 export async function updateExtension(extensionId: string, data: Partial<Extensions>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS, extensionId, data);
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS, extensionId, cleanDocumentData(data));
 }
 
 export async function deleteExtension(extensionId: string) {
@@ -284,7 +291,7 @@ export async function listExtensions(queries: any[] = []) {
 // --- REACTIONS CRUD ---
 
 export async function createReaction(data: Partial<Reactions>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_REACTIONS, ID.unique(), data);
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_REACTIONS, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getReaction(reactionId: string): Promise<Reactions> {
@@ -292,7 +299,7 @@ export async function getReaction(reactionId: string): Promise<Reactions> {
 }
 
 export async function updateReaction(reactionId: string, data: Partial<Reactions>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_REACTIONS, reactionId, data);
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_REACTIONS, reactionId, cleanDocumentData(data));
 }
 
 export async function deleteReaction(reactionId: string) {
@@ -306,7 +313,7 @@ export async function listReactions(queries: any[] = []) {
 // --- COLLABORATORS CRUD ---
 
 export async function createCollaborator(data: Partial<Collaborators>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, ID.unique(), data);
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getCollaborator(collaboratorId: string): Promise<Collaborators> {
@@ -314,7 +321,7 @@ export async function getCollaborator(collaboratorId: string): Promise<Collabora
 }
 
 export async function updateCollaborator(collaboratorId: string, data: Partial<Collaborators>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, collaboratorId, data);
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, collaboratorId, cleanDocumentData(data));
 }
 
 export async function deleteCollaborator(collaboratorId: string) {
@@ -328,7 +335,7 @@ export async function listCollaborators(noteId: string) {
 // --- ACTIVITY LOG CRUD ---
 
 export async function createActivityLog(data: Partial<ActivityLog>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, ID.unique(), data);
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getActivityLog(activityLogId: string): Promise<ActivityLog> {
@@ -336,7 +343,7 @@ export async function getActivityLog(activityLogId: string): Promise<ActivityLog
 }
 
 export async function updateActivityLog(activityLogId: string, data: Partial<ActivityLog>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, activityLogId, data);
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, activityLogId, cleanDocumentData(data));
 }
 
 export async function deleteActivityLog(activityLogId: string) {
