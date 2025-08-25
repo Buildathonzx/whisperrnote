@@ -18,13 +18,29 @@ interface LoadingProviderProps {
 export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("Loading your creative space...");
+  const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const showLoading = (customMessage?: string) => {
     setMessage(customMessage || "Loading your creative space...");
-    setIsLoading(true);
+    
+    // Clear any existing timeout
+    if (loadingTimeout) {
+      clearTimeout(loadingTimeout);
+    }
+    
+    // Only show loading if it takes longer than 100ms to prevent flashing for quick operations
+    const timeout = setTimeout(() => {
+      setIsLoading(true);
+    }, 100);
+    
+    setLoadingTimeout(timeout);
   };
 
   const hideLoading = () => {
+    if (loadingTimeout) {
+      clearTimeout(loadingTimeout);
+      setLoadingTimeout(null);
+    }
     setIsLoading(false);
   };
 

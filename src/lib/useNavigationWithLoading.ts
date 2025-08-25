@@ -11,14 +11,14 @@ export const useNavigationWithLoading = () => {
   const navigateTo = useCallback((path: string, message?: string) => {
     showLoading(message || 'Loading...');
     
-    // Add a slight delay to show the loading screen
+    // Reduced delay to minimize flashing
     setTimeout(() => {
       router.push(path);
-      // Hide loading after navigation
+      // Reduced loading duration after navigation
       setTimeout(() => {
         hideLoading();
-      }, 500); // Keep loading visible for 500ms after navigation
-    }, 100);
+      }, 200); // Reduced from 500ms to 200ms
+    }, 50); // Reduced from 100ms to 50ms
   }, [router, showLoading, hideLoading]);
 
   const navigateBack = useCallback((message?: string) => {
@@ -28,8 +28,8 @@ export const useNavigationWithLoading = () => {
       router.back();
       setTimeout(() => {
         hideLoading();
-      }, 500);
-    }, 100);
+      }, 200); // Reduced from 500ms
+    }, 50); // Reduced from 100ms
   }, [router, showLoading, hideLoading]);
 
   const navigateReplace = useCallback((path: string, message?: string) => {
@@ -39,8 +39,8 @@ export const useNavigationWithLoading = () => {
       router.replace(path);
       setTimeout(() => {
         hideLoading();
-      }, 500);
-    }, 100);
+      }, 200); // Reduced from 500ms
+    }, 50); // Reduced from 100ms
   }, [router, showLoading, hideLoading]);
 
   return {

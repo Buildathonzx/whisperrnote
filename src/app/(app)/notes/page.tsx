@@ -23,7 +23,10 @@ export default function NotesPage() {
 
   useEffect(() => {
     const fetchNotes = async () => {
-      showLoading('Loading your notes...');
+      // Only show loading if we don't already have notes
+      if (notes.length === 0) {
+        showLoading('Loading your notes...');
+      }
       try {
         const res = await appwriteListNotes();
         setNotes(Array.isArray(res.documents) ? (res.documents as Notes[]) : []);
@@ -35,7 +38,7 @@ export default function NotesPage() {
       }
     };
     fetchNotes();
-  }, [showLoading, hideLoading]);
+  }, []); // Removed showLoading, hideLoading from dependencies to prevent unnecessary refetches
 
   const handleNoteCreated = (newNote: Notes) => {
     setNotes((prevNotes) => [newNote, ...prevNotes]);

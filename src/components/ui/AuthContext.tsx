@@ -41,10 +41,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
     } finally {
       setIsLoading(false);
-      // Show loading for minimum 1.5 seconds for better UX
+      // Reduced loading time to prevent excessive flashing
       setTimeout(() => {
         setShowInitialLoading(false);
-      }, 1500);
+      }, 800); // Reduced from 1500ms to 800ms
     }
   };
 

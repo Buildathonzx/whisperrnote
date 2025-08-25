@@ -25,7 +25,7 @@ function isPublicRoute(path: string): boolean {
 }
 
 export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
   const { showLoading, hideLoading } = useLoading();
   const pathname = usePathname();
   const router = useRouter();
@@ -46,7 +46,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
       setTimeout(() => {
         router.replace('/login');
         hideLoading();
-      }, 500);
+      }, 200); // Reduced from 500ms
       return;
     }
 
@@ -56,7 +56,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
       setTimeout(() => {
         router.replace('/notes');
         hideLoading();
-      }, 500);
+      }, 200); // Reduced from 500ms
       return;
     }
 
@@ -66,7 +66,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
       setTimeout(() => {
         router.replace('/notes');
         hideLoading();
-      }, 500);
+      }, 200); // Reduced from 500ms
       return;
     }
 

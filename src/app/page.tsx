@@ -2,44 +2,23 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser } from '@/lib/appwrite';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { useAuth } from '@/components/ui/AuthContext';
 
 export default function Home() {
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const user = await getCurrentUser();
-        if (user) {
-          router.replace('/notes');
-        } else {
-          router.replace('/signup');
-        }
-      } catch (error) {
-        router.replace('/signup');
+    // Let AuthContext handle the initial loading and auth check
+    if (!isLoading) {
+      if (isAuthenticated) {
+        router.replace('/notes');
+      } else {
+        router.replace('/landing');
       }
-    };
+    }
+  }, [isAuthenticated, isLoading, router]);
 
-    checkAuth();
-  }, [router]);
-
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        gap: 2
-      }}
-    >
-      <CircularProgress />
-      <Typography variant="body1" color="text.secondary">
-        Redirecting...
-      </Typography>
-    </Box>
-  );
+  // Return null - AuthContext will show loading screen
+  return null;
 }
