@@ -28,19 +28,19 @@ export const AI_MODE_CONFIG: Record<AIMode, AIConfig> = {
     mode: AIMode.STANDARD,
     temperature: 0.3,
     maxTokens: 1000,
-    model: "gpt-3.5-turbo"
+    model: "gemini-2.0-flash-001"
   },
   [AIMode.CREATIVE]: {
     mode: AIMode.CREATIVE,
     temperature: 0.8,
     maxTokens: 2000,
-    model: "gpt-4"
+    model: "gemini-2.0-flash-001"
   },
   [AIMode.ULTRA]: {
     mode: AIMode.ULTRA,
     temperature: 0.9,
     maxTokens: 4000,
-    model: "gpt-4-turbo"
+    model: "gemini-2.5-flash"
   }
 };
 
