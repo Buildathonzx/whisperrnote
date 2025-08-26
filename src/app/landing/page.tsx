@@ -32,7 +32,18 @@ const features = [
 ];
 
 export default function LandingPage() {
-  const { showAuthModal } = useAuth();
+  const { showAuthModal, isAuthenticated, user } = useAuth();
+
+  // Generate user initials from name or email
+  const getUserInitials = (user: any): string => {
+    if (user?.name) {
+      return user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    if (user?.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return 'U';
+  };
 
   return (
     <div className="flex min-h-screen flex-col overflow-x-hidden bg-dark-bg text-dark-fg">
@@ -76,15 +87,20 @@ export default function LandingPage() {
             </a>
           </nav>
         <div className="flex items-center gap-3">
-          <Button 
-            variant="ghost" 
-            onClick={() => showAuthModal('login')}
-          >
-            Log in
-          </Button>
-          <Button onClick={() => showAuthModal('signup')}>
-            Sign Up
-          </Button>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-accent rounded-full flex items-center justify-center text-white text-sm font-medium shadow-3d-light dark:shadow-3d-dark">
+                {getUserInitials(user)}
+              </div>
+            </div>
+          ) : (
+            <Button 
+              variant="ghost" 
+              onClick={() => showAuthModal('login')}
+            >
+              Login
+            </Button>
+          )}
         </div>
       </header>
       <main className="flex-1">
