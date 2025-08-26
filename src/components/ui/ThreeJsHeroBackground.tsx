@@ -31,7 +31,7 @@ export const ThreeJsHeroBackground: React.FC<ThreeJsHeroBackgroundProps> = ({
       0.1,
       1000
     );
-    camera.position.z = 12;
+    camera.position.z = 8;
 
     // Renderer setup
     const renderer = new THREE.WebGLRenderer({ 
@@ -318,6 +318,7 @@ export const ThreeJsHeroBackground: React.FC<ThreeJsHeroBackgroundProps> = ({
 
       const material = createFluidMaterial(blob.color, colors.opacity);
       const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(blob.position.x, blob.position.y, 0);
       
       fluidMeshes.push(mesh);
       scene.add(mesh);
@@ -326,6 +327,7 @@ export const ThreeJsHeroBackground: React.FC<ThreeJsHeroBackgroundProps> = ({
       const trailGeometry = new THREE.PlaneGeometry(2, 2);
       const trailMaterial = createFluidMaterial(blob.color, colors.trailOpacity * 0.5);
       const trailMesh = new THREE.Mesh(trailGeometry, trailMaterial);
+      trailMesh.position.set(blob.position.x * 0.8, blob.position.y * 0.8, -0.1);
       
       trailMeshes.push(trailMesh);
       scene.add(trailMesh);
@@ -346,35 +348,31 @@ export const ThreeJsHeroBackground: React.FC<ThreeJsHeroBackgroundProps> = ({
       // Update fluid physics
       fluidBlobs.forEach(blob => blob.update(time, fluidBlobs));
 
-      // Update mesh positions and properties
-    fluidBlobs.forEach((blob, index) => {
-      // Main fluid blob
-      const geometry = new THREE.PlaneGeometry(4, 4, 8, 8);
-      const positions = geometry.attributes.position.array as Float32Array;
-      const shapeVariations = new Float32Array(positions.length / 3);
-      const velocities = new Float32Array(positions.length);
+      // Update existing mesh positions and properties
+      fluidBlobs.forEach((blob, index) => {
+        if (fluidMeshes[index]) {
+          const mesh = fluidMeshes[index];
+          mesh.position.set(blob.position.x, blob.position.y, 0);
+          
+          // Update material uniforms
+          const material = mesh.material as THREE.ShaderMaterial;
+          if (material && material.uniforms) {
+            if (material.uniforms.time) material.uniforms.time.value = time * 0.01;
+            if (material.uniforms.size) material.uniforms.size.value = 1.0 + Math.sin(time * 0.05) * 0.2;
+          }
+        }
 
-      for (let i = 0; i < shapeVariations.length; i++) {
-        shapeVariations[i] = Math.random();
-      }
-
-      geometry.setAttribute('shapeVariation', new THREE.BufferAttribute(shapeVariations, 1));
-      geometry.setAttribute('fluidVelocity', new THREE.BufferAttribute(velocities, 3));
-
-      const material = createFluidMaterial(blob.color, colors.opacity);
-      const mesh = new THREE.Mesh(geometry, material);
-      
-      fluidMeshes.push(mesh);
-      scene.add(mesh);
-
-      // Trail system
-      const trailGeometry = new THREE.PlaneGeometry(2, 2);
-      const trailMaterial = createFluidMaterial(blob.color, colors.trailOpacity * 0.5);
-      const trailMesh = new THREE.Mesh(trailGeometry, trailMaterial);
-      
-      trailMeshes.push(trailMesh);
-      scene.add(trailMesh);
-    });
+        if (trailMeshes[index]) {
+          const trailMesh = trailMeshes[index];
+          trailMesh.position.set(blob.position.x * 0.8, blob.position.y * 0.8, -0.1);
+          
+          // Update trail material
+          const trailMaterial = trailMesh.material as THREE.ShaderMaterial;
+          if (trailMaterial && trailMaterial.uniforms) {
+            if (trailMaterial.uniforms.time) trailMaterial.uniforms.time.value = time * 0.008;
+          }
+        }
+      });
 
       renderer.render(scene, camera);
     };

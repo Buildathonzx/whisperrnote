@@ -124,7 +124,7 @@ export function AIHeroInput({ onPromptSelectAction, className = '' }: AIHeroInpu
       {/* Quick Suggestions */}
       <div className="space-y-3">
         <p className="text-sm font-medium text-light-fg/70 dark:text-dark-fg/70 text-center">
-          Try these prompts:
+          Instant create with AI!
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {PROMPT_SUGGESTIONS.map((suggestion, index) => (
