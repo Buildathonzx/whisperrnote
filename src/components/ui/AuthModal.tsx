@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { loginEmailPassword, signupEmailPassword, getCurrentUser } from '@/lib/appwrite';
 import { useAuth } from './AuthContext';
 import { useLoading } from './LoadingContext';
+import { getUmiAccount } from '@/integrations/umi/wallet';
+import { generateNonce, getWalletMessage, verifyWalletSignature } from '@/lib/auth-utils';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,12 +14,16 @@ interface AuthModalProps {
   initialMode?: 'login' | 'signup';
 }
 
+type AuthMethod = 'selection' | 'email' | 'passkey' | 'wallet';
+type AuthMode = 'login' | 'signup';
+
 export const AuthModal: React.FC<AuthModalProps> = ({ 
   isOpen, 
   onClose, 
   initialMode = 'login' 
 }) => {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+  const [authMethod, setAuthMethod] = useState<'selection' | 'email' | 'passkey' | 'wallet'>('selection');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -30,11 +36,110 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setPassword('');
     setName('');
     setError('');
+    setAuthMethod('selection');
   };
 
   const handleClose = () => {
     resetForm();
     onClose();
+  };
+
+  const handleWalletAuth = async () => {
+    setError('');
+    showLoading('Connecting to wallet...');
+    
+    try {
+      // Check if MetaMask is installed
+      if (!window.ethereum) {
+        setError('MetaMask is not installed. Please install MetaMask to continue.');
+        return;
+      }
+
+      const account = await getUmiAccount();
+      const nonce = generateNonce();
+      const message = getWalletMessage(nonce);
+      
+      // Request signature from user
+      const signature = await window.ethereum.request({
+        method: 'personal_sign',
+        params: [message, account],
+      });
+
+      if (verifyWalletSignature(message, signature, account)) {
+        // Here you would typically call a backend service to authenticate the wallet
+        // For now, we'll simulate success
+        const mockUser = {
+          $id: account,
+          email: null,
+          name: `Wallet ${account.slice(0, 6)}...${account.slice(-4)}`,
+          walletAddress: account,
+        };
+        
+        authLogin(mockUser);
+        await refreshUser();
+        handleClose();
+      } else {
+        setError('Wallet signature verification failed');
+      }
+    } catch (err: any) {
+      if (err?.code === 4001) {
+        setError('Wallet connection was rejected');
+      } else {
+        setError(err?.message || 'Wallet authentication failed');
+      }
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const handlePasskeyAuth = async () => {
+    setError('');
+    showLoading('Authenticating with passkey...');
+    
+    try {
+      // Check if WebAuthn is supported
+      if (!window.PublicKeyCredential) {
+        setError('Passkeys are not supported in this browser');
+        return;
+      }
+
+      // This is a basic WebAuthn implementation
+      // In a real app, you'd get the challenge from your server
+      const credential = await navigator.credentials.create({
+        publicKey: {
+          challenge: new Uint8Array(32),
+          rp: { name: "WhisperNote" },
+          user: {
+            id: new Uint8Array(16),
+            name: "user@example.com",
+            displayName: "User",
+          },
+          pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            userVerification: "required"
+          }
+        }
+      });
+
+      if (credential) {
+        // Here you would typically send the credential to your backend for verification
+        // For now, we'll simulate success
+        const mockUser = {
+          $id: 'passkey_user',
+          email: null,
+          name: 'Passkey User',
+        };
+        
+        authLogin(mockUser);
+        await refreshUser();
+        handleClose();
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Passkey authentication failed');
+    } finally {
+      hideLoading();
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
