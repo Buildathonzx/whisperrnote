@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { listNotes as appwriteListNotes } from '@/lib/appwrite';
 import { useLoading } from '@/components/ui/LoadingContext';
+import { useOverlay } from '@/components/ui/OverlayContext';
+import { useSearchParams } from 'next/navigation';
 import type { Notes } from '@/types/appwrite-types';
 import NoteCard from '@/components/ui/NoteCard';
 import { Button } from '@/components/ui/Button';
@@ -13,14 +15,16 @@ import {
   MagnifyingGlassIcon,
   PlusCircleIcon,
 } from '@heroicons/react/24/outline';
-import { useOverlay } from '@/components/ui/OverlayContext';
 import CreateNoteForm from './CreateNoteForm';
 import { MobileBottomNav } from '@/components/Navigation';
+import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
 
 export default function NotesPage() {
   const [allNotes, setAllNotes] = useState<Notes[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
   const { showLoading, hideLoading } = useLoading();
-  const { openOverlay } = useOverlay();
+  const { openOverlay, closeOverlay } = useOverlay();
+  const searchParams = useSearchParams();
 
   // Fetch notes action for the search hook
   const fetchNotesAction = async (queries: string[]) => {
@@ -86,6 +90,78 @@ export default function NotesPage() {
     };
     fetchNotes();
   }, []);
+
+  // Check for AI prompt from landing page
+  useEffect(() => {
+    const aiPrompt = searchParams.get('ai-prompt');
+    const pendingPrompt = typeof window !== 'undefined' ? sessionStorage.getItem('pending-ai-prompt') : null;
+    
+    if (aiPrompt) {
+      // Direct from landing page with prompt
+      handleAIGenerateFromPrompt(aiPrompt);
+    } else if (pendingPrompt) {
+      // From sessionStorage after auth
+      sessionStorage.removeItem('pending-ai-prompt');
+      handleAIGenerateFromPrompt(pendingPrompt);
+    }
+  }, [searchParams]);
+
+  const handleAIGenerateFromPrompt = (prompt: string) => {
+    openOverlay(
+      <AIGeneratePromptModal
+        onClose={closeOverlay}
+        onGenerate={handleAIGenerate}
+        isGenerating={isGenerating}
+        initialPrompt={prompt}
+      />
+    );
+  };
+
+  const handleAIGenerate = async (prompt: string, type: 'topic' | 'brainstorm' | 'research' | 'custom') => {
+    setIsGenerating(true);
+    
+    try {
+      // Simulate AI generation for now
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      let generatedContent = '';
+      switch (type) {
+        case 'topic':
+          generatedContent = `# ${prompt}\n\nThis is a comprehensive note about ${prompt}.\n\n## Key Points\n\n- Important concept 1\n- Important concept 2\n- Important concept 3\n\n## Details\n\nDetailed information about ${prompt} will be generated here. This content will include relevant examples, explanations, and insights.\n\n## Conclusion\n\nSummary of the main points covered.`;
+          break;
+        case 'brainstorm':
+          generatedContent = `# Ideas for: ${prompt}\n\n## Creative Suggestions\n\n1. **Innovative Approach**: A fresh perspective on ${prompt}\n2. **Traditional Method**: Time-tested strategies for ${prompt}\n3. **Technology Integration**: How to leverage technology for ${prompt}\n4. **Collaborative Solution**: Team-based approaches to ${prompt}\n5. **Cost-Effective Option**: Budget-friendly ways to tackle ${prompt}\n\n## Next Steps\n\n- Evaluate each idea\n- Choose the most promising approaches\n- Create an action plan`;
+          break;
+        case 'research':
+          generatedContent = `# Research on: ${prompt}\n\n## Overview\n\nComprehensive research findings on ${prompt}.\n\n## Key Findings\n\n- Finding 1: Important discovery about ${prompt}\n- Finding 2: Statistical data related to ${prompt}\n- Finding 3: Expert opinions on ${prompt}\n\n## Analysis\n\nDetailed analysis of the research data and trends.\n\n## Sources\n\n- Academic papers\n- Industry reports\n- Expert interviews`;
+          break;
+        case 'custom':
+          generatedContent = `# Generated Content\n\n${prompt}\n\n## AI Response\n\nThis content has been generated based on your specific request. The AI has processed your instructions and created relevant information.\n\n## Additional Information\n\nSupplementary details and context have been added to provide a comprehensive response.`;
+          break;
+      }
+      
+      // Close the prompt modal and open create note form with content
+      closeOverlay();
+      
+      // Open the create note form with pre-filled content
+      openOverlay(
+        <CreateNoteForm 
+          initialContent={{
+            title: `AI Generated: ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+            content: generatedContent,
+            tags: [`ai-generated`, type]
+          }}
+          onNoteCreated={handleNoteCreated} 
+        />
+      );
+      
+    } catch (error) {
+      console.error('Failed to generate content:', error);
+      // TODO: Show error toast
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleNoteCreated = (newNote: Notes) => {
     setAllNotes((prevNotes) => [newNote, ...prevNotes]);

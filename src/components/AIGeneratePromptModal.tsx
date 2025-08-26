@@ -8,11 +8,12 @@ interface AIGeneratePromptModalProps {
   onClose: () => void;
   onGenerate: (prompt: string, type: 'topic' | 'brainstorm' | 'research' | 'custom') => void;
   isGenerating?: boolean;
+  initialPrompt?: string;
 }
 
-export function AIGeneratePromptModal({ onClose, onGenerate, isGenerating = false }: AIGeneratePromptModalProps) {
+export function AIGeneratePromptModal({ onClose, onGenerate, isGenerating = false, initialPrompt = '' }: AIGeneratePromptModalProps) {
   const [selectedType, setSelectedType] = useState<'topic' | 'brainstorm' | 'research' | 'custom'>('topic');
-  const [customPrompt, setCustomPrompt] = useState('');
+  const [customPrompt, setCustomPrompt] = useState(initialPrompt);
 
   const promptTypes = [
     {

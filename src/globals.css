@@ -11,6 +11,7 @@
     --border: theme('colors.light-border');
     --muted: theme('colors.light-muted');
     --accent: theme('colors.accent');
+    --accent-rgb: 255, 199, 0;
   }
 
   .dark {
@@ -21,6 +22,7 @@
     --border: theme('colors.dark-border');
     --muted: theme('colors.dark-muted');
     --accent: theme('colors.accent');
+    --accent-rgb: 255, 199, 0;
   }
 
   body {
@@ -48,11 +50,38 @@
   
   /* Enhanced 3D styling for UI elements */
   .card-3d {
-    @apply shadow-card-light dark:shadow-card-dark;
-    @apply border border-border;
-    @apply rounded-xl;
-    transition: all 0.2s ease;
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.15),
+      0 2px 4px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
+
+  /* Glow effects for AI elements */
+  .shadow-glow-accent {
+    box-shadow: 
+      0 0 10px rgba(var(--accent-rgb), 0.3),
+      0 0 20px rgba(var(--accent-rgb), 0.15),
+      0 0 30px rgba(var(--accent-rgb), 0.1);
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 
+        0 0 10px rgba(var(--accent-rgb), 0.3),
+        0 0 20px rgba(var(--accent-rgb), 0.15);
+    }
+    50% {
+      box-shadow: 
+        0 0 15px rgba(var(--accent-rgb), 0.5),
+        0 0 30px rgba(var(--accent-rgb), 0.25),
+        0 0 45px rgba(var(--accent-rgb), 0.15);
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+}
   
   .card-3d:hover {
     @apply shadow-3d-light dark:shadow-3d-dark;

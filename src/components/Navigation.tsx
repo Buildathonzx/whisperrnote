@@ -124,20 +124,10 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
   ];
 
   return (
-    <aside className={`hidden md:flex flex-col fixed left-0 top-0 h-full bg-light-card dark:bg-dark-card border-r-2 border-light-border dark:border-dark-border shadow-[inset_-1px_0_0_rgba(255,255,255,0.1),2px_0_8px_rgba(0,0,0,0.08)] z-40 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-72'} ${className}`}>
+    <aside className={`hidden md:flex flex-col fixed left-0 top-16 h-[calc(100vh-4rem)] bg-light-card dark:bg-dark-card border-r-2 border-light-border dark:border-dark-border shadow-[inset_-1px_0_0_rgba(255,255,255,0.1),2px_0_8px_rgba(0,0,0,0.08)] z-40 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-72'} ${className}`}>
       
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b-2 border-light-border dark:border-dark-border">
-        {!isCollapsed && (
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center shadow-lg">
-              <DocumentTextIcon className="h-5 w-5 text-white" />
-            </div>
-            <h2 className="text-xl font-black text-light-fg dark:text-dark-fg bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
-              WhisperNote
-            </h2>
-          </div>
-        )}
+      {/* Collapse Toggle */}
+      <div className="flex items-center justify-end p-4 border-b border-light-border dark:border-dark-border">
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="p-2 rounded-xl hover:bg-light-bg dark:hover:bg-dark-bg text-light-fg dark:text-dark-fg transition-all duration-200 hover:shadow-md"
@@ -147,10 +137,10 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
       </div>
 
       {/* Create Button */}
-      <div className="p-6 border-b border-light-border dark:border-dark-border">
+      <div className="p-4 border-b border-light-border dark:border-dark-border">
         <button
           onClick={handleCreateClick}
-          className={`w-full flex items-center justify-center gap-3 px-4 py-4 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white rounded-2xl font-bold transition-all duration-200 shadow-lg hover:shadow-xl hover:transform hover:-translate-y-0.5 ${isCollapsed ? 'px-3' : ''}`}
+          className={`w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white rounded-2xl font-bold transition-all duration-200 shadow-lg hover:shadow-xl hover:transform hover:-translate-y-0.5 ${isCollapsed ? 'px-3' : ''}`}
         >
           <PlusCircleIcon className="h-6 w-6" />
           {!isCollapsed && <span>Create Note</span>}
@@ -158,7 +148,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 p-6 space-y-2">
+      <nav className="flex-1 p-4 space-y-1 overflow-visible">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -167,7 +157,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
             <a
               key={item.path}
               href={item.path}
-              className={`flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-200 group ${
+              className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-200 group ${
                 active 
                   ? 'bg-accent text-white shadow-lg transform translate-x-1' 
                   : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:translate-x-0.5'
@@ -184,7 +174,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
       </nav>
 
       {/* User Profile & Controls */}
-      <div className="p-6 border-t border-light-border dark:border-dark-border space-y-4">
+      <div className="p-4 border-t border-light-border dark:border-dark-border space-y-3">
         {/* Theme Toggle */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isCollapsed && (
@@ -196,12 +186,12 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
         {/* User Info */}
         {isAuthenticated && user && (
           <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-            <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center text-white font-bold">
+            <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center text-white font-bold text-sm">
               {user.name ? user.name[0].toUpperCase() : user.email ? user.email[0].toUpperCase() : 'U'}
             </div>
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-light-fg dark:text-dark-fg truncate">
+                <p className="font-semibold text-light-fg dark:text-dark-fg truncate text-sm">
                   {user.name || user.email || 'User'}
                 </p>
                 <p className="text-xs text-light-fg/70 dark:text-dark-fg/70 truncate">
@@ -216,7 +206,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
         {isAuthenticated && (
           <button
             onClick={() => logout()}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-light-fg dark:text-dark-fg hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 ${isCollapsed ? 'justify-center px-3' : ''}`}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-light-fg dark:text-dark-fg hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 text-sm ${isCollapsed ? 'justify-center px-2' : ''}`}
           >
             <PowerIcon className="h-5 w-5" />
             {!isCollapsed && <span className="font-medium">Logout</span>}

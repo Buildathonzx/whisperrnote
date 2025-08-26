@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { SparklesIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/components/ui/AuthContext';
 import { useSubscription } from '@/components/ui/SubscriptionContext';
 import { useOverlay } from '@/components/ui/OverlayContext';
@@ -120,8 +120,18 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
   return (
     <header className={`fixed top-0 right-0 left-0 md:left-72 z-30 bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-sm border-b border-light-border dark:border-dark-border ${className}`}>
       <div className="flex items-center justify-between px-6 py-3 gap-4">
-        {/* Left: Search Bar */}
-        <div className="flex-1 max-w-md">
+        {/* Left: WhisperRNote Logo */}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center shadow-lg">
+            <DocumentTextIcon className="h-5 w-5 text-white" />
+          </div>
+          <h1 className="text-xl font-black text-light-fg dark:text-dark-fg bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
+            WhisperRNote
+          </h1>
+        </div>
+
+        {/* Center: Search Bar */}
+        <div className="flex-1 max-w-md mx-4">
           <TopBarSearch />
         </div>
         

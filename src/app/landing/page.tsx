@@ -4,35 +4,38 @@ import React from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAuth } from '@/components/ui/AuthContext';
+import { AIHeroInput } from '@/components/AIHeroInput';
 import {
-  UserGroupIcon,
-  RectangleStackIcon,
-  CheckBadgeIcon,
+  SparklesIcon,
+  CpuChipIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
 
 const features = [
   {
-    icon: <UserGroupIcon className="h-8 w-8 text-accent" />,
-    title: 'Real-time Collaboration',
+    icon: <SparklesIcon className="h-8 w-8 text-accent" />,
+    title: 'AI-Powered Creation',
     description:
-      "Work on notes together, see changes instantly, and keep the creative flow going without missing a beat.",
+      "Generate comprehensive notes, research summaries, and creative content with advanced AI assistance in seconds.",
   },
   {
-    icon: <RectangleStackIcon className="h-8 w-8 text-accent" />,
-    title: 'Structured Workspaces',
+    icon: <CpuChipIcon className="h-8 w-8 text-accent" />,
+    title: 'Blockchain Integration',
     description:
-      'Organize your work with dedicated spaces for projects or teams. Keep everything tidy and accessible for everyone.',
+      'Securely store and share your notes on-chain with cryptographic verification and decentralized access control.',
   },
   {
-    icon: <CheckBadgeIcon className="h-8 w-8 text-accent" />,
-    title: 'Actionable Notes',
+    icon: <ShieldCheckIcon className="h-8 w-8 text-accent" />,
+    title: 'Smart Collaboration',
     description:
-      'Turn discussions into do-lists. Assign tasks, set deadlines, and track progress right inside your notes.',
+      'Real-time collaborative editing with AI insights and blockchain-verified ownership and permissions.',
   },
 ];
 
 export default function LandingPage() {
   const { showAuthModal, isAuthenticated, user } = useAuth();
+  const router = useRouter();
 
   // Generate user initials from name or email
   const getUserInitials = (user: any): string => {
@@ -43,6 +46,19 @@ export default function LandingPage() {
       return user.email.slice(0, 2).toUpperCase();
     }
     return 'U';
+  };
+
+  // Handle AI prompt selection with smart routing
+  const handlePromptSelect = async (prompt: string) => {
+    if (isAuthenticated) {
+      // User is logged in - go directly to notes with AI generation
+      router.push(`/notes?ai-prompt=${encodeURIComponent(prompt)}`);
+    } else {
+      // User not logged in - show auth modal, then proceed
+      showAuthModal();
+      // Store prompt in sessionStorage for after login
+      sessionStorage.setItem('pending-ai-prompt', prompt);
+    }
   };
 
   return (
@@ -115,30 +131,39 @@ export default function LandingPage() {
           ></div>
           <div className="container relative z-10 mx-auto px-5">
             <h1 className="mb-4 text-4xl font-black leading-tight tracking-tighter text-foreground md:text-6xl">
-              Your Ideas, United.
+              Your notes, AI powered onchain
             </h1>
-            <p className="mx-auto mb-8 max-w-3xl text-lg text-foreground/60 md:text-xl">
-              WhisperNote is the fluid, collaborative workspace where your
-              team's best ideas take shape. Capture, organize, and act on
-              inspiration, together in real-time.
+            <p className="mx-auto mb-12 max-w-3xl text-lg text-foreground/60 md:text-xl">
+              Transform your ideas with AI assistance and secure them on blockchain. 
+              Generate comprehensive content instantly, collaborate seamlessly, and own your data forever.
             </p>
-            <Button 
-              size="lg" 
-              onClick={() => showAuthModal()}
-            >
-              Get started
-            </Button>
+            
+            {/* AI Hero Input */}
+            <AIHeroInput onPromptSelectAction={handlePromptSelect} className="mb-8" />
+            
+            {/* Fallback for users who prefer traditional sign-up */}
+            <div className="mt-8 pt-8 border-t border-foreground/10">
+              <p className="text-sm text-foreground/50 mb-4">Or get started the traditional way:</p>
+              <Button 
+                size="lg" 
+                onClick={() => showAuthModal()}
+                variant="ghost"
+                className="border-2 border-accent/30 hover:border-accent"
+              >
+                Sign up now
+              </Button>
+            </div>
           </div>
         </section>
         <section className="bg-dark-card py-20 md:py-28">
           <div className="container mx-auto px-5">
             <div className="mx-auto mb-16 max-w-2xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-dark-fg md:text-4xl">
-                Everything you need to collaborate
+                AI meets blockchain for the future of notes
               </h2>
               <p className="mt-4 text-lg text-foreground/60">
-                From brainstorming sessions to project roadmaps, WhisperNote
-                provides the tools to keep your team in sync.
+                Experience next-generation note-taking with intelligent content generation, 
+                decentralized storage, and cryptographic security built-in.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">

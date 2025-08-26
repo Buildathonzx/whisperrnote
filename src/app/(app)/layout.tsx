@@ -18,7 +18,7 @@ export default function AppLayout({
       <AppHeader />
       
       {/* Main Content */}
-      <div className="relative pt-16 md:pt-16 pb-24 md:pb-0">
+      <div className="relative pt-16 md:pt-16 pb-24 md:pb-0 md:ml-72">
         {children}
       </div>
       
