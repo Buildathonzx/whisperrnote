@@ -6,6 +6,8 @@ import { account } from '../appwrite';
 
 const PASSKEY_FUNCTION_URL = process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_PASSKEY_URL!;
 
+console.log('Passkey function URL:', PASSKEY_FUNCTION_URL);
+
 export interface PasskeyAuthResult {
   success: boolean;
   user?: any;
@@ -83,6 +85,7 @@ async function signUpWithPasskey(email: string): Promise<PasskeyAuthResult> {
 
 async function signInWithPasskey(email: string): Promise<PasskeyAuthResult> {
   try {
+    console.log('Making request to:', `${PASSKEY_FUNCTION_URL}/v1/tokens`);
     // 1. Start authentication
     const startResponse = await fetch(
       `${PASSKEY_FUNCTION_URL}/v1/tokens`,
@@ -92,6 +95,7 @@ async function signInWithPasskey(email: string): Promise<PasskeyAuthResult> {
         body: JSON.stringify({ email }),
       }
     );
+    console.log('Response status:', startResponse.status);
 
     if (!startResponse.ok) {
       throw new Error(await startResponse.text());
@@ -118,7 +122,7 @@ async function signInWithPasskey(email: string): Promise<PasskeyAuthResult> {
 
     const { userId, secret } = await finishResponse.json();
 
-    // 4. Create Appwrite session
+    // 4. Create Appwrite session using the token
     await account.createSession(userId, secret);
 
     return { success: true, user: await account.get() };
