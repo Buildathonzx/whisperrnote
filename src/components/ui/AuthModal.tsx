@@ -27,19 +27,40 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const { login: authLogin, refreshUser } = useAuth();
   const { showLoading, hideLoading } = useLoading();
 
-  // Show password field after user stops typing email for 1 second
+  // Email validation function
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
+  };
+
+  // Show password field after user stops typing email for 600ms AND email is valid, OR if force revealed
   useEffect(() => {
     if (email.trim().length === 0) {
       setShowPasswordField(false);
       return;
     }
 
+    if (!isValidEmail(email)) {
+      setShowPasswordField(false);
+      return;
+    }
+
     const timer = setTimeout(() => {
       setShowPasswordField(true);
-    }, 1000);
+    }, 600); // Reduced from 1000ms to 600ms for snappier response
 
     return () => clearTimeout(timer);
   }, [email]);
+
+  // Handle Enter key in email field to force reveal password
+  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (email.trim().length > 0) {
+        setShowPasswordField(true);
+      }
+    }
+  };
 
   const resetForm = () => {
     setEmail('');
@@ -147,7 +168,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
+    if (!email || !password || !isValidEmail(email)) return;
 
     setError('');
     showLoading('Authenticating...');
@@ -242,6 +263,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      onKeyDown={handleEmailKeyDown}
                       placeholder="Enter your email"
                       className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
                       autoComplete="email"
@@ -249,23 +271,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     
                     {showPasswordField && (
                       <motion.input
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
+                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                        animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Enter your password"
                         className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
                         autoComplete="current-password"
+                        autoFocus
                       />
                     )}
                     
                     {showPasswordField && (
                       <motion.button
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
+                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                        animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                        transition={{ duration: 0.2, ease: "easeOut", delay: 0.1 }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         type="button"
