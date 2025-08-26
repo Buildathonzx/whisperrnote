@@ -30,6 +30,23 @@
     font-feature-settings: "rlig" 1, "calt" 1;
     /* Smooth transitions for theme changes */
     transition: background-color 0.3s ease, color 0.3s ease;
+    /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+  }
+
+  /* Ensure all containers prevent horizontal overflow */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  .overflow-x-hidden {
+    overflow-x: hidden !important;
   }
 
   h1, h2, h3, h4, h5, h6 {

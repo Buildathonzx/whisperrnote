@@ -15,7 +15,7 @@ WhisperNote supports modular integrations to extend functionality with decentral
   _Codebase: `src/integrations/starknet`_
 
   _Codebase: `src/integrations/calimero`_
-- **ICP Cannisters Integration:** Decentralized data storage and reliability.  
+- **ICP Integration:** Decentralized data storage and reliability.  
   [ICP integration repo](https://github.com/nathfavour/whisperrnote_icp)
 
     URLs:
