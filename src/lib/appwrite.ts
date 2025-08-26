@@ -200,6 +200,10 @@ export async function listTags(queries: any[] = []) {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, queries);
 }
 
+export async function listTagsByUser(userId: string) {
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, [Query.equal('userId', userId)]);
+}
+
 // --- APIKEYS CRUD ---
 
 export async function createApiKey(data: Partial<ApiKeys>) {
@@ -542,6 +546,7 @@ export default {
   updateTag,
   deleteTag,
   listTags,
+  listTagsByUser,
   createApiKey,
   getApiKey,
   updateApiKey,

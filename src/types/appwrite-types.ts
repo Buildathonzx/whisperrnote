@@ -48,6 +48,7 @@ export type Notes = Models.Document & {
 
 export type Tags = Models.Document & {
     id: string | null;
+    userId: string | null;
     name: string | null;
     notes: string[] | null;
     createdAt: string | null;

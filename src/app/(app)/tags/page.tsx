@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Tags } from '@/types/appwrite-types';
-import { listTags, createTag, updateTag, deleteTag } from '@/lib/appwrite';
+import { listTagsByUser, createTag, updateTag, deleteTag } from '@/lib/appwrite';
+import { useAuth } from '@/components/ui/AuthContext';
 import { ID } from 'appwrite';
 
 export default function TagsPage() {
+  const { user, isAuthenticated, showAuthModal } = useAuth();
   const [tags, setTags] = useState<Tags[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,14 +38,25 @@ export default function TagsPage() {
   ];
 
   useEffect(() => {
-    fetchTags();
-  }, []);
+    if (!isAuthenticated) {
+      showAuthModal();
+      return;
+    }
+    if (user) {
+      fetchTags();
+    }
+  }, [isAuthenticated, user, showAuthModal]);
 
   const fetchTags = async () => {
+    if (!user) {
+      setError('User not authenticated');
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await listTags();
-      setTags(response.documents as Tags[]);
+      const response = await listTagsByUser(user.$id);
+      setTags(response.documents as unknown as Tags[]);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch tags');
     } finally {
@@ -55,6 +68,12 @@ export default function TagsPage() {
     e.preventDefault();
     setError(null);
     setIsCreating(true);
+
+    if (!user) {
+      setError('User not authenticated');
+      setIsCreating(false);
+      return;
+    }
 
     try {
       if (editingTag) {
@@ -68,6 +87,7 @@ export default function TagsPage() {
         // Create new tag
         await createTag({
           id: ID.unique(),
+          userId: user.$id, // Add userId for proper ownership
           name: formData.name,
           description: formData.description,
           color: formData.color,
@@ -118,6 +138,17 @@ export default function TagsPage() {
     setEditingTag(null);
     setError(null);
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-accent rounded-2xl shadow-3d-light dark:shadow-3d-dark animate-pulse mb-4 mx-auto"></div>
+          <p className="text-foreground/70">Please log in to manage your tags</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
