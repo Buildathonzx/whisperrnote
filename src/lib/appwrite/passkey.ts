@@ -59,7 +59,7 @@ async function signUpWithPasskey(email: string): Promise<PasskeyAuthResult> {
     // 3. Complete registration
     const finishResult = await functions.createExecution(
       PASSKEY_FUNCTION_ID,
-      JSON.stringify({ action: 'register/finish', challengeId, registration })
+      JSON.stringify({ action: 'register/complete', challengeId, registration })
     );
 
     if (finishResult.responseStatusCode !== 200) {
@@ -98,7 +98,7 @@ async function signInWithPasskey(email: string): Promise<PasskeyAuthResult> {
     // 3. Complete authentication
     const finishResult = await functions.createExecution(
       PASSKEY_FUNCTION_ID,
-      JSON.stringify({ action: 'authenticate/finish', challengeId, authentication })
+      JSON.stringify({ action: 'authenticate/complete', challengeId, authentication })
     );
 
     if (finishResult.responseStatusCode !== 200) {
