@@ -13,16 +13,16 @@ export function initializeAIProviders() {
   });
   aiProviderRegistry.register(mockProvider);
 
-  // Register Gemini provider if API key is available (but disabled by default)
+  // Register Gemini provider if API key is available
   const geminiApiKey = process.env.GEMINI_API_KEY;
   if (geminiApiKey) {
     const geminiProvider = createGeminiProvider({
       apiKey: geminiApiKey,
-      enabled: false, // Temporarily disabled
+      enabled: true, // Enable Gemini as fallback
       defaultMode: 'STANDARD' as any,
     });
     aiProviderRegistry.register(geminiProvider);
-    console.log('Gemini provider registered (disabled)');
+    console.log('Gemini provider registered (enabled)');
   } else {
     console.log('Gemini API key not found - provider not registered');
   }
@@ -42,7 +42,7 @@ export function initializeAIProviders() {
   }
 
   // Configure AI service with primary provider based on availability
-  const primaryProvider = githubToken ? 'github-models' : 'mock';
+  const primaryProvider = githubToken ? 'github-models' : (geminiApiKey ? 'gemini' : 'mock');
   const fallbackProviders = [
     ...(githubToken ? ['github-models'] : []),
     ...(geminiApiKey ? ['gemini'] : []),
