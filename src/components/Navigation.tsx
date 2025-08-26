@@ -237,7 +237,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
         {/* Logout */}
         {isAuthenticated && (
           <button
-            onClick={logout}
+            onClick={() => logout()}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-light-fg dark:text-dark-fg hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 ${isCollapsed ? 'justify-center px-3' : ''}`}
           >
             <PowerIcon className="h-5 w-5" />

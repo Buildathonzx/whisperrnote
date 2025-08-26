@@ -32,7 +32,6 @@ import {
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './AuthContext';
-import { logout } from '@/lib/auth';
 
 interface SearchResult {
   id: string;
@@ -92,7 +91,7 @@ export default function GlobalSearch({
 }: GlobalSearchProps) {
   const theme = useTheme();
   const router = useRouter();
-  const { user, logout: authLogout } = useAuth();
+  const { user, logout } = useAuth();
   const [query, setQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -154,7 +153,6 @@ export default function GlobalSearch({
   const handleLogout = async () => {
     try {
       await logout();
-      authLogout();
       router.push('/');
     } catch (error) {
       console.error('Logout failed:', error);
