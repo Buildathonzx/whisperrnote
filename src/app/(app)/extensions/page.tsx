@@ -1,18 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Package, Download, Star, User, Settings, Code, Zap, Shield, Brain } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { Extensions } from '@/types/appwrite';
-import { listExtensions, createExtension, updateExtension, deleteExtension, getCurrentUser } from '@/lib/appwrite';
+import { listExtensions, createExtension, updateExtension, getCurrentUser } from '@/lib/appwrite';
 
 interface ExtensionTemplate {
   id: string;
   name: string;
   description: string;
-  icon: React.ReactNode;
+  icon: string;
   category: string;
   hooks: string[];
   settings: any;
@@ -24,7 +23,7 @@ const extensionTemplates: ExtensionTemplate[] = [
     id: 'note-revisor',
     name: 'AI Note Revisor',
     description: 'Automatically revise and improve notes using AI when they are created',
-    icon: <Brain className="w-6 h-6" />,
+    icon: '🧠',
     category: 'AI Enhancement',
     hooks: ['onCreate'],
     settings: {
@@ -60,7 +59,7 @@ export default {
     id: 'auto-tagger',
     name: 'Smart Auto-Tagger',
     description: 'Automatically extract and add relevant tags to notes based on content',
-    icon: <Zap className="w-6 h-6" />,
+    icon: '⚡',
     category: 'Organization',
     hooks: ['onCreate', 'onUpdate'],
     settings: {
@@ -79,14 +78,6 @@ export default {
         ...note,
         tags: [...(note.tags || []), ...extractedTags]
       };
-    },
-    onUpdate: async (note, settings) => {
-      const extractedTags = await extractTags(note.content, settings);
-      const uniqueTags = [...new Set([...(note.tags || []), ...extractedTags])];
-      return {
-        ...note,
-        tags: uniqueTags.slice(0, settings.maxTags)
-      };
     }
   }
 };`
@@ -95,7 +86,7 @@ export default {
     id: 'security-scanner',
     name: 'Security Scanner',
     description: 'Scan notes for sensitive information and apply additional encryption',
-    icon: <Shield className="w-6 h-6" />,
+    icon: '🛡️',
     category: 'Security',
     hooks: ['onCreate', 'onUpdate'],
     settings: {
@@ -120,12 +111,7 @@ export default {
           const encryptedContent = await encryptSensitiveData(note.content, sensitiveData);
           return {
             ...note,
-            content: encryptedContent,
-            metadata: JSON.stringify({
-              ...JSON.parse(note.metadata || '{}'),
-              securityScanned: true,
-              sensitiveDataFound: sensitiveData.length
-            })
+            content: encryptedContent
           };
         }
       }
@@ -164,7 +150,7 @@ export default function ExtensionsPage() {
     try {
       setLoading(true);
       const result = await listExtensions();
-      setExtensions(result.documents as Extensions[]);
+      setExtensions(result.documents as unknown as Extensions[]);
     } catch (error) {
       console.error('Failed to load extensions:', error);
     } finally {
@@ -205,7 +191,6 @@ export default function ExtensionsPage() {
     ext.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const userExtensions = extensions.filter(ext => ext.authorId === user?.$id);
   const installedExtensions = extensions.filter(ext => ext.enabled);
 
   return (
@@ -225,7 +210,7 @@ export default function ExtensionsPage() {
             onClick={() => setIsCreateModalOpen(true)}
             className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <span className="mr-2">+</span>
             Create Extension
           </Button>
         </div>
@@ -311,7 +296,7 @@ export default function ExtensionsPage() {
           (activeTab === 'templates' && extensionTemplates.length === 0)
         ) && (
           <div className="text-center py-12">
-            <Package className="w-16 h-16 text-light-400 dark:text-dark-600 mx-auto mb-4" />
+            <div className="text-6xl mb-4">📦</div>
             <h3 className="text-lg font-medium text-light-700 dark:text-dark-300 mb-2">
               {activeTab === 'marketplace' && 'No extensions found'}
               {activeTab === 'installed' && 'No extensions installed'}
@@ -345,14 +330,12 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
   onToggle: (extension: Extensions) => void;
   isOwner: boolean;
 }) {
-  const settings = extension.settings ? JSON.parse(extension.settings) : {};
-
   return (
     <div className="bg-white dark:bg-dark-900 rounded-xl p-6 border border-light-200 dark:border-dark-800 hover:shadow-lg transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-            <Code className="w-5 h-5 text-white" />
+            <span className="text-white text-lg">📦</span>
           </div>
           <div>
             <h3 className="font-semibold text-light-900 dark:text-dark-50">{extension.name}</h3>
@@ -372,7 +355,7 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2 text-sm text-light-500 dark:text-dark-500">
-          <User className="w-4 h-4" />
+          <span>👤</span>
           <span>Author</span>
         </div>
         <Button
@@ -396,7 +379,7 @@ function TemplateCard({ template, onUse }: {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-            {template.icon}
+            <span className="text-white text-lg">{template.icon}</span>
           </div>
           <div>
             <h3 className="font-semibold text-light-900 dark:text-dark-50">{template.name}</h3>
@@ -424,7 +407,7 @@ function TemplateCard({ template, onUse }: {
       </div>
 
       <Button onClick={onUse} className="w-full" variant="outline">
-        <Download className="w-4 h-4 mr-2" />
+        <span className="mr-2">⬇️</span>
         Use Template
       </Button>
     </div>
