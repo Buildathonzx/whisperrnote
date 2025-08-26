@@ -33,7 +33,7 @@ export function initializeAIProviders() {
     const githubProvider = createGitHubModelsProvider({
       githubToken,
       enabled: true, // Enable GitHub Models by default when token is available
-      model: 'gpt-4o-mini', // Default model
+      model: 'gpt-4.1', // Default model
     });
     aiProviderRegistry.register(githubProvider);
     console.log('GitHub Models provider registered (enabled)');

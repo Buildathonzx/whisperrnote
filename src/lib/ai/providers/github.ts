@@ -72,7 +72,7 @@ export class GitHubModelsProvider extends AIProvider {
       const systemInstruction = this.getSystemInstructionForType(request.type);
       
       // Prepare GitHub Models request
-      const model = this.githubConfig.model || 'gpt-4o-mini';
+      const model = this.githubConfig.model || 'gpt-4.1';
       const response = await this.client.path('/chat/completions').post({
         body: {
           messages: [
