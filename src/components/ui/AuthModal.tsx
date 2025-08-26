@@ -24,6 +24,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [tooltip, setTooltip] = useState('');
   const [showPasswordField, setShowPasswordField] = useState(false);
   const { login: authLogin, refreshUser } = useAuth();
   const { showLoading, hideLoading } = useLoading();
@@ -67,6 +68,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setEmail('');
     setPassword('');
     setError('');
+    setTooltip('');
     setShowPasswordField(false);
   };
 
@@ -84,66 +86,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     return sanitized.length >= 3 ? sanitized.toLowerCase() : 'user' + Math.random().toString(36).substring(2, 8);
   };
 
-  const generateNonce = () => {
-    return Math.random().toString(36).substring(2, 15);
-  };
-
   const handleWalletAuth = async () => {
-    setError('');
-    showLoading('Connecting to wallet...');
-    
-    try {
-      if (!window.ethereum) {
-        setError('MetaMask is not installed. Please install MetaMask to continue.');
-        return;
-      }
-
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const account = accounts[0];
-      
-      if (!account) {
-        setError('No wallet account found');
-        return;
-      }
-
-      const nonce = generateNonce();
-      const message = `Sign this message to verify your wallet ownership. Nonce: ${nonce}`;
-      
-      const signature = await window.ethereum.request({
-        method: 'personal_sign',
-        params: [message, account],
-      });
-
-      if (!signature) {
-        setError('Wallet signature required');
-        return;
-      }
-
-      const mockUser = {
-        $id: 'wallet_user_' + Date.now(),
-        email: null,
-        name: account.substring(0, 6) + '...' + account.substring(account.length - 4),
-      };
-      
-      authLogin(mockUser);
-      await refreshUser();
-      handleClose();
-    } catch (err: any) {
-      if (err.code === 4001) {
-        setError('Wallet connection was rejected');
-      } else {
-        setError(err?.message || 'Wallet authentication failed');
-      }
-    } finally {
-      hideLoading();
-    }
+    setError('Create email account to configure wallet in settings');
+    return;
   };
 
   const handlePasskeyAuth = async () => {
-    console.log('Passkey button clicked', { email });
-    
     if (!email || !email.includes('@')) {
-      setError('Please enter a valid email address first');
+      setError('Create email account to configure passkey in settings');
       return;
     }
     
@@ -314,33 +264,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   <div className="flex-1 h-px bg-light-border dark:bg-dark-border"></div>
                 </div>
 
-                {/* Passkey & Wallet Buttons */}
+                 {/* Passkey & Wallet Buttons */}
                 <div className="flex flex-col md:flex-row gap-3">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handlePasskeyAuth}
-                    disabled={!email || !email.includes('@')}
-                    className={`flex-1 p-4 border border-light-border dark:border-dark-border rounded-xl transition-all text-center ${
-                      !email || !email.includes('@') 
-                        ? 'bg-light-card/50 dark:bg-dark-card/50 opacity-50 cursor-not-allowed' 
-                        : 'bg-light-card dark:bg-dark-card hover:shadow-3d-light dark:hover:shadow-3d-dark'
-                    }`}
+                    className="flex-1 p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center"
                   >
                     <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
                       <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-4 4-4-4 4-4 4 4 .257-.257A6 6 0 1118 8zm-6-6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <div className={`font-medium text-foreground text-sm ${
-                      !email || !email.includes('@') ? 'opacity-50' : ''
-                    }`}>Passkey</div>
+                    <div className="font-medium text-foreground text-sm">Passkey</div>
                   </motion.button>
 
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => handleWalletAuth()}
+                    onClick={handleWalletAuth}
                     className="flex-1 p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center"
                   >
                     <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
