@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { loginEmailPassword, signupEmailPassword, getCurrentUser } from '@/lib/appwrite';
 import { useAuth } from './AuthContext';
@@ -28,20 +28,34 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   initialMode = 'login' 
 }) => {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
-  const [authMethod, setAuthMethod] = useState<'selection' | 'email' | 'passkey' | 'wallet'>('selection');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [showPasswordField, setShowPasswordField] = useState(false);
   const { login: authLogin, refreshUser } = useAuth();
   const { showLoading, hideLoading } = useLoading();
+
+  // Show password field after user stops typing email for 1 second
+  useEffect(() => {
+    if (email.trim().length === 0) {
+      setShowPasswordField(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowPasswordField(true);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [email]);
 
   const resetForm = () => {
     setEmail('');
     setPassword('');
     setName('');
     setError('');
-    setAuthMethod('selection');
+    setShowPasswordField(false);
   };
 
   const handleClose = () => {
@@ -180,7 +194,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const toggleMode = () => {
     setMode(mode === 'login' ? 'signup' : 'login');
     setError('');
-    setAuthMethod('selection');
   };
 
   if (!isOpen) return null;
@@ -205,24 +218,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="backdrop-blur-lg bg-light-card/95 dark:bg-dark-card/95 rounded-3xl shadow-3d-light dark:shadow-3d-dark border border-light-border/20 dark:border-dark-border/20 overflow-hidden">
-            {/* Header */}
-            <div className="p-6 text-center border-b border-light-border/20 dark:border-dark-border/20">
-              <img 
-                src="/logo/whisperrnote.png" 
-                alt="WhisperNote Logo" 
-                className="mx-auto mb-4 w-16 h-16 rounded-full shadow-3d-light dark:shadow-3d-dark" 
-              />
-              <h2 className="text-2xl font-bold text-foreground mb-2">
-                {mode === 'login' ? 'Welcome Back' : 'Create Account'}
-              </h2>
-              <p className="text-foreground/60">
-                {mode === 'login' 
-                  ? 'Sign in to your WhisperNote account' 
-                  : 'Sign up to get started with WhisperNote'
-                }
-              </p>
-            </div>
-
             {/* Content */}
             <div className="p-6">
               {error && (
@@ -235,162 +230,135 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </motion.div>
               )}
 
-              {authMethod === 'selection' ? (
-                <div className="space-y-4">
-                  <p className="text-center text-foreground/60 mb-6">
-                    Choose how you'd like to {mode === 'login' ? 'sign in' : 'create your account'}
-                  </p>
+              {/* Continue with section */}
+              <div className="space-y-6">
+                <h3 className="text-center text-lg font-medium text-foreground mb-6">
+                  Continue with:
+                </h3>
                   
-                  <div className="space-y-3">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setAuthMethod('email')}
-                      className="w-full p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-left flex items-center space-x-3"
-                    >
+                  {/* Email Option */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
                         <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                           <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                         </svg>
                       </div>
-                      <div>
-                        <div className="font-medium text-foreground">Continue with Email</div>
-                        <div className="text-sm text-foreground/60">Use your email and password</div>
-                      </div>
-                    </motion.button>
+                      <span className="font-medium text-foreground">Email</span>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email"
+                        className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
+                        autoComplete="email"
+                      />
+                      
+                      {mode === 'signup' && (
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Enter your name"
+                          className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
+                          autoComplete="name"
+                        />
+                      )}
+                      
+                      {showPasswordField && (
+                        <motion.input
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Enter your password"
+                          className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
+                          autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                        />
+                      )}
+                      
+                      {showPasswordField && (
+                        <motion.button
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (mode === 'login') {
+                              handleLogin(e);
+                            } else {
+                              handleSignup(e);
+                            }
+                          }}
+                          className="w-full bg-accent hover:bg-accent/90 text-white py-2 px-4 rounded-xl font-medium transition-colors shadow-3d-light dark:shadow-3d-dark"
+                        >
+                          {mode === 'login' ? 'Sign In' : 'Sign Up'}
+                        </motion.button>
+                      )}
+                    </div>
+                  </div>
 
+                  {/* Divider */}
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-1 h-px bg-light-border dark:bg-dark-border"></div>
+                    <span className="text-sm text-foreground/60">or</span>
+                    <div className="flex-1 h-px bg-light-border dark:bg-dark-border"></div>
+                  </div>
+
+                  {/* Passkey & Wallet Buttons */}
+                  <div className="flex flex-col md:flex-row gap-3">
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handlePasskeyAuth()}
-                      className="w-full p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-left flex items-center space-x-3"
+                      className="flex-1 p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center"
                     >
-                      <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
                         <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-4 4-4-4 4-4 4 4 .257-.257A6 6 0 1118 8zm-6-6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                         </svg>
                       </div>
-                      <div>
-                        <div className="font-medium text-foreground">Continue with Passkey</div>
-                        <div className="text-sm text-foreground/60">Use biometric or security key</div>
-                      </div>
+                      <div className="font-medium text-foreground text-sm">Passkey</div>
                     </motion.button>
 
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleWalletAuth()}
-                      className="w-full p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-left flex items-center space-x-3"
+                      className="flex-1 p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center"
                     >
-                      <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
                         <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                         </svg>
                       </div>
-                      <div>
-                        <div className="font-medium text-foreground">Continue with Wallet</div>
-                        <div className="text-sm text-foreground/60">Connect your Web3 wallet</div>
-                      </div>
+                      <div className="font-medium text-foreground text-sm">Wallet</div>
                     </motion.button>
                   </div>
                 </div>
-              ) : (
-                <form onSubmit={mode === 'login' ? handleLogin : handleSignup} className="space-y-4">
-                  {mode === 'signup' && (
-                    <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-                          Name
-                        </label>
-                        <input
-                          id="name"
-                          type="text"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          required
-                          className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
-                          placeholder="Enter your name"
-                          autoComplete="name"
-                        />
-                    </div>
-                  )}
 
-                      <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                          Email
-                        </label>
-                        <input
-                          id="email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                          className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
-                          placeholder="Enter your email"
-                          autoComplete="email"
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
-                          Password
-                        </label>
-                        <input
-                          id="password"
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                          className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
-                          placeholder="Enter your password"
-                          autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                        />
-                      </div>
-
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        type="submit"
-                        className="w-full py-3 px-4 bg-accent hover:bg-accent-dark text-light-bg rounded-xl font-semibold shadow-3d-light transition-all duration-200"
-                      >
-                        {mode === 'login' ? 'Sign In' : 'Create Account'}
-                      </motion.button>
-
-                  <div className="text-center">
-                        <button
-                          type="button"
-                          onClick={() => setAuthMethod('selection')}
-                          className="text-sm text-accent hover:text-accent-dark transition-colors"
-                        >
-                          ← Back to options
-                        </button>
-                      </div>
-                    </form>
-                  )}
-
-                  {/* Footer */}
-                  <div className="mt-6 text-center space-y-3">
-                    {authMethod === 'email' && mode === 'login' && (
-                      <a 
-                        href="/reset" 
-                        className="block text-sm text-accent hover:text-accent-dark transition-colors"
-                        onClick={handleClose}
-                      >
-                        Forgot your password?
-                      </a>
-                    )}
-                    
-                    <p className="text-sm text-foreground/60">
-                      {mode === 'login' ? "Don't have an account?" : "Already have an account?"}{" "}
-                      <button
-                        type="button"
-                        onClick={toggleMode}
-                        className="text-accent hover:text-accent-dark font-medium transition-colors"
-                      >
-                        {mode === 'login' ? 'Sign up' : 'Sign in'}
-                      </button>
-                    </p>
-                  </div>
+              {/* Footer */}
+              <div className="mt-6 text-center space-y-3">
+                <p className="text-sm text-foreground/60">
+                  {mode === 'login' ? "Don't have an account?" : "Already have an account?"}{" "}
+                  <button
+                    type="button"
+                    onClick={toggleMode}
+                    className="text-accent hover:text-accent/80 font-medium transition-colors"
+                  >
+                    {mode === 'login' ? 'Sign up' : 'Sign in'}
+                  </button>
+                </p>
+              </div>
             </div>
 
             {/* Close button */}
