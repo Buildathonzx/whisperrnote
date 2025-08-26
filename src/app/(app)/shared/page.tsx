@@ -38,7 +38,7 @@ export default function SharedNotesPage() {
         <header className="hidden md:flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-black text-light-fg dark:text-dark-fg mb-2">
-              Shared with Me
+              Shared
             </h1>
             <p className="text-lg text-light-fg/70 dark:text-dark-fg/70">
               Notes that others have shared with you
