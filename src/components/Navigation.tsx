@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useAuth } from '@/components/ui/AuthContext';
+import { useSidebar } from '@/components/ui/SidebarContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 
@@ -96,7 +97,7 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
 export const DesktopSidebar: React.FC<NavigationProps> = ({ 
   className = '' 
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isCollapsed, setIsCollapsed } = useSidebar();
   const pathname = usePathname();
   const { openOverlay } = useOverlay();
   const { user, isAuthenticated, logout } = useAuth();
