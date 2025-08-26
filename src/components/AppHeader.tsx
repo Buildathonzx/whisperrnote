@@ -3,14 +3,10 @@
 import { useState, useEffect } from 'react';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/components/ui/AuthContext';
-import { useSubscription } from '@/components/ui/SubscriptionContext';
 import { useOverlay } from '@/components/ui/OverlayContext';
-import AIModeSelect from '@/components/AIModeSelect';
 import { TopBarSearch } from '@/components/TopBarSearch';
 import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
-import { AIMode } from '@/types/ai';
-import { updateAIMode, getAIMode } from '@/lib/appwrite';
 
 interface AppHeaderProps {
   className?: string;
@@ -18,41 +14,12 @@ interface AppHeaderProps {
 
 export default function AppHeader({ className = '' }: AppHeaderProps) {
   const { user, isAuthenticated } = useAuth();
-  const { userTier } = useSubscription();
   const { openOverlay, closeOverlay } = useOverlay();
-  const [currentAIMode, setCurrentAIMode] = useState<AIMode>(AIMode.STANDARD);
-  const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
-    const loadAIMode = async () => {
-      if (isAuthenticated && user) {
-        try {
-          const mode = await getAIMode(user.$id);
-          setCurrentAIMode((mode as AIMode) || AIMode.STANDARD);
-        } catch (error) {
-          console.error('Failed to load AI mode:', error);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    };
-
-    loadAIMode();
+    // Component initialization if needed
   }, [isAuthenticated, user]);
-
-  const handleAIModeChange = async (mode: AIMode) => {
-    if (user) {
-      try {
-        await updateAIMode(user.$id, mode);
-        setCurrentAIMode(mode);
-      } catch (error) {
-        console.error('Failed to update AI mode:', error);
-      }
-    }
-  };
 
   const handleAIGenerateClick = () => {
     openOverlay(
@@ -113,7 +80,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
     }
   };
 
-  if (!isAuthenticated || loading) {
+  if (!isAuthenticated) {
     return null;
   }
 
@@ -159,13 +126,6 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
             )}
             <span className="hidden sm:inline">Generate</span>
           </button>
-          
-          {/* AI Mode Select */}
-          <AIModeSelect
-            currentMode={currentAIMode}
-            userTier={userTier}
-            onModeChangeAction={handleAIModeChange}
-          />
         </div>
       </div>
     </header>
