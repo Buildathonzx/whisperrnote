@@ -176,38 +176,37 @@ export default function NotesPage() {
   const tags = existingTags.length > 0 ? existingTags.slice(0, 8) : ['Personal', 'Work', 'Ideas', 'To-Do'];
 
   return (
-    <div className="relative flex size-full min-h-screen flex-col overflow-x-hidden bg-light-bg dark:bg-dark-bg md:ml-72">
-      <div className="flex-grow px-4 pt-6 pb-24 sm:px-6 md:px-8 md:pb-8">
-        {/* Mobile Header - Hidden on Desktop */}
-        <header className="mb-8 flex items-center justify-between md:hidden">
-          <h1 className="text-3xl font-bold text-light-fg dark:text-dark-fg">
-            Notes
-          </h1>
-          <div className="flex items-center gap-3">
-            <Button size="icon" onClick={handleCreateNoteClick}>
-              <PlusCircleIcon className="h-6 w-6" />
-            </Button>
-          </div>
-        </header>
+    <div className="flex-1 min-h-screen">
+      {/* Mobile Header - Hidden on Desktop */}
+      <header className="mb-8 flex items-center justify-between md:hidden">
+        <h1 className="text-3xl font-bold text-light-fg dark:text-dark-fg">
+          Notes
+        </h1>
+        <div className="flex items-center gap-3">
+          <Button size="icon" onClick={handleCreateNoteClick}>
+            <PlusCircleIcon className="h-6 w-6" />
+          </Button>
+        </div>
+      </header>
 
-        {/* Desktop Header */}
-        <header className="hidden md:flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-black text-light-fg dark:text-dark-fg mb-2">
-              My Notes
-            </h1>
-            <p className="text-lg text-light-fg/70 dark:text-dark-fg/70">
-              {totalCount} {totalCount === 1 ? 'note' : 'notes'} in your collection
-              {hasSearchResults && ` (filtered from ${allNotes.length})`}
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button onClick={handleCreateNoteClick} className="gap-2">
-              <PlusCircleIcon className="h-5 w-5" />
-              Create Note
-            </Button>
-          </div>
-        </header>
+      {/* Desktop Header */}
+      <header className="hidden md:flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-4xl font-black text-light-fg dark:text-dark-fg mb-2">
+            My Notes
+          </h1>
+          <p className="text-lg text-light-fg/70 dark:text-dark-fg/70">
+            {totalCount} {totalCount === 1 ? 'note' : 'notes'} in your collection
+            {hasSearchResults && ` (filtered from ${allNotes.length})`}
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <Button onClick={handleCreateNoteClick} className="gap-2">
+            <PlusCircleIcon className="h-5 w-5" />
+            Create Note
+          </Button>
+        </div>
+      </header>
 
         {/* Search Bar */}
         <div className="mb-6">

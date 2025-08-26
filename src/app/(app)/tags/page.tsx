@@ -133,7 +133,7 @@ export default function TagsPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop spacing */}
-      <div className="ml-0 lg:ml-64">
+      <div className="">
         <div className="p-6">
           {/* Header */}
           <div className="mb-8">

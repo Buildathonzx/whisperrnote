@@ -20,7 +20,7 @@ export default function SharedNotesPage() {
   }, []);
 
   return (
-    <div className="relative flex size-full min-h-screen flex-col overflow-x-hidden bg-light-bg dark:bg-dark-bg md:ml-72">
+    <div className="relative flex size-full min-h-screen flex-col overflow-x-hidden bg-light-bg dark:bg-dark-bg">
       <div className="flex-grow px-4 pt-6 pb-24 sm:px-6 md:px-8 md:pb-8">
         {/* Mobile Header - Hidden on Desktop */}
         <header className="mb-8 flex items-center justify-between md:hidden">
