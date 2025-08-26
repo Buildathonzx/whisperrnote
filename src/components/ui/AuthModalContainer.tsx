@@ -5,12 +5,12 @@ import { useAuth } from './AuthContext';
 import { AuthModal } from './AuthModal';
 
 export const AuthModalContainer: React.FC = () => {
-  const { authModalOpen, hideAuthModal } = useAuth();
+  const { authModalOpen, hideAuthModalAndRedirect } = useAuth();
 
   return (
     <AuthModal
       isOpen={authModalOpen}
-      onClose={hideAuthModal}
+      onClose={hideAuthModalAndRedirect}
     />
   );
 };

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAuth } from '@/components/ui/AuthContext';
 import { AIHeroInput } from '@/components/AIHeroInput';
-import { ThreeJsHeroBackground } from '@/components/ui/ThreeJsHeroBackground';
 import {
   SparklesIcon,
   CpuChipIcon,
@@ -122,12 +121,6 @@ export default function LandingPage() {
       </header>
       <main className="flex-1">
         <section className="relative flex items-center justify-center py-24 text-center md:py-32">
-          {/* Three.js Creative Background */}
-          <ThreeJsHeroBackground className="absolute inset-0 z-0" />
-          
-          {/* Subtle overlay to ensure text readability */}
-          <div className="absolute inset-0 z-10 bg-gradient-to-b from-light-bg/40 via-light-bg/60 to-light-bg/80 dark:from-dark-bg/40 dark:via-dark-bg/60 dark:to-dark-bg/80"></div>
-          
           <div className="container relative z-20 mx-auto px-5">
             <h1 className="mb-4 text-4xl font-black leading-tight tracking-tighter text-light-fg dark:text-dark-fg md:text-6xl">
               Your notes, AI powered onchain

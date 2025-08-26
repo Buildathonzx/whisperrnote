@@ -14,7 +14,7 @@ const AppContent: React.FC<AppContentProps> = ({ children }) => {
   return (
     <>
       {children}
-      <LoadingOverlay show={isLoading} message={message} />
+      {/* LoadingOverlay disabled - only use InitialLoadingScreen */}
     </>
   );
 };

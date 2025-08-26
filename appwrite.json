@@ -1074,5 +1074,27 @@
             "encryption": true,
             "antivirus": true
         }
+    ],
+    "functions": [
+        {
+            "$id": "68adaa4f0017aa9ef537",
+            "execute": [
+                "any"
+            ],
+            "name": "passkey",
+            "enabled": true,
+            "logging": true,
+            "runtime": "node-22",
+            "scopes": [
+                "users.read"
+            ],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "specification": "s-0.5vcpu-512mb",
+            "path": "functions/passkey"
+        }
     ]
 }

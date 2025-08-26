@@ -33,7 +33,6 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
 
   useEffect(() => {
     if (isLoading) {
-      showLoading('Checking authentication...');
       return;
     }
 

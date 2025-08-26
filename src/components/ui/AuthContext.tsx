@@ -21,6 +21,7 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
   showAuthModal: () => void;
   hideAuthModal: () => void;
+  hideAuthModalAndRedirect: () => void;
   authModalOpen: boolean;
 }
 
@@ -78,6 +79,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setAuthModalOpen(false);
   };
 
+  const hideAuthModalAndRedirect = () => {
+    setAuthModalOpen(false);
+    // Small delay to ensure modal closes before navigation
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 100);
+  };
+
   const value = {
     user,
     isLoading,
@@ -87,6 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     refreshUser,
     showAuthModal,
     hideAuthModal,
+    hideAuthModalAndRedirect,
     authModalOpen,
   };
 

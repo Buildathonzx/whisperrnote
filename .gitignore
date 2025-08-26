@@ -56,3 +56,4 @@ flow/
 *.env*
 # Added by Autocommiter: ensure .docx/
 .docx/
+functions/
