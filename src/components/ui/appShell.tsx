@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { getCurrentUser } from "@/lib/appwrite";
+import { useAuth } from "./AuthContext";
 import Navigation from "../Navigation";
 import QuickCreateFab from "./QuickCreateFab";
 import { Box, CircularProgress, Typography } from "@mui/material";
@@ -25,6 +26,7 @@ interface AppShellProps {
 export default function AppShell({ children, toggleTheme, isDarkMode }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { showAuthModal } = useAuth();
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
@@ -34,11 +36,11 @@ export default function AppShell({ children, toggleTheme, isDarkMode }: AppShell
     }
     getCurrentUser()
       .then(user => {
-        if (!user) router.replace("/login");
+        if (!user) showAuthModal();
         setAuthChecked(true);
       })
       .catch(() => {
-        router.replace("/login");
+        showAuthModal();
         setAuthChecked(true);
       });
   }, [pathname, router]);

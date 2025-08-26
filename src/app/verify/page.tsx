@@ -2,6 +2,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { account, getCurrentUser, sendEmailVerification, completeEmailVerification } from "@/lib/appwrite";
+import { useAuth } from "@/components/ui/AuthContext";
 import type { Users } from "@/types/appwrite-types";
 import { motion } from "framer-motion";
 
@@ -14,6 +15,7 @@ function EmailVerifyInner() {
   const [emailSent, setEmailSent] = useState<boolean>(false);
 
   const router = useRouter();
+  const { showAuthModal } = useAuth();
   const searchParams = useSearchParams();
   const userId = searchParams?.get("userId") || "";
   const secret = searchParams?.get("secret") || "";
@@ -52,7 +54,7 @@ function EmailVerifyInner() {
         }
       })
       .catch(() => {
-        router.replace("/login");
+        showAuthModal();
       });
   }, [router]);
 

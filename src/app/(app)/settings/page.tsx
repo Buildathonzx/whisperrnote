@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { account, getSettings, createSettings, updateSettings, updateUser, uploadProfilePicture, getProfilePicture, listNotes, updateAIMode, getAIMode } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
 import { useOverlay } from "@/components/ui/OverlayContext";
+import { useAuth } from "@/components/ui/AuthContext";
 import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, SubscriptionTier, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
@@ -46,6 +47,7 @@ export default function SettingsPage() {
   const { userTier } = useSubscription();
   const { openOverlay, closeOverlay } = useOverlay();
   const router = useRouter();
+  const { showAuthModal } = useAuth();
 
   useEffect(() => {
     const fetchUserAndSettings = async () => {
@@ -95,7 +97,7 @@ export default function SettingsPage() {
           console.error('Failed to load auth methods:', e);
         }
       } catch {
-        router.replace("/login");
+        showAuthModal();
       } finally {
         setLoading(false);
       }
