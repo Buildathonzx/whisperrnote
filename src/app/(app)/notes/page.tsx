@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { listNotes as appwriteListNotes } from '@/lib/appwrite';
 import { useLoading } from '@/components/ui/LoadingContext';
 import { useOverlay } from '@/components/ui/OverlayContext';
+import { useAI } from '@/components/ui/AIContext';
 import { useSearchParams } from 'next/navigation';
 import type { Notes } from '@/types/appwrite-types';
 import NoteCard from '@/components/ui/NoteCard';
@@ -22,10 +23,10 @@ import { MobileFAB } from '@/components/MobileFAB';
 
 export default function NotesPage() {
   const [allNotes, setAllNotes] = useState<Notes[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const { showLoading, hideLoading } = useLoading();
   const { openOverlay, closeOverlay } = useOverlay();
+  const { isGenerating, setIsGenerating, setAIGenerateHandler } = useAI();
   const searchParams = useSearchParams();
 
   // Fetch notes action for the search hook
@@ -53,7 +54,6 @@ export default function NotesPage() {
   const {
     items: paginatedNotes,
     totalCount,
-    isSearching,
     error,
     searchQuery,
     setSearchQuery,
@@ -65,7 +65,6 @@ export default function NotesPage() {
     goToPage,
     nextPage,
     previousPage,
-    refresh,
     clearSearch
   } = useSearch({
     data: allNotes,
@@ -73,6 +72,12 @@ export default function NotesPage() {
     searchConfig,
     paginationConfig
   });
+
+  // Register AI handler with context
+  useEffect(() => {
+    setAIGenerateHandler(handleAIGenerate);
+    return () => setAIGenerateHandler(undefined);
+  }, [setAIGenerateHandler]);
 
   // Initial data fetch
   useEffect(() => {

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { UserCircleIcon, ShareIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, ShareIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/components/ui/AuthContext';
+import { useAI } from '@/components/ui/AIContext';
 import { TopBarSearch } from '@/components/TopBarSearch';
+import { Button } from '@/components/ui/Button';
 
 interface AppHeaderProps {
   className?: string;
@@ -11,6 +13,7 @@ interface AppHeaderProps {
 
 export default function AppHeader({ className = '' }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
+  const { isGenerating, showAIGenerateModal } = useAI();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -20,6 +23,10 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
   const handleLogout = () => {
     setIsAccountMenuOpen(false);
     logout();
+  };
+
+  const handleAIGenerateClick = () => {
+    showAIGenerateModal();
   };
 
   if (!isAuthenticated) {
@@ -46,8 +53,22 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
           <TopBarSearch />
         </div>
         
-        {/* Right: Account Menu */}
+        {/* Right: AI Generate Button (Desktop) + Account Menu */}
         <div className="relative flex items-center gap-3 shrink-0">
+          {/* AI Generate Button - Desktop Only */}
+          <div className="hidden md:block">
+            <Button 
+              onClick={handleAIGenerateClick}
+              disabled={isGenerating}
+              className="gap-2"
+              variant="default"
+            >
+              <SparklesIcon className="h-4 w-4" />
+              AI Generate
+            </Button>
+          </div>
+
+          {/* Account Menu Button */}
           <button
             onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
             className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card hover:bg-card/80 transition-all duration-200"
