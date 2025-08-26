@@ -44,7 +44,7 @@ async function signUpWithPasskey(email: string): Promise<PasskeyAuthResult> {
     // 1. Start registration
     const startResult = await functions.createExecution(
       PASSKEY_FUNCTION_ID,
-      JSON.stringify({ action: 'register-start', email })
+      JSON.stringify({ action: 'register/begin', email })
     );
 
     if (startResult.responseStatusCode !== 200) {
@@ -59,7 +59,7 @@ async function signUpWithPasskey(email: string): Promise<PasskeyAuthResult> {
     // 3. Complete registration
     const finishResult = await functions.createExecution(
       PASSKEY_FUNCTION_ID,
-      JSON.stringify({ action: 'register-finish', challengeId, registration })
+      JSON.stringify({ action: 'register/finish', challengeId, registration })
     );
 
     if (finishResult.responseStatusCode !== 200) {
@@ -82,7 +82,7 @@ async function signInWithPasskey(email: string): Promise<PasskeyAuthResult> {
     // 1. Start authentication
     const startResult = await functions.createExecution(
       PASSKEY_FUNCTION_ID,
-      JSON.stringify({ action: 'auth-start', email })
+      JSON.stringify({ action: 'authenticate/begin', email })
     );
     console.log('Start result status:', startResult.responseStatusCode);
 
@@ -98,7 +98,7 @@ async function signInWithPasskey(email: string): Promise<PasskeyAuthResult> {
     // 3. Complete authentication
     const finishResult = await functions.createExecution(
       PASSKEY_FUNCTION_ID,
-      JSON.stringify({ action: 'auth-finish', challengeId, authentication })
+      JSON.stringify({ action: 'authenticate/finish', challengeId, authentication })
     );
 
     if (finishResult.responseStatusCode !== 200) {
