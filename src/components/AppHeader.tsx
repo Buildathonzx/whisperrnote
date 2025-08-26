@@ -118,10 +118,10 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
   }
 
   return (
-    <header className={`fixed top-0 right-0 left-0 md:left-72 z-30 bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-sm border-b border-light-border dark:border-dark-border ${className}`}>
+    <header className={`fixed top-0 right-0 left-0 z-30 bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-sm border-b border-light-border dark:border-dark-border ${className}`}>
       <div className="flex items-center justify-between px-6 py-3 gap-4">
-        {/* Left: WhisperRNote Logo */}
-        <div className="flex items-center gap-3">
+        {/* Left: WhisperRNote Logo - Always at the edge */}
+        <div className="flex items-center gap-3 shrink-0">
           <img 
             src="/logo/whisperrnote.png" 
             alt="WhisperRNote Logo" 
@@ -138,7 +138,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
         </div>
         
         {/* Right: AI Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           {/* AI Generate Button */}
           <button
             onClick={handleAIGenerateClick}
