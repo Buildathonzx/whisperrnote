@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhisperRNote - Enhanced Three.js Background Demo</title>
+    <style>
+        body { 
+            margin: 0; 
+            font-family: system-ui, -apple-system, sans-serif;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 12px 24px;
+            background: #ffc700;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Light mode */
+        .light {
+            background-color: #f8f8f8;
+            color: #0f0a08;
+        }
+        
+        /* Dark mode */
+        .dark {
+            background-color: #0f0f0f;
+            color: #faf8f6;
+        }
+        
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+            padding: 2rem;
+        }
+        
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .feature {
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .light .feature {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(15, 10, 8, 0.1);
+        }
+        
+        .dark .feature {
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(250, 248, 246, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="light">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+    
+    <section class="hero-section">
+        <!-- This is where the Three.js background would be rendered -->
+        <div style="position: absolute; inset: 0; background: linear-gradient(45deg, 
+            rgba(255, 199, 0, 0.1) 0%, 
+            rgba(15, 10, 8, 0.05) 25%, 
+            rgba(255, 199, 0, 0.08) 50%, 
+            rgba(107, 91, 79, 0.06) 75%, 
+            rgba(255, 199, 0, 0.1) 100%); 
+            animation: wave 8s ease-in-out infinite;"></div>
+        
+        <div class="hero-content">
+            <h1 class="hero-title">Your notes, AI powered onchain</h1>
+            <p class="hero-subtitle">
+                Transform your ideas with AI assistance and secure them on blockchain. 
+                Generate comprehensive content instantly, collaborate seamlessly, and own your data forever.
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <button style="padding: 12px 24px; background: #ffc700; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Get Started</button>
+                <button style="padding: 12px 24px; background: transparent; color: currentColor; border: 2px solid currentColor; border-radius: 8px; font-weight: bold; cursor: pointer;">Learn More</button>
+            </div>
+        </div>
+    </section>
+    
+    <section class="features">
+        <div class="feature">
+            <div class="feature-icon">🌊</div>
+            <h3>Flowing Abstract Waves</h3>
+            <p>Multiple layers of fluid, animated wave patterns that create organic motion and depth, representing the flow of creativity and ideas.</p>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-icon">✨</div>
+            <h3>Creative Particle Bubbles</h3>
+            <p>Floating accent particles that move organically through the scene, adding sparkle and movement to inspire creativity.</p>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-icon">🎨</div>
+            <h3>Theme-Aware Colors</h3>
+            <p>Automatically adapts to light and dark themes with optimal contrast and visibility while maintaining the ash/brown aesthetic.</p>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-icon">⚡</div>
+            <h3>High Performance</h3>
+            <p>Optimized shaders and efficient rendering ensure smooth 60fps animation without affecting page performance or user experience.</p>
+        </div>
+    </section>
+    
+    <style>
+        @keyframes wave {
+            0%, 100% { 
+                transform: scale(1) rotate(0deg);
+                opacity: 0.6;
+            }
+            25% { 
+                transform: scale(1.05) rotate(1deg);
+                opacity: 0.8;
+            }
+            50% { 
+                transform: scale(1.02) rotate(-0.5deg);
+                opacity: 0.7;
+            }
+            75% { 
+                transform: scale(1.08) rotate(0.8deg);
+                opacity: 0.9;
+            }
+        }
+    </style>
+    
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const button = document.querySelector('.theme-toggle');
+            
+            if (body.classList.contains('light')) {
+                body.classList.remove('light');
+                body.classList.add('dark');
+                button.textContent = '☀️ Light Mode';
+                button.style.background = '#ffc700';
+                button.style.color = '#000';
+            } else {
+                body.classList.remove('dark');
+                body.classList.add('light');
+                button.textContent = '🌙 Dark Mode';
+                button.style.background = '#ffc700';
+                button.style.color = '#000';
+            }
+        }
+    </script>
+</body>
+</html>

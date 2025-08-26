@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAuth } from '@/components/ui/AuthContext';
 import { AIHeroInput } from '@/components/AIHeroInput';
+import { ThreeJsHeroBackground } from '@/components/ui/ThreeJsHeroBackground';
 import {
   SparklesIcon,
   CpuChipIcon,
@@ -62,8 +63,8 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden bg-dark-bg text-dark-fg">
-      <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-dark-border bg-dark-bg/80 px-10 py-4 backdrop-blur-sm">
+    <div className="flex min-h-screen flex-col overflow-x-hidden bg-light-bg dark:bg-dark-bg text-light-fg dark:text-dark-fg">
+      <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-light-border dark:border-dark-border bg-light-bg/80 dark:bg-dark-bg/80 px-10 py-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="h-6 w-6 text-accent">
             <svg
@@ -74,29 +75,29 @@ export default function LandingPage() {
               <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z"></path>
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-dark-fg">WhisperNote</h2>
+          <h2 className="text-xl font-bold text-light-fg dark:text-dark-fg">WhisperRNote</h2>
         </div>
           <nav className="hidden flex-1 justify-center gap-8 md:flex">
             <a
-              className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              className="text-sm font-medium text-light-fg/60 dark:text-dark-fg/60 transition-colors hover:text-light-fg dark:hover:text-dark-fg"
               href="#"
             >
               Product
             </a>
             <a
-              className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              className="text-sm font-medium text-light-fg/60 dark:text-dark-fg/60 transition-colors hover:text-light-fg dark:hover:text-dark-fg"
               href="#"
             >
               Solutions
             </a>
             <a
-              className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              className="text-sm font-medium text-light-fg/60 dark:text-dark-fg/60 transition-colors hover:text-light-fg dark:hover:text-dark-fg"
               href="#"
             >
               Resources
             </a>
             <a
-              className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              className="text-sm font-medium text-light-fg/60 dark:text-dark-fg/60 transition-colors hover:text-light-fg dark:hover:text-dark-fg"
               href="#"
             >
               Pricing
@@ -121,64 +122,49 @@ export default function LandingPage() {
       </header>
       <main className="flex-1">
         <section className="relative flex items-center justify-center py-24 text-center md:py-32">
-          <div className="absolute inset-0 z-0 bg-gradient-to-b from-dark-bg via-dark-bg/80 to-dark-bg"></div>
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-10"
-            style={{
-              backgroundImage:
-                'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDMQEOUV-9C3ZJc3BofI_w3F_doogjsVsJxe1vWGKJuQsSj61Vg1Kqux0Bdto2ZoxIT7xisNzezSFSuFHVZPXklUZpEDG_M_eawFaLUihrA5xZh6KlJHnnfEDHw73X7XLUsMTF0f8fJLVVO8q_PCoGe-PvuPOg-COWYdn6-ov54hSObVg4R-co6GF-RB44pjzpe3FGFiCh8HuVuZobR8Cn9fRD5-rFeBPw1C8OcATbu26uGJpyLLBbykz2xnvNmmnM7mq65BsG88MpZ")',
-            }}
-          ></div>
-          <div className="container relative z-10 mx-auto px-5">
-            <h1 className="mb-4 text-4xl font-black leading-tight tracking-tighter text-foreground md:text-6xl">
+          {/* Three.js Creative Background */}
+          <ThreeJsHeroBackground className="absolute inset-0 z-0" />
+          
+          {/* Subtle overlay to ensure text readability */}
+          <div className="absolute inset-0 z-10 bg-gradient-to-b from-light-bg/40 via-light-bg/60 to-light-bg/80 dark:from-dark-bg/40 dark:via-dark-bg/60 dark:to-dark-bg/80"></div>
+          
+          <div className="container relative z-20 mx-auto px-5">
+            <h1 className="mb-4 text-4xl font-black leading-tight tracking-tighter text-light-fg dark:text-dark-fg md:text-6xl">
               Your notes, AI powered onchain
             </h1>
-            <p className="mx-auto mb-12 max-w-3xl text-lg text-foreground/60 md:text-xl">
+            <p className="mx-auto mb-12 max-w-3xl text-lg text-light-fg/80 dark:text-dark-fg/80 md:text-xl">
               Transform your ideas with AI assistance and secure them on blockchain. 
               Generate comprehensive content instantly, collaborate seamlessly, and own your data forever.
             </p>
             
             {/* AI Hero Input */}
             <AIHeroInput onPromptSelectAction={handlePromptSelect} className="mb-8" />
-            
-            {/* Fallback for users who prefer traditional sign-up */}
-            <div className="mt-8 pt-8 border-t border-foreground/10">
-              <p className="text-sm text-foreground/50 mb-4">Or get started the traditional way:</p>
-              <Button 
-                size="lg" 
-                onClick={() => showAuthModal()}
-                variant="ghost"
-                className="border-2 border-accent/30 hover:border-accent"
-              >
-                Sign up now
-              </Button>
-            </div>
           </div>
         </section>
-        <section className="bg-dark-card py-20 md:py-28">
+        <section className="bg-light-card dark:bg-dark-card py-20 md:py-28">
           <div className="container mx-auto px-5">
             <div className="mx-auto mb-16 max-w-2xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-dark-fg md:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight text-light-fg dark:text-dark-fg md:text-4xl">
                 AI meets blockchain for the future of notes
               </h2>
-              <p className="mt-4 text-lg text-foreground/60">
+              <p className="mt-4 text-lg text-light-fg/60 dark:text-dark-fg/60">
                 Experience next-generation note-taking with intelligent content generation, 
                 decentralized storage, and cryptographic security built-in.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               {features.map((feature, index) => (
-                <Card key={index} className="flex flex-col gap-4 bg-dark-card">
+                <Card key={index} className="flex flex-col gap-4 bg-light-card dark:bg-dark-card border-light-border dark:border-dark-border">
                   <CardHeader>
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent shadow-3d-light dark:shadow-3d-dark">
                       {feature.icon}
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <CardTitle className="text-xl font-bold text-foreground">
+                    <CardTitle className="text-xl font-bold text-light-fg dark:text-dark-fg">
                       {feature.title}
                     </CardTitle>
-                    <p className="text-foreground/60">{feature.description}</p>
+                    <p className="text-light-fg/60 dark:text-dark-fg/60">{feature.description}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -186,37 +172,37 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="border-t border-solid border-dark-border bg-dark-bg">
+      <footer className="border-t border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg">
         <div className="container mx-auto px-5 py-12">
           <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="mb-6 flex flex-wrap justify-center gap-6 md:mb-0 md:justify-start">
               <a
-                className="text-sm text-foreground/60 transition-colors hover:text-foreground"
+                className="text-sm text-light-fg/60 dark:text-dark-fg/60 transition-colors hover:text-light-fg dark:hover:text-dark-fg"
                 href="#"
               >
                 About
               </a>
               <a
-                className="text-sm text-foreground/60 transition-colors hover:text-foreground"
+                className="text-sm text-light-fg/60 dark:text-dark-fg/60 transition-colors hover:text-light-fg dark:hover:text-dark-fg"
                 href="#"
               >
                 Contact
               </a>
               <a
-                className="text-sm text-foreground/60 transition-colors hover:text-foreground"
+                className="text-sm text-light-fg/60 dark:text-dark-fg/60 transition-colors hover:text-light-fg dark:hover:text-dark-fg"
                 href="#"
               >
                 Privacy Policy
               </a>
               <a
-                className="text-sm text-foreground/60 transition-colors hover:text-foreground"
+                className="text-sm text-light-fg/60 dark:text-dark-fg/60 transition-colors hover:text-light-fg dark:hover:text-dark-fg"
                 href="#"
               >
                 Terms of Service
               </a>
             </div>
-            <p className="text-sm text-foreground/40">
-              © 2025 WhisperNote. All rights reserved.
+            <p className="text-sm text-light-fg/40 dark:text-dark-fg/40">
+              © 2025 WhisperRNote. All rights reserved.
             </p>
           </div>
         </div>

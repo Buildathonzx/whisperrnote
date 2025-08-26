@@ -9,12 +9,8 @@ interface AIHeroInputProps {
 }
 
 const PROMPT_SUGGESTIONS = [
-  "Write a comprehensive guide about sustainable energy",
-  "Brainstorm creative marketing ideas for a tech startup", 
-  "Research the latest trends in artificial intelligence",
-  "Create a strategic plan for remote team collaboration",
-  "Generate ideas for improving customer experience",
-  "Analyze the impact of blockchain on modern finance"
+  "Brainstorm creative marketing ideas for a web3 startup",
+  "Write me a blog about the future of AI powered note taking"
 ];
 
 export function AIHeroInput({ onPromptSelectAction, className = '' }: AIHeroInputProps) {

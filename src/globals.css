@@ -81,7 +81,6 @@
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
-}
   
   .card-3d:hover {
     @apply shadow-3d-light dark:shadow-3d-dark;
@@ -104,8 +103,8 @@
     @apply shadow-inner-light dark:shadow-inner-dark;
     transform: translateY(0);
   }
-}
 
-html {
-  scroll-behavior: smooth;
+  html {
+    scroll-behavior: smooth;
+  }
 }

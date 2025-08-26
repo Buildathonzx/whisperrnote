@@ -31,17 +31,17 @@ const config: Config = {
 
         // Light mode theme (brownish white fg, ash-white bg)
         'light-bg': '#f8f8f8',      // ash-white background
-        'light-fg': '#1a120e',      // very dark brown foreground  
+        'light-fg': '#0f0a08',      // much darker brown foreground for stronger contrast
         'light-card': '#ffffff',    // pure white for cards
         'light-border': '#e8e8e8',  // very light ash border
-        'light-muted': '#6b5b4f',   // medium brown for muted text
+        'light-muted': '#3d2f26',   // darker brown for muted text
 
         // Dark mode theme (very dark brown fg, dark ash bg)
         'dark-bg': '#0f0f0f',       // very dark ash background
-        'dark-fg': '#f5f2f0',       // brownish white foreground
+        'dark-fg': '#faf8f6',       // much lighter brownish white foreground for stronger contrast
         'dark-card': '#1a1a1a',     // dark ash for cards
         'dark-border': '#2a2a2a',   // medium dark ash border  
-        'dark-muted': '#a69080',    // light brown for muted text
+        'dark-muted': '#c4b5a8',    // lighter brown for muted text
 
         // Accent colors
         'accent': '#ffc700',        // sun-yellow
