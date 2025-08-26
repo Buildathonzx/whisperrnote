@@ -33,7 +33,7 @@ export function SearchBar({
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-12 pr-12 py-4 bg-card border border-border rounded-2xl text-foreground placeholder-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all duration-300 shadow-3d-light dark:shadow-3d-dark"
+          className="w-full pl-12 pr-12 py-3 sm:py-4 bg-card border border-border rounded-2xl text-foreground placeholder-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all duration-300 shadow-3d-light dark:shadow-3d-dark"
           placeholder={placeholder}
         />
         

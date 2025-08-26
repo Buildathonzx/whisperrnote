@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { 
   HomeIcon, 
-  MagnifyingGlassIcon, 
   PlusCircleIcon, 
   ShareIcon, 
   UserIcon,
@@ -61,14 +60,6 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
             <HomeIcon className="h-6 w-6" />
             <span className="text-xs font-semibold">Notes</span>
           </a>
-          
-          <button 
-            onClick={() => {/* Open search drawer */}}
-            className="flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg transition-all duration-200 hover:transform hover:-translate-y-0.5"
-          >
-            <MagnifyingGlassIcon className="h-6 w-6" />
-            <span className="text-xs font-semibold">Search</span>
-          </button>
           
           <button 
             onClick={handleCreateClick}
