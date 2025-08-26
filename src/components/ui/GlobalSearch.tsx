@@ -28,7 +28,6 @@ import {
   History as HistoryIcon,
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
-  MoreVert as MoreIcon,
 } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -374,15 +373,17 @@ export default function GlobalSearch({
         anchorEl={userMenuAnchor}
         open={Boolean(userMenuAnchor)}
         onClose={handleUserMenuClose}
-        PaperProps={{
-          sx: {
-            borderRadius: '12px',
-            minWidth: 180,
-            border: `1px solid ${theme.palette.divider}`,
-            boxShadow: `
-              0 8px 32px rgba(0, 0, 0, 0.12),
-              0 4px 16px rgba(0, 0, 0, 0.08)
-            `,
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: '12px',
+              minWidth: 180,
+              border: `1px solid ${theme.palette.divider}`,
+              boxShadow: `
+                0 8px 32px rgba(0, 0, 0, 0.12),
+                0 4px 16px rgba(0, 0, 0, 0.08)
+              `,
+            }
           }
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
