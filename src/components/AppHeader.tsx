@@ -6,6 +6,7 @@ import { useAuth } from '@/components/ui/AuthContext';
 import { useAI } from '@/components/ui/AIContext';
 import { TopBarSearch } from '@/components/TopBarSearch';
 import { Button } from '@/components/ui/Button';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface AppHeaderProps {
   className?: string;
@@ -68,10 +69,10 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
             </Button>
           </div>
 
-          {/* Account Menu Button */}
+          {/* Account Menu Button - Mobile Only */}
           <button
             onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card hover:bg-card/80 transition-all duration-200"
+            className="md:hidden flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card hover:bg-card/80 transition-all duration-200"
           >
             <UserCircleIcon className="h-5 w-5 text-foreground" />
             <span className="hidden sm:inline text-sm font-medium text-foreground">
@@ -107,6 +108,12 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                   <Cog6ToothIcon className="h-4 w-4" />
                   <span className="text-sm font-medium">Settings</span>
                 </a>
+                
+                {/* Theme Toggle */}
+                <div className="flex items-center justify-between px-4 py-3">
+                  <span className="text-sm font-medium text-foreground">Theme</span>
+                  <ThemeToggle size="sm" />
+                </div>
                 
                 <div className="border-t border-border my-1"></div>
                 
