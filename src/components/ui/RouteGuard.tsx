@@ -54,18 +54,19 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
       return;
     }
 
-  }, [isLoading, isAuthenticated, pathname, router]);
+  }, [isLoading, isAuthenticated, pathname, router, showAuthModal, showLoading, hideLoading]);
 
   // Show loading during initial auth check
   if (isLoading) {
     return null; // Loading overlay will be shown by useEffect
   }
 
-  // Show loading while redirecting for authenticated users on auth pages
+  // For protected routes when user is not authenticated, stay on current page and show auth modal
   const publicRoute = isPublicRoute(pathname);
   if (!isAuthenticated && !publicRoute) {
-    // Auth modal will be shown, render children normally
-    return <>{children}</>;
+    // Don't render the protected content until authenticated
+    // Auth modal will handle the authentication flow
+    return null;
   }
 
   if (isAuthenticated && pathname === '/') {
