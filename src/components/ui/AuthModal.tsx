@@ -87,17 +87,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleWalletAuth = async () => {
-    setError('Create email account to configure wallet in settings');
+    setTooltip('Create email account to configure wallet in settings');
+    setError('');
     return;
   };
 
   const handlePasskeyAuth = async () => {
     if (!email || !email.includes('@')) {
-      setError('Create email account to configure passkey in settings');
+      setTooltip('Create email account to configure passkey in settings');
+      setError('');
       return;
     }
     
     setError('');
+    setTooltip('');
     showLoading('Authenticating with passkey...');
     
     try {
@@ -191,6 +194,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   className="bg-red-100/80 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl mb-4 shadow-inner-light dark:shadow-inner-dark"
                 >
                   {error}
+                </motion.div>
+              )}
+
+              {tooltip && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-yellow-100/80 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded-xl mb-4 shadow-inner-light dark:shadow-inner-dark"
+                >
+                  {tooltip}
                 </motion.div>
               )}
 
