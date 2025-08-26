@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         email, // Use the provided email
         undefined, // phone
         undefined, // password (not used for wallet auth)
-        `Wallet ${address.slice(0, 6)}...${address.slice(-4)}` // Display name
+        address // Use wallet address as display name
       );
     } catch (createError: any) {
       console.error('User creation failed:', {
