@@ -2,11 +2,11 @@ import {
   startRegistration,
   startAuthentication,
 } from '@simplewebauthn/browser';
-import { account } from '../appwrite';
+import { account, functions } from '../appwrite';
 
-const PASSKEY_FUNCTION_URL = process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_PASSKEY_URL!;
+const PASSKEY_FUNCTION_ID = process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID_PASSKEY!;
 
-console.log('Passkey function URL:', PASSKEY_FUNCTION_URL);
+console.log('Passkey function ID:', PASSKEY_FUNCTION_ID);
 
 export interface PasskeyAuthResult {
   success: boolean;
@@ -42,36 +42,28 @@ export function handlePasskeyError(error: PasskeyError): string {
 async function signUpWithPasskey(email: string): Promise<PasskeyAuthResult> {
   try {
     // 1. Start registration
-    const startResponse = await fetch(
-      `${PASSKEY_FUNCTION_URL}/v1/challenges`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      }
+    const startResult = await functions.createExecution(
+      PASSKEY_FUNCTION_ID,
+      JSON.stringify({ action: 'register-start', email })
     );
 
-    if (!startResponse.ok) {
-      throw new Error(await startResponse.text());
+    if (startResult.responseStatusCode !== 200) {
+      throw new Error(startResult.responseBody);
     }
 
-    const { options, challengeId } = await startResponse.json();
+    const { options, challengeId } = JSON.parse(startResult.responseBody);
 
     // 2. Browser prompts for biometric
     const registration = await startRegistration(options);
 
     // 3. Complete registration
-    const finishResponse = await fetch(
-      `${PASSKEY_FUNCTION_URL}/v1/challenges`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ challengeId, registration }),
-      }
+    const finishResult = await functions.createExecution(
+      PASSKEY_FUNCTION_ID,
+      JSON.stringify({ action: 'register-finish', challengeId, registration })
     );
 
-    if (!finishResponse.ok) {
-      throw new Error(await finishResponse.text());
+    if (finishResult.responseStatusCode !== 200) {
+      throw new Error(finishResult.responseBody);
     }
 
     return {
@@ -85,42 +77,35 @@ async function signUpWithPasskey(email: string): Promise<PasskeyAuthResult> {
 
 async function signInWithPasskey(email: string): Promise<PasskeyAuthResult> {
   try {
-    console.log('Making request to:', `${PASSKEY_FUNCTION_URL}/v1/tokens`);
+    console.log('Starting passkey authentication with function ID:', PASSKEY_FUNCTION_ID);
+    
     // 1. Start authentication
-    const startResponse = await fetch(
-      `${PASSKEY_FUNCTION_URL}/v1/tokens`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      }
+    const startResult = await functions.createExecution(
+      PASSKEY_FUNCTION_ID,
+      JSON.stringify({ action: 'auth-start', email })
     );
-    console.log('Response status:', startResponse.status);
+    console.log('Start result status:', startResult.responseStatusCode);
 
-    if (!startResponse.ok) {
-      throw new Error(await startResponse.text());
+    if (startResult.responseStatusCode !== 200) {
+      throw new Error(startResult.responseBody);
     }
 
-    const { options, challengeId } = await startResponse.json();
+    const { options, challengeId } = JSON.parse(startResult.responseBody);
 
     // 2. Browser prompts for biometric
     const authentication = await startAuthentication(options);
 
     // 3. Complete authentication
-    const finishResponse = await fetch(
-      `${PASSKEY_FUNCTION_URL}/v1/tokens`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ challengeId, authentication }),
-      }
+    const finishResult = await functions.createExecution(
+      PASSKEY_FUNCTION_ID,
+      JSON.stringify({ action: 'auth-finish', challengeId, authentication })
     );
 
-    if (!finishResponse.ok) {
-      throw new Error(await finishResponse.text());
+    if (finishResult.responseStatusCode !== 200) {
+      throw new Error(finishResult.responseBody);
     }
 
-    const { userId, secret } = await finishResponse.json();
+    const { userId, secret } = JSON.parse(finishResult.responseBody);
 
     // 4. Create Appwrite session using the token
     await account.createSession(userId, secret);

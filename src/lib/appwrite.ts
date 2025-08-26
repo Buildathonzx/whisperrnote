@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Storage, ID, Query } from 'appwrite';
+import { Client, Account, Databases, Storage, Functions, ID, Query } from 'appwrite';
 import type {
   Users,
   Notes,
@@ -20,6 +20,7 @@ const client = new Client()
 const account = new Account(client);
 const databases = new Databases(client);
 const storage = new Storage(client);
+const functions = new Functions(client);
 
 // export app public uri
 export const APP_URI = process.env.NEXT_PUBLIC_APP_URI!;
@@ -45,7 +46,7 @@ export const APPWRITE_BUCKET_EXTENSION_ASSETS = process.env.NEXT_PUBLIC_APPWRITE
 export const APPWRITE_BUCKET_BACKUPS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_BACKUPS!;
 export const APPWRITE_BUCKET_TEMP_UPLOADS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_TEMP_UPLOADS!;
 
-export { client, account, databases, storage, ID, Query };
+export { client, account, databases, storage, functions, ID, Query };
 
 // --- AUTHENTICATION ---
 
