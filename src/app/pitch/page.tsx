@@ -6,197 +6,253 @@ const slides = [
   {
     id: 1,
     title: "WhisperRNote",
-    subtitle: "AI + Blockchain = Secure Intelligence",
+    subtitle: "AI × Blockchain Intelligence",
     content: (
-      <>
-        <div className="w-32 h-32 mx-auto mb-12 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl flex items-center justify-center text-6xl shadow-2xl animate-pulse">
-          🤫
+      <div className="space-y-12">
+        <div className="w-40 h-40 mx-auto bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full flex items-center justify-center text-8xl shadow-2xl shadow-blue-500/30 animate-pulse">
+          🧠
         </div>
         
-        <div className="grid grid-cols-3 gap-8 mt-16">
-          <div className="text-center">
-            <div className="text-6xl font-black bg-gradient-to-r from-pink-500 to-cyan-500 bg-clip-text text-transparent">85%</div>
-            <div className="text-xl opacity-80 mt-2">Data Breaches</div>
+        <div className="grid grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="text-center p-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10">
+            <div className="text-5xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">73%</div>
+            <div className="text-lg opacity-80">Want AI Notes</div>
           </div>
-          <div className="text-center">
-            <div className="text-6xl font-black bg-gradient-to-r from-pink-500 to-cyan-500 bg-clip-text text-transparent">$4.45M</div>
-            <div className="text-xl opacity-80 mt-2">Breach Cost</div>
+          <div className="text-center p-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10">
+            <div className="text-5xl font-black bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">$4.5M</div>
+            <div className="text-lg opacity-80">Breach Cost</div>
           </div>
-          <div className="text-center">
-            <div className="text-6xl font-black bg-gradient-to-r from-pink-500 to-cyan-500 bg-clip-text text-transparent">73%</div>
-            <div className="text-xl opacity-80 mt-2">Want AI Notes</div>
+          <div className="text-center p-6 bg-white/5 backdrop-blur rounded-2xl border border-white/10">
+            <div className="text-5xl font-black bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">0</div>
+            <div className="text-lg opacity-80">AI+Blockchain</div>
           </div>
         </div>
         
-        <p className="text-2xl opacity-90 max-w-4xl mx-auto mt-16 leading-relaxed">
-          No more choosing between <strong>security</strong> and <strong>intelligence</strong>.
-        </p>
-      </>
+        <div className="text-2xl font-light opacity-90 max-w-3xl mx-auto">
+          The first <span className="font-bold bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent">AI-powered blockchain notes</span> platform
+        </div>
+      </div>
     )
   },
   {
     id: 2,
-    title: "AI-Native Blockchain Notes",
-    subtitle: "Multi-AI × Multi-Chain",
+    title: "The Problem",
+    subtitle: "Security vs Intelligence",
     content: (
-      <div className="grid grid-cols-2 gap-12 mt-16">
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 transition-all duration-500 hover:scale-105">
-          <div className="text-6xl mb-6">🧠</div>
-          <div className="text-2xl font-bold mb-4">Multi-AI Engine</div>
-          <div className="text-lg opacity-90">GitHub Models, Gemini, auto-failover</div>
+      <div className="grid grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
+        <div className="space-y-8">
+          <div className="bg-red-500/20 border border-red-500/30 rounded-3xl p-8 backdrop-blur">
+            <div className="text-6xl mb-4">⚠️</div>
+            <div className="text-2xl font-bold mb-4">Traditional Notes</div>
+            <div className="space-y-2 text-lg opacity-90">
+              <div>• Data breaches</div>
+              <div>• No AI enhancement</div>
+              <div>• Centralized control</div>
+            </div>
+          </div>
+          
+          <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-3xl p-8 backdrop-blur">
+            <div className="text-6xl mb-4">🤖</div>
+            <div className="text-2xl font-bold mb-4">AI Tools</div>
+            <div className="space-y-2 text-lg opacity-90">
+              <div>• Privacy concerns</div>
+              <div>• Data mining</div>
+              <div>• Limited features</div>
+            </div>
+          </div>
         </div>
         
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 transition-all duration-500 hover:scale-105">
-          <div className="text-6xl mb-6">🔗</div>
-          <div className="text-2xl font-bold mb-4">Multi-Chain</div>
-          <div className="text-lg opacity-90">ICP, Starknet, Umi, Calimero</div>
-        </div>
-        
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 transition-all duration-500 hover:scale-105">
-          <div className="text-6xl mb-6">🛡️</div>
-          <div className="text-2xl font-bold mb-4">Zero-Knowledge</div>
-          <div className="text-lg opacity-90">AES-256 + WebAuthn passkeys</div>
-        </div>
-        
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 transition-all duration-500 hover:scale-105">
-          <div className="text-6xl mb-6">🌐</div>
-          <div className="text-2xl font-bold mb-4">Universal Access</div>
-          <div className="text-lg opacity-90">Web, mobile, desktop, CLI</div>
+        <div className="text-center">
+          <div className="text-8xl mb-8 animate-pulse">💔</div>
+          <div className="text-3xl font-bold mb-6">Choose One:</div>
+          <div className="text-xl opacity-80 space-y-3">
+            <div>🛡️ Security</div>
+            <div className="text-2xl font-black">OR</div>
+            <div>🧠 Intelligence</div>
+          </div>
         </div>
       </div>
     )
   },
   {
     id: 3,
-    title: "Perfect Synergy",
-    subtitle: "Intelligence Meets Security",
+    title: "Our Solution",
+    subtitle: "Best of Both Worlds",
     content: (
-      <>
-        <div className="flex justify-center items-center my-16 relative">
-          <div className="w-56 h-56 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-center text-white shadow-2xl shadow-indigo-500/50 animate-pulse">
-            <div className="text-lg">
-              🤖<br/>
-              <strong>AI Layer</strong><br/>
-              Smart Generation<br/>
-              Auto-Enhancement
+      <div className="space-y-16">
+        <div className="flex justify-center items-center relative">
+          <div className="w-48 h-48 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center shadow-2xl shadow-cyan-500/40">
+            <div className="text-center text-white">
+              <div className="text-5xl mb-2">🧠</div>
+              <div className="text-lg font-bold">AI Layer</div>
             </div>
           </div>
           
-          <div className="absolute w-32 h-2 bg-gradient-to-r from-indigo-500 to-pink-500 shadow-lg animate-pulse"></div>
+          <div className="absolute w-24 h-1 bg-gradient-to-r from-cyan-400 to-purple-600 animate-pulse"></div>
           
-          <div className="w-56 h-56 rounded-full bg-gradient-to-r from-pink-500 to-rose-600 flex items-center justify-center text-center text-white shadow-2xl shadow-pink-500/50 ml-16 animate-pulse">
-            <div className="text-lg">
-              ⛓️<br/>
-              <strong>Blockchain</strong><br/>
-              Immutable Storage<br/>
-              Crypto Security
+          <div className="w-48 h-48 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center ml-24 shadow-2xl shadow-purple-500/40">
+            <div className="text-center text-white">
+              <div className="text-5xl mb-2">🔗</div>
+              <div className="text-lg font-bold">Blockchain</div>
             </div>
           </div>
         </div>
         
-        <div className="text-center mt-16">
-          <div className="text-3xl font-bold mb-8">🎯 Smart + Secure + Decentralized</div>
-          <p className="text-xl opacity-90">
-            Every AI-generated insight is cryptographically verified and stored across multiple blockchains.
-          </p>
+        <div className="text-center">
+          <div className="text-4xl font-bold mb-6 bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent">
+            = Secure Intelligence
+          </div>
+          <div className="text-xl opacity-90 max-w-2xl mx-auto">
+            AI enhances your thoughts while blockchain protects them
+          </div>
         </div>
-      </>
+      </div>
     )
   },
   {
     id: 4,
-    title: "$135B Market",
-    subtitle: "AI + Notes + Blockchain",
+    title: "Core Features",
+    subtitle: "Advanced Technology",
     content: (
-      <>
-        <div className="grid grid-cols-3 gap-8 mt-16 mb-16">
-          <div className="text-center">
-            <div className="text-6xl font-black bg-gradient-to-r from-pink-500 to-cyan-500 bg-clip-text text-transparent">$45B</div>
-            <div className="text-xl opacity-80 mt-2">Notes Market</div>
-          </div>
-          <div className="text-center">
-            <div className="text-6xl font-black bg-gradient-to-r from-pink-500 to-cyan-500 bg-clip-text text-transparent">$67B</div>
-            <div className="text-xl opacity-80 mt-2">AI Software</div>
-          </div>
-          <div className="text-center">
-            <div className="text-6xl font-black bg-gradient-to-r from-pink-500 to-cyan-500 bg-clip-text text-transparent">$23B</div>
-            <div className="text-xl opacity-80 mt-2">Blockchain</div>
-          </div>
+      <div className="grid grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="bg-gradient-to-br from-cyan-500/20 to-blue-600/20 backdrop-blur border border-white/20 rounded-3xl p-8 hover:scale-105 transition-all duration-500">
+          <div className="text-6xl mb-4">🤖</div>
+          <div className="text-2xl font-bold mb-3">Multi-AI Engine</div>
+          <div className="text-lg opacity-90">GPT-4.1, Gemini, auto-failover</div>
         </div>
         
-        <div className="grid grid-cols-2 gap-12">
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8">
-            <div className="text-2xl font-bold mb-4">🎯 First Mover Advantage</div>
-            <div className="text-lg opacity-90">
-              • No AI+Blockchain note app exists<br/>
-              • Patent-pending architecture<br/>
-              • Network effects & data lock-in
-            </div>
-          </div>
-          
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8">
-            <div className="text-2xl font-bold mb-4">💰 Revenue Model</div>
-            <div className="text-lg opacity-90">
-              • Freemium: $0-$49/month<br/>
-              • Enterprise white-label<br/>
-              • Blockchain token economy
-            </div>
-          </div>
+        <div className="bg-gradient-to-br from-purple-500/20 to-pink-600/20 backdrop-blur border border-white/20 rounded-3xl p-8 hover:scale-105 transition-all duration-500">
+          <div className="text-6xl mb-4">🔐</div>
+          <div className="text-2xl font-bold mb-3">ICP Blockchain</div>
+          <div className="text-lg opacity-90">Internet Computer security</div>
         </div>
-      </>
+        
+        <div className="bg-gradient-to-br from-blue-500/20 to-purple-600/20 backdrop-blur border border-white/20 rounded-3xl p-8 hover:scale-105 transition-all duration-500">
+          <div className="text-6xl mb-4">⚡</div>
+          <div className="text-2xl font-bold mb-3">Smart Automation</div>
+          <div className="text-lg opacity-90">Auto-tagging, enhancement</div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-pink-500/20 to-red-600/20 backdrop-blur border border-white/20 rounded-3xl p-8 hover:scale-105 transition-all duration-500">
+          <div className="text-6xl mb-4">🌍</div>
+          <div className="text-2xl font-bold mb-3">Universal Access</div>
+          <div className="text-lg opacity-90">Web, mobile, desktop</div>
+        </div>
+      </div>
     )
   },
   {
     id: 5,
-    title: "Join the Revolution",
-    subtitle: "Shape the Future of Knowledge",
+    title: "Market Opportunity",
+    subtitle: "$135B+ TAM",
     content: (
-      <>
-        <div className="w-32 h-32 mx-auto mb-12 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-3xl flex items-center justify-center text-6xl shadow-2xl animate-pulse">
-          🤫
-        </div>
-        
-        <div className="grid grid-cols-3 gap-8 mb-16">
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 text-center">
-            <div className="text-4xl mb-4">🚀</div>
-            <div className="text-xl font-bold mb-2">Investors</div>
-            <div className="text-lg opacity-90">$2M seed round</div>
+      <div className="space-y-12">
+        <div className="grid grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="text-center p-8 bg-white/5 backdrop-blur rounded-3xl border border-white/10">
+            <div className="text-6xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">$45B</div>
+            <div className="text-xl opacity-80 mt-2">Note-taking</div>
           </div>
-          
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 text-center">
-            <div className="text-4xl mb-4">💼</div>
-            <div className="text-xl font-bold mb-2">Partners</div>
-            <div className="text-lg opacity-90">AI & Blockchain alliances</div>
+          <div className="text-center p-8 bg-white/5 backdrop-blur rounded-3xl border border-white/10">
+            <div className="text-6xl font-black bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">$67B</div>
+            <div className="text-xl opacity-80 mt-2">AI Software</div>
           </div>
-          
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 text-center">
-            <div className="text-4xl mb-4">👨‍💻</div>
-            <div className="text-xl font-bold mb-2">Talent</div>
-            <div className="text-lg opacity-90">World-class team</div>
+          <div className="text-center p-8 bg-white/5 backdrop-blur rounded-3xl border border-white/10">
+            <div className="text-6xl font-black bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">$23B</div>
+            <div className="text-xl opacity-80 mt-2">Blockchain</div>
           </div>
         </div>
         
-        <div className="space-x-8">
+        <div className="grid grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 backdrop-blur border border-white/20 rounded-3xl p-6">
+            <div className="text-3xl mb-3">🎯</div>
+            <div className="text-xl font-bold mb-2">First Mover</div>
+            <div className="text-lg opacity-90">No AI+Blockchain notes exist</div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 backdrop-blur border border-white/20 rounded-3xl p-6">
+            <div className="text-3xl mb-3">💰</div>
+            <div className="text-xl font-bold mb-2">Revenue Model</div>
+            <div className="text-lg opacity-90">Freemium + Enterprise</div>
+          </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 6,
+    title: "Traction",
+    subtitle: "Building Momentum",
+    content: (
+      <div className="grid grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div className="text-center p-8 bg-gradient-to-br from-green-500/20 to-emerald-600/20 backdrop-blur border border-white/20 rounded-3xl">
+          <div className="text-6xl mb-4">🚀</div>
+          <div className="text-3xl font-black bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent mb-2">Live</div>
+          <div className="text-lg opacity-90">Product deployed</div>
+        </div>
+        
+        <div className="text-center p-8 bg-gradient-to-br from-blue-500/20 to-cyan-600/20 backdrop-blur border border-white/20 rounded-3xl">
+          <div className="text-6xl mb-4">👥</div>
+          <div className="text-3xl font-black bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent mb-2">Users</div>
+          <div className="text-lg opacity-90">Growing community</div>
+        </div>
+        
+        <div className="text-center p-8 bg-gradient-to-br from-purple-500/20 to-pink-600/20 backdrop-blur border border-white/20 rounded-3xl">
+          <div className="text-6xl mb-4">🏆</div>
+          <div className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent mb-2">Awards</div>
+          <div className="text-lg opacity-90">Tech recognition</div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 7,
+    title: "Join Us",
+    subtitle: "Shape the Future",
+    content: (
+      <div className="space-y-12">
+        <div className="w-32 h-32 mx-auto bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full flex items-center justify-center text-6xl shadow-2xl shadow-blue-500/30 animate-pulse">
+          🚀
+        </div>
+        
+        <div className="grid grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="text-center p-6 bg-gradient-to-br from-green-500/20 to-emerald-600/20 backdrop-blur border border-white/20 rounded-3xl">
+            <div className="text-4xl mb-3">💰</div>
+            <div className="text-xl font-bold">Investors</div>
+            <div className="text-lg opacity-90">$2M seed</div>
+          </div>
+          
+          <div className="text-center p-6 bg-gradient-to-br from-blue-500/20 to-cyan-600/20 backdrop-blur border border-white/20 rounded-3xl">
+            <div className="text-4xl mb-3">🤝</div>
+            <div className="text-xl font-bold">Partners</div>
+            <div className="text-lg opacity-90">Strategic alliances</div>
+          </div>
+          
+          <div className="text-center p-6 bg-gradient-to-br from-purple-500/20 to-pink-600/20 backdrop-blur border border-white/20 rounded-3xl">
+            <div className="text-4xl mb-3">⭐</div>
+            <div className="text-xl font-bold">Talent</div>
+            <div className="text-lg opacity-90">Join our team</div>
+          </div>
+        </div>
+        
+        <div className="space-x-6">
           <a 
             href="https://whisperrnote.space" 
-            className="inline-block bg-gradient-to-r from-pink-500 to-cyan-500 text-white px-12 py-4 rounded-full text-xl font-bold transition-all duration-300 hover:scale-110 hover:shadow-2xl"
+            className="inline-block bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-10 py-4 rounded-full text-xl font-bold transition-all duration-300 hover:scale-110 hover:shadow-2xl shadow-lg"
           >
-            Try Now
+            Try Now →
           </a>
           <a 
             href="mailto:team@whisperrnote.space" 
-            className="inline-block bg-white/20 backdrop-blur-xl border border-white/30 text-white px-12 py-4 rounded-full text-xl font-bold transition-all duration-300 hover:scale-110 hover:bg-white/30"
+            className="inline-block bg-white/10 backdrop-blur border border-white/30 text-white px-10 py-4 rounded-full text-xl font-bold transition-all duration-300 hover:scale-110 hover:bg-white/20"
           >
             Contact Us
           </a>
         </div>
         
-        <div className="mt-16 opacity-80">
-          <p className="text-xl font-semibold">
-            The future of knowledge is <strong>secure</strong>, <strong>intelligent</strong>, and <strong>decentralized</strong>.
-          </p>
+        <div className="text-xl font-light opacity-90 max-w-2xl mx-auto">
+          The future of knowledge is <span className="font-bold bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent">secure, intelligent, and yours</span>
         </div>
-      </>
+      </div>
     )
   }
 ];
@@ -235,7 +291,7 @@ export default function PitchPage() {
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
         prevSlide();
-      } else if (e.key >= '1' && e.key <= '5') {
+      } else if (e.key >= '1' && e.key <= '7') {
         e.preventDefault();
         goToSlide(parseInt(e.key) - 1);
       }
@@ -248,27 +304,30 @@ export default function PitchPage() {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <div className="h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-800 text-white overflow-hidden relative">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent pointer-events-none" />
+    <div className="h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden relative">
+      {/* Enhanced Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900 via-slate-900 to-slate-900" />
       <div 
-        className="absolute inset-0 opacity-30 pointer-events-none"
+        className="absolute inset-0 opacity-40 pointer-events-none"
         style={{
           background: `
-            radial-gradient(circle at 20% 80%, rgba(120,119,198,0.3) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255,119,198,0.3) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(120,200,255,0.2) 0%, transparent 50%)
+            radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.2) 0%, transparent 50%)
           `
         }}
       />
       
+      {/* Animated Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none" />
+      
       {/* Main Content */}
       <div className={`h-full flex flex-col justify-center items-center p-8 z-10 relative transition-all duration-300 ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
         <div className="max-w-7xl w-full text-center">
-          <h1 className="text-6xl md:text-8xl font-black mb-6 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent drop-shadow-2xl">
+          <h1 className="text-6xl md:text-8xl font-black mb-6 bg-gradient-to-r from-white via-cyan-200 to-purple-200 bg-clip-text text-transparent drop-shadow-2xl tracking-tight">
             {currentSlideData.title}
           </h1>
-          <p className="text-2xl md:text-3xl opacity-90 mb-8 font-light">
+          <p className="text-xl md:text-2xl opacity-90 mb-12 font-light tracking-wide">
             {currentSlideData.subtitle}
           </p>
           {currentSlideData.content}
@@ -279,10 +338,10 @@ export default function PitchPage() {
       <button
         onClick={prevSlide}
         disabled={currentSlide === 0}
-        className={`absolute left-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex items-center justify-center text-2xl transition-all duration-300 z-20 ${
+        className={`absolute left-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-black/20 backdrop-blur-xl border border-white/20 flex items-center justify-center text-2xl transition-all duration-300 z-20 ${
           currentSlide === 0 
             ? 'opacity-30 cursor-not-allowed' 
-            : 'hover:bg-white/30 hover:scale-110 cursor-pointer'
+            : 'hover:bg-black/30 hover:scale-110 cursor-pointer hover:border-white/40'
         }`}
       >
         ←
@@ -291,10 +350,10 @@ export default function PitchPage() {
       <button
         onClick={nextSlide}
         disabled={currentSlide === slides.length - 1}
-        className={`absolute right-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex items-center justify-center text-2xl transition-all duration-300 z-20 ${
+        className={`absolute right-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-black/20 backdrop-blur-xl border border-white/20 flex items-center justify-center text-2xl transition-all duration-300 z-20 ${
           currentSlide === slides.length - 1 
             ? 'opacity-30 cursor-not-allowed' 
-            : 'hover:bg-white/30 hover:scale-110 cursor-pointer'
+            : 'hover:bg-black/30 hover:scale-110 cursor-pointer hover:border-white/40'
         }`}
       >
         →
@@ -306,23 +365,23 @@ export default function PitchPage() {
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-4 h-4 rounded-full transition-all duration-300 ${
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
               currentSlide === index 
-                ? 'bg-white scale-125' 
-                : 'bg-white/50 hover:bg-white/75 hover:scale-110'
+                ? 'bg-white scale-125 shadow-lg' 
+                : 'bg-white/40 hover:bg-white/70 hover:scale-110'
             }`}
           />
         ))}
       </div>
       
       {/* Slide Counter */}
-      <div className="absolute top-8 right-8 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full px-4 py-2 z-20">
+      <div className="absolute top-8 right-8 bg-black/20 backdrop-blur-xl border border-white/20 rounded-full px-4 py-2 z-20">
         <span className="text-lg font-semibold">{currentSlide + 1} / {slides.length}</span>
       </div>
       
       {/* Instructions */}
-      <div className="absolute bottom-8 right-8 text-sm opacity-60 z-20">
-        <p>Use ← → arrows or 1-5 keys</p>
+      <div className="absolute bottom-8 right-8 text-sm opacity-50 z-20">
+        <p>Use ← → arrows or 1-7 keys</p>
       </div>
     </div>
   );
