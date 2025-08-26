@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, logout as authLogout } from '@/lib/auth';
 import { InitialLoadingScreen } from './InitialLoadingScreen';
 
 interface User {
@@ -17,7 +17,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (user: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   showAuthModal: () => void;
   hideAuthModal: () => void;
@@ -60,8 +60,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(userData);
   };
 
-  const logout = () => {
-    setUser(null);
+  const logout = async () => {
+    try {
+      await authLogout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    } finally {
+      setUser(null);
+    }
   };
 
   const showAuthModal = () => {
