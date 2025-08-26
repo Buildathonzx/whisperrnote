@@ -29,25 +29,29 @@ export default function BlogDetailPage() {
 
   if (loading || !note) {
     return (
-      <div className="container mx-auto px-5 py-12 text-center">
-        <p>Loading...</p>
+      <div className="bg-background text-foreground min-h-screen">
+        <main className="px-6 md:px-20 lg:px-40 py-12 max-w-6xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+          </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="bg-ash-white">
-      <main className="flex flex-1 justify-center py-12 px-8">
-        <div className="w-full max-w-4xl">
-          <article className="content-card p-6 sm:p-10">
+    <div className="bg-background text-foreground min-h-screen">
+      <main className="px-6 md:px-20 lg:px-40 py-12 max-w-6xl mx-auto">
+        <div className="w-full max-w-4xl mx-auto">
+          <article className="bg-card border border-border rounded-2xl shadow-3d-light dark:shadow-3d-dark p-6 sm:p-10">
             <div className="mb-8">
               <div
-                className="w-full aspect-[16/9] bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden solid-3d-card"
+                className="w-full aspect-[16/9] bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden rounded-xl border border-border"
                 style={{ backgroundImage: `url('https://via.placeholder.com/1200x675')` }}
               >
                 <div className="w-full h-full bg-gradient-to-t from-black/50 to-transparent p-6 flex flex-col justify-end">
                   <h1
-                    className="text-brownish-white text-4xl lg:text-5xl font-extrabold !font-['Newsreader'] tracking-tighter leading-tight"
+                    className="text-white text-4xl lg:text-5xl font-extrabold tracking-tighter leading-tight"
                     style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}
                   >
                     {note.title}
@@ -55,7 +59,7 @@ export default function BlogDetailPage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-between mb-6 text-sm text-text-muted">
+            <div className="flex items-center justify-between mb-6 text-sm text-foreground/60">
               <p>By {author?.name || 'Unknown'}</p>
               <p>Published on {note.createdAt ? new Date(note.createdAt).toLocaleDateString() : ''}</p>
             </div>
@@ -66,7 +70,7 @@ export default function BlogDetailPage() {
                 </Button>
               ))}
             </div>
-            <div className="prose prose-lg max-w-none text-text-main leading-relaxed space-y-6" dangerouslySetInnerHTML={{ __html: note.content || '' }}>
+            <div className="prose prose-lg max-w-none text-foreground leading-relaxed space-y-6 prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-code:text-foreground prose-pre:bg-background prose-pre:border prose-pre:border-border" dangerouslySetInnerHTML={{ __html: note.content || '' }}>
             </div>
           </article>
         </div>

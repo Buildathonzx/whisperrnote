@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { DesktopSidebar } from '@/components/Navigation';
+import { DesktopSidebar, MobileBottomNav } from '@/components/Navigation';
 import AppHeader from '@/components/AppHeader';
 
 export default function AppLayout({
@@ -25,9 +25,12 @@ export default function AppLayout({
       <AppHeader />
       
       {/* Main Content */}
-      <div className="relative pt-16 md:pt-16">
+      <div className="relative pt-16 md:pt-16 pb-24 md:pb-0">
         {children}
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 }
