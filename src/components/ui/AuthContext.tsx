@@ -88,19 +88,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     authModalMode,
   };
 
-  // Show initial loading screen during auth check
-  if (showInitialLoading) {
-    return (
-      <>
-        {children}
-        <InitialLoadingScreen show={true} />
-      </>
-    );
-  }
-
   return (
     <AuthContext.Provider value={value}>
       {children}
+      {showInitialLoading && <InitialLoadingScreen show={true} />}
     </AuthContext.Provider>
   );
 };
