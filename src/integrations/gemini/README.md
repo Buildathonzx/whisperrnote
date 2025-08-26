@@ -106,9 +106,9 @@ searchSuggestionService.clearCache();
 
 The integration supports three AI modes that align with subscription tiers:
 
-- **Standard** (Free) - `gemini-2.0-flash-001` with conservative settings
-- **Creative** (Pro) - `gemini-2.0-flash-001` with higher creativity 
-- **Ultra** (Pro+) - `gemini-2.5-flash` with maximum capabilities
+- **Standard** (Free) - `gemini-2.5-flash` with conservative settings
+- **Creative** (Pro) - `gemini-2.5-pro` with higher creativity 
+- **Ultra** (Pro+) - `gemini-2.5-pro` with maximum capabilities
 
 ## Configuration
 

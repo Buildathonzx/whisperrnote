@@ -3,14 +3,14 @@ import { GeminiModelConfig } from './types';
 
 export const GEMINI_MODEL_CONFIG: GeminiModelConfig = {
   [AIMode.STANDARD]: {
-    model: 'gemini-2.0-flash-001',
+    model: 'gemini-2.5-flash',
     temperature: 0.3,
     maxTokens: 1000,
     topP: 0.8,
     topK: 20,
   },
   [AIMode.CREATIVE]: {
-    model: 'gemini-2.0-flash-001',
+    model: 'gemini-2.5-flash',
     temperature: 0.8,
     maxTokens: 2000,
     topP: 0.9,
@@ -35,7 +35,7 @@ export const DEFAULT_CONFIG = {
 export const SEARCH_SUGGESTION_CONFIG = {
   maxSuggestions: 5,
   minQueryLength: 2,
-  model: 'gemini-2.0-flash-001',
+  model: 'gemini-2.5-flash',
   temperature: 0.7,
   systemPrompt: `You are an AI assistant helping with search suggestions. 
   Generate helpful, relevant search suggestions based on the user's query and context. 
@@ -44,7 +44,7 @@ export const SEARCH_SUGGESTION_CONFIG = {
 };
 
 export const CONTENT_ENHANCEMENT_CONFIG = {
-  model: 'gemini-2.0-flash-001',
+  model: 'gemini-2.5-flash',
   maxTokens: 3000,
   temperature: 0.6,
   systemPrompts: {
