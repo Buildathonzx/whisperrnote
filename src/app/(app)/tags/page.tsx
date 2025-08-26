@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Tags } from '@/types/appwrite-types';
-import { listTagsByUser, createTag, updateTag, deleteTag } from '@/lib/appwrite';
+import { listTags, createTag, updateTag, deleteTag } from '@/lib/appwrite';
 import { useAuth } from '@/components/ui/AuthContext';
 import { ID } from 'appwrite';
 
@@ -55,7 +55,7 @@ export default function TagsPage() {
 
     try {
       setLoading(true);
-      const response = await listTagsByUser(user.$id);
+      const response = await listTags(); // Uses default user filtering
       setTags(response.documents as unknown as Tags[]);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch tags');

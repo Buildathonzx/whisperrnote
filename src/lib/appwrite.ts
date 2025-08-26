@@ -181,7 +181,30 @@ export async function listNotes(queries: any[] = []) {
 // --- TAGS CRUD ---
 
 export async function createTag(data: Partial<Tags>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, ID.unique(), cleanDocumentData(data));
+  // Get current user for userId
+  const user = await getCurrentUser();
+  if (!user || !user.$id) throw new Error("User not authenticated");
+  // Create tag with userId
+  const cleanData = cleanDocumentData(data);
+  const doc = await databases.createDocument(
+    APPWRITE_DATABASE_ID,
+    APPWRITE_COLLECTION_ID_TAGS,
+    ID.unique(),
+    {
+      ...cleanData,
+      userId: user.$id,
+      id: null // id will be set after creation
+    }
+  );
+  // Patch the tag to set id = $id (Appwrite does not set this automatically)
+  await databases.updateDocument(
+    APPWRITE_DATABASE_ID,
+    APPWRITE_COLLECTION_ID_TAGS,
+    doc.$id,
+    { id: doc.$id }
+  );
+  // Return the updated document as Tags type
+  return await getTag(doc.$id);
 }
 
 export async function getTag(tagId: string): Promise<Tags> {
@@ -189,7 +212,9 @@ export async function getTag(tagId: string): Promise<Tags> {
 }
 
 export async function updateTag(tagId: string, data: Partial<Tags>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, tagId, cleanDocumentData(data));
+  // Do not allow updating id or userId directly
+  const { id, userId, ...rest } = data;
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, tagId, cleanDocumentData(rest));
 }
 
 export async function deleteTag(tagId: string) {
@@ -197,7 +222,21 @@ export async function deleteTag(tagId: string) {
 }
 
 export async function listTags(queries: any[] = []) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, queries);
+  // By default, fetch all tags for the current user
+  if (!queries.length) {
+    const user = await getCurrentUser();
+    if (!user || !user.$id) {
+      // Return empty result instead of throwing error for unauthenticated users
+      return { 
+        documents: [], 
+        total: 0 
+      };
+    }
+    queries = [Query.equal("userId", user.$id)];
+  }
+  // Cast documents to Tags[]
+  const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, queries);
+  return { ...res, documents: res.documents as unknown as Tags[] };
 }
 
 export async function listTagsByUser(userId: string) {

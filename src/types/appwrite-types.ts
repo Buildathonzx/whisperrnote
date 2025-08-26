@@ -48,13 +48,13 @@ export type Notes = Models.Document & {
 
 export type Tags = Models.Document & {
     id: string | null;
-    userId: string | null;
     name: string | null;
     notes: string[] | null;
     createdAt: string | null;
     color: string | null;
     description: string | null;
     usageCount: number | null;
+    userId: string | null;
 }
 
 export type ApiKeys = Models.Document & {
