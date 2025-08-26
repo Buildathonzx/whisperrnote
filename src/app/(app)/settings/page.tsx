@@ -7,11 +7,22 @@ import { useOverlay } from "@/components/ui/OverlayContext";
 import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, SubscriptionTier, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
+import { 
+  listStoredPasskeys, 
+  removePasskey, 
+  isPlatformAuthenticatorAvailable 
+} from "@/lib/appwrite/auth/passkey";
+import { 
+  listStoredWallets, 
+  removeWallet, 
+  isWalletAvailable,
+  getWalletStatus 
+} from "@/lib/appwrite/auth/wallet";
 
 type TabType = 'profile' | 'settings' | 'preferences';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('profile');
+  const [activeTab, setActiveTab] = useState<TabType>('settings');
   const [user, setUser] = useState<any>(null);
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -21,6 +32,17 @@ export default function SettingsPage() {
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState<any[]>([]);
   const [currentAIMode, setCurrentAIMode] = useState<AIMode>(AIMode.STANDARD);
+  const [authMethods, setAuthMethods] = useState<{
+    passkeys: any[];
+    wallets: any[];
+    passkeySupported: boolean;
+    walletAvailable: boolean;
+  }>({
+    passkeys: [],
+    wallets: [],
+    passkeySupported: false,
+    walletAvailable: false
+  });
   const { userTier } = useSubscription();
   const { openOverlay, closeOverlay } = useOverlay();
   const router = useRouter();
@@ -54,6 +76,23 @@ export default function SettingsPage() {
           setCurrentAIMode((mode as AIMode) || AIMode.STANDARD);
         } catch (e) {
           console.error('Failed to load AI mode:', e);
+        }
+
+        // Load authentication methods
+        try {
+          const passkeySupported = await isPlatformAuthenticatorAvailable();
+          const walletAvailable = isWalletAvailable();
+          const passkeys = listStoredPasskeys();
+          const wallets = listStoredWallets();
+          
+          setAuthMethods({
+            passkeys,
+            wallets,
+            passkeySupported,
+            walletAvailable
+          });
+        } catch (e) {
+          console.error('Failed to load auth methods:', e);
         }
       } catch {
         router.replace("/login");
@@ -90,6 +129,32 @@ export default function SettingsPage() {
         console.error('Failed to update AI mode:', error);
         setError("Failed to update AI mode");
       }
+    }
+  };
+
+  const handleRemovePasskey = async (credentialId: string) => {
+    try {
+      removePasskey(credentialId);
+      setAuthMethods(prev => ({
+        ...prev,
+        passkeys: prev.passkeys.filter(p => p.credentialId !== credentialId)
+      }));
+      setSuccess("Passkey removed successfully.");
+    } catch (error) {
+      setError("Failed to remove passkey");
+    }
+  };
+
+  const handleRemoveWallet = async (address: string) => {
+    try {
+      removeWallet(address);
+      setAuthMethods(prev => ({
+        ...prev,
+        wallets: prev.wallets.filter(w => w.address !== address)
+      }));
+      setSuccess("Wallet removed successfully.");
+    } catch (error) {
+      setError("Failed to remove wallet");
     }
   };
 
@@ -147,7 +212,21 @@ export default function SettingsPage() {
 
           <div className="p-8">
             {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} notes={notes} onEditProfile={handleEditProfile} />}
-            {activeTab === 'settings' && <SettingsTab user={user} settings={settings} isVerified={isVerified} error={error} success={success} onUpdate={handleUpdate} onSettingChange={handleSettingChange} router={router} />}
+            {activeTab === 'settings' && (
+              <SettingsTab 
+                user={user} 
+                settings={settings} 
+                isVerified={isVerified} 
+                error={error} 
+                success={success} 
+                onUpdate={handleUpdate} 
+                onSettingChange={handleSettingChange} 
+                router={router}
+                authMethods={authMethods}
+                onRemovePasskey={handleRemovePasskey}
+                onRemoveWallet={handleRemoveWallet}
+              />
+            )}
             {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} currentAIMode={currentAIMode} userTier={userTier} onAIModeChange={handleAIModeChange} />}
           </div>
         </div>
@@ -202,7 +281,7 @@ const ProfileTab = ({ user, profilePicUrl, notes, onEditProfile }: any) => (
   </div>
 );
 
-const SettingsTab = ({ user, settings, isVerified, error, success, onUpdate, onSettingChange, router }: any) => (
+const SettingsTab = ({ user, settings, isVerified, error, success, onUpdate, onSettingChange, router, authMethods, onRemovePasskey, onRemoveWallet }: any) => (
   <div className="space-y-8">
     <h1 className="text-foreground text-3xl font-bold">Settings</h1>
     
@@ -220,6 +299,97 @@ const SettingsTab = ({ user, settings, isVerified, error, success, onUpdate, onS
           </span>
         )}
       </p>
+    </div>
+
+    {/* Authentication Methods Section */}
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold text-foreground">Authentication Methods</h2>
+      
+      {/* Show current authentication method */}
+      <div className="p-4 bg-background rounded-xl border border-border">
+        <p className="text-foreground text-sm mb-2">
+          Current method: <span className="font-medium">{user?.prefs?.authMethod || 'Email'}</span>
+        </p>
+        {user?.prefs?.authMethod === 'wallet' && user?.prefs?.walletAddress && (
+          <p className="text-foreground/70 text-xs">
+            Wallet: {user.prefs.walletAddress.slice(0, 6)}...{user.prefs.walletAddress.slice(-4)}
+          </p>
+        )}
+      </div>
+
+      {/* Passkeys */}
+      <div className="p-6 bg-background border border-border rounded-xl">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-medium text-foreground">Passkeys</h3>
+            <p className="text-sm text-foreground/70">Secure authentication using biometrics</p>
+          </div>
+          <div className="text-sm text-foreground/60">
+            {authMethods.passkeySupported ? 'Available' : 'Not Supported'}
+          </div>
+        </div>
+        
+        {authMethods.passkeys.length > 0 ? (
+          <div className="space-y-2">
+            {authMethods.passkeys.map((passkey: any) => (
+              <div key={passkey.credentialId} className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{passkey.displayName || passkey.email}</p>
+                  <p className="text-xs text-foreground/60">Added {new Date(passkey.createdAt).toLocaleDateString()}</p>
+                </div>
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  onClick={() => onRemovePasskey(passkey.credentialId)}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-foreground/60">No passkeys configured</p>
+        )}
+      </div>
+
+      {/* Wallets */}
+      <div className="p-6 bg-background border border-border rounded-xl">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-medium text-foreground">Wallets</h3>
+            <p className="text-sm text-foreground/70">Web3 wallet authentication</p>
+          </div>
+          <div className="text-sm text-foreground/60">
+            {authMethods.walletAvailable ? 'Available' : 'Not Available'}
+          </div>
+        </div>
+        
+        {authMethods.wallets.length > 0 ? (
+          <div className="space-y-2">
+            {authMethods.wallets.map((wallet: any) => (
+              <div key={wallet.address} className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
+                  </p>
+                  <p className="text-xs text-foreground/60">
+                    {wallet.provider} • Connected {new Date(wallet.connectedAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  onClick={() => onRemoveWallet(wallet.address)}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-foreground/60">No wallets connected</p>
+        )}
+      </div>
     </div>
 
     {error && (
