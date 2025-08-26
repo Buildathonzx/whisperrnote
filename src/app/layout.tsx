@@ -7,6 +7,7 @@ import { OverlayProvider } from "@/components/ui/OverlayContext";
 import { SubscriptionProvider } from "@/components/ui/SubscriptionContext";
 import { RouteGuard } from "@/components/ui/RouteGuard";
 import { AuthModalContainer } from "@/components/ui/AuthModalContainer";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import Overlay from "@/components/ui/Overlay";
 
 export default function RootLayout({
@@ -15,21 +16,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body>
-        <AppWithLoading>
-          <AuthProvider>
-            <SubscriptionProvider>
-              <OverlayProvider>
-                <RouteGuard>
-                  {children}
-                </RouteGuard>
-                <AuthModalContainer />
-                <Overlay />
-              </OverlayProvider>
-            </SubscriptionProvider>
-          </AuthProvider>
-        </AppWithLoading>
+        <ThemeProvider>
+          <AppWithLoading>
+            <AuthProvider>
+              <SubscriptionProvider>
+                <OverlayProvider>
+                  <RouteGuard>
+                    {children}
+                  </RouteGuard>
+                  <AuthModalContainer />
+                  <Overlay />
+                </OverlayProvider>
+              </SubscriptionProvider>
+            </AuthProvider>
+          </AppWithLoading>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -13,17 +13,14 @@ import {
   DocumentTextIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  SunIcon,
-  MoonIcon,
   PowerIcon,
 } from '@heroicons/react/24/outline';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useAuth } from '@/components/ui/AuthContext';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 
 interface NavigationProps {
-  toggleTheme?: () => void;
-  isDarkMode?: boolean;
   className?: string;
 }
 
@@ -192,19 +189,12 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
       {/* User Profile & Controls */}
       <div className="p-6 border-t border-light-border dark:border-dark-border space-y-4">
         {/* Theme Toggle */}
-        {toggleTheme && (
-          <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-            {!isCollapsed && (
-              <span className="text-sm font-medium text-light-fg dark:text-dark-fg">Theme</span>
-            )}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-xl hover:bg-light-bg dark:hover:bg-dark-bg text-light-fg dark:text-dark-fg transition-all duration-200"
-            >
-              {isDarkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
-            </button>
-          </div>
-        )}
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+          {!isCollapsed && (
+            <span className="text-sm font-medium text-light-fg dark:text-dark-fg">Theme</span>
+          )}
+          <ThemeToggle size="sm" />
+        </div>
 
         {/* User Info */}
         {isAuthenticated && user && (
