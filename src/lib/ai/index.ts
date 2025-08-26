@@ -1,6 +1,5 @@
 import { aiProviderRegistry, aiService } from '@/lib/ai/registry';
 import { createMockProvider } from '@/lib/ai/providers/mock';
-import { createGeminiProvider } from '@/lib/ai/providers/gemini';
 import { createGitHubModelsProvider } from '@/lib/ai/providers/github';
 
 // Initialize AI providers based on environment and configuration
@@ -13,19 +12,8 @@ export function initializeAIProviders() {
   });
   aiProviderRegistry.register(mockProvider);
 
-  // Register Gemini provider if API key is available
-  const geminiApiKey = process.env.GEMINI_API_KEY;
-  if (geminiApiKey) {
-    const geminiProvider = createGeminiProvider({
-      apiKey: geminiApiKey,
-      enabled: true, // Enable Gemini as fallback
-      defaultMode: 'STANDARD' as any,
-    });
-    aiProviderRegistry.register(geminiProvider);
-    console.log('Gemini provider registered (enabled)');
-  } else {
-    console.log('Gemini API key not found - provider not registered');
-  }
+  // Gemini provider disabled - using GitHub Models only
+  console.log('Gemini provider disabled by configuration');
 
   // Register GitHub Models provider if GitHub token is available
   const githubToken = process.env.GITHUB_TOKEN;
@@ -41,11 +29,10 @@ export function initializeAIProviders() {
     console.log('GitHub token not found - GitHub Models provider not registered');
   }
 
-  // Configure AI service with primary provider based on availability
-  const primaryProvider = githubToken ? 'github-models' : (geminiApiKey ? 'gemini' : 'mock');
+  // Configure AI service with primary provider (GitHub Models only)
+  const primaryProvider = githubToken ? 'github-models' : 'mock';
   const fallbackProviders = [
     ...(githubToken ? ['github-models'] : []),
-    ...(geminiApiKey ? ['gemini'] : []),
     'mock'
   ].filter((provider, index, arr) => arr.indexOf(provider) === index && provider !== primaryProvider);
 
