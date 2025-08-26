@@ -28,10 +28,10 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
       clearTimeout(loadingTimeoutRef.current);
     }
     
-    // Only show loading if it takes longer than 100ms to prevent flashing for quick operations
+    // Only show loading if operation takes longer than 300ms to prevent flashing
     const timeout = setTimeout(() => {
       setIsLoading(true);
-    }, 100);
+    }, 300);
     
     loadingTimeoutRef.current = timeout;
   }, []);

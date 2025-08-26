@@ -7,6 +7,7 @@ import { useOverlay } from '@/components/ui/OverlayContext';
 import { useSearchParams } from 'next/navigation';
 import type { Notes } from '@/types/appwrite-types';
 import NoteCard from '@/components/ui/NoteCard';
+import { NoteGridSkeleton } from '@/components/ui/NoteCardSkeleton';
 import { Button } from '@/components/ui/Button';
 import { Pagination } from '@/components/ui/Pagination';
 import { useSearch } from '@/hooks/useSearch';
@@ -22,6 +23,7 @@ import { MobileFAB } from '@/components/MobileFAB';
 export default function NotesPage() {
   const [allNotes, setAllNotes] = useState<Notes[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const { showLoading, hideLoading } = useLoading();
   const { openOverlay, closeOverlay } = useOverlay();
   const searchParams = useSearchParams();
@@ -75,9 +77,13 @@ export default function NotesPage() {
   // Initial data fetch
   useEffect(() => {
     const fetchNotes = async () => {
-      if (allNotes.length === 0) {
+      // Only show loading for longer operations on first load
+      const shouldShowLoading = allNotes.length === 0;
+      
+      if (shouldShowLoading) {
         showLoading('Loading your notes...');
       }
+      
       try {
         const res = await appwriteListNotes();
         setAllNotes(Array.isArray(res.documents) ? (res.documents as Notes[]) : []);
@@ -85,7 +91,10 @@ export default function NotesPage() {
         setAllNotes([]);
         console.error('Failed to fetch notes:', error);
       } finally {
-        hideLoading();
+        if (shouldShowLoading) {
+          hideLoading();
+        }
+        setIsInitialLoading(false);
       }
     };
     fetchNotes();
@@ -251,7 +260,9 @@ export default function NotesPage() {
       )}
 
       {/* Notes Grid */}
-      {paginatedNotes.length === 0 ? (
+      {isInitialLoading ? (
+        <NoteGridSkeleton count={12} />
+      ) : paginatedNotes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-24 h-24 bg-light-card dark:bg-dark-card rounded-3xl flex items-center justify-center mb-6 shadow-lg">
             {hasSearchResults ? (

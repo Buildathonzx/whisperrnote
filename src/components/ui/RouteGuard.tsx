@@ -3,7 +3,6 @@
 import React, { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from './AuthContext';
-import { useLoading } from './LoadingContext';
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -26,7 +25,6 @@ function isPublicRoute(path: string): boolean {
 
 export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
   const { isLoading, isAuthenticated, showAuthModal } = useAuth();
-  const { showLoading, hideLoading } = useLoading();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -34,8 +32,6 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
     if (isLoading) {
       return;
     }
-
-    hideLoading();
 
     const publicRoute = isPublicRoute(pathname);
     
@@ -47,15 +43,12 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
 
     // If user is authenticated and on landing page, redirect to notes
     if (isAuthenticated && pathname === '/') {
-      showLoading('Loading your workspace...');
-      setTimeout(() => {
-        router.replace('/notes');
-        hideLoading();
-      }, 200);
+      // Use silent redirect without global loading
+      router.replace('/notes');
       return;
     }
 
-  }, [isLoading, isAuthenticated, pathname, router, showAuthModal, showLoading, hideLoading]);
+  }, [isLoading, isAuthenticated, pathname, router, showAuthModal]);
 
   // Show loading during initial auth check
   if (isLoading) {
