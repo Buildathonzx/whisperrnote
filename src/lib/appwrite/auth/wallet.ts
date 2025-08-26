@@ -171,7 +171,7 @@ export async function signAuthenticationMessage(address: string): Promise<string
 /**
  * Register a new wallet connection
  */
-export async function registerWallet(): Promise<WalletConnection> {
+export async function registerWallet(email: string): Promise<WalletConnection> {
   try {
     // Connect to wallet
     const { address, provider, chainId } = await connectWallet();
@@ -179,15 +179,15 @@ export async function registerWallet(): Promise<WalletConnection> {
     // Sign authentication message
     const signature = await signAuthenticationMessage(address);
     
-    // Create user ID from address
-    const userId = `wallet_${address.toLowerCase()}`;
+    // Generate a proper Appwrite-compatible userId (let API generate it)
+    const userId = 'unique()'; // This will be replaced by server with actual unique ID
     
     // Create connection object
     const connection: WalletConnection = {
       address: address.toLowerCase(),
       provider,
       chainId,
-      userId,
+      userId, // Will be updated after account creation
       connectedAt: new Date(),
     };
 
@@ -195,7 +195,7 @@ export async function registerWallet(): Promise<WalletConnection> {
     storeConnection(connection);
 
     // Create user account with wallet
-    await createUserAccountWithWallet(connection, signature);
+    await createUserAccountWithWallet(connection, signature, email);
 
     return connection;
 
@@ -274,7 +274,7 @@ export async function authenticateWithWallet(address?: string): Promise<WalletAu
 /**
  * Create user account after successful wallet connection
  */
-async function createUserAccountWithWallet(connection: WalletConnection, signature: string): Promise<void> {
+async function createUserAccountWithWallet(connection: WalletConnection, signature: string, email: string): Promise<void> {
   try {
     // Call API to create user and get custom token
     const response = await fetch('/api/auth/wallet/register', {
@@ -282,6 +282,7 @@ async function createUserAccountWithWallet(connection: WalletConnection, signatu
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId: connection.userId,
+        email,
         address: connection.address,
         provider: connection.provider,
         chainId: connection.chainId,
@@ -291,7 +292,13 @@ async function createUserAccountWithWallet(connection: WalletConnection, signatu
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'User creation failed');
+      console.error('Wallet registration API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: error,
+        url: response.url
+      });
+      throw new Error(error.error || error.message || 'User creation failed');
     }
 
     await response.json();

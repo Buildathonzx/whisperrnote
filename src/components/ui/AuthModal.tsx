@@ -113,6 +113,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
+    if (!email || !email.includes('@')) {
+      setTooltip('Enter your email first to register or authenticate with wallet');
+      setError('');
+      return;
+    }
+
     setError('');
     setTooltip('');
     showLoading('Connecting to wallet...');
@@ -138,7 +144,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       
       // If not authenticated, register new wallet
       showLoading('Registering wallet...');
-      const connection = await registerWallet();
+      const connection = await registerWallet(email);
       
       if (connection) {
         const user = await getCurrentUser();
