@@ -23,7 +23,18 @@ export const logout = async () => {
 // Get the currently authenticated user
 export const getCurrentUser = async () => {
   try {
-    return await account.get();
+    const user = await account.get();
+    if (user) {
+      // Check user preferences to determine authentication method
+      const preferences = user.prefs || {};
+      return {
+        ...user,
+        authMethod: preferences.authMethod || 'email',
+        walletAddress: preferences.walletAddress || null,
+        passkeyCredentialId: preferences.passkeyCredentialId || null,
+      };
+    }
+    return user;
   } catch {
     return null;
   }

@@ -3,7 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { loginEmailPassword, signupEmailPassword, getCurrentUser } from '@/lib/appwrite';
-import { continueWithPasskey, handlePasskeyError } from '@/lib/appwrite/passkey';
+import { 
+  registerPasskey, 
+  authenticateWithPasskey, 
+  isPlatformAuthenticatorAvailable 
+} from '@/lib/appwrite/auth/passkey';
+import { 
+  registerWallet, 
+  authenticateWithWallet, 
+  isWalletAvailable,
+  getWalletStatus 
+} from '@/lib/appwrite/auth/wallet';
 import { useAuth } from './AuthContext';
 import { useLoading } from './LoadingContext';
 
@@ -26,8 +36,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState('');
   const [tooltip, setTooltip] = useState('');
   const [showPasswordField, setShowPasswordField] = useState(false);
+  const [passkeySupported, setPasskeySupported] = useState(false);
+  const [walletAvailable, setWalletAvailable] = useState(false);
   const { login: authLogin, refreshUser } = useAuth();
   const { showLoading, hideLoading } = useLoading();
+
+  // Check for passkey and wallet support on mount
+  useEffect(() => {
+    const checkSupport = async () => {
+      setPasskeySupported(await isPlatformAuthenticatorAvailable());
+      setWalletAvailable(isWalletAvailable());
+    };
+    checkSupport();
+  }, []);
 
   // Email validation function
   const isValidEmail = (email: string): boolean => {
@@ -87,37 +108,104 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleWalletAuth = async () => {
-    setTooltip('Create email account to configure wallet in settings');
+    if (!walletAvailable) {
+      setError('No wallet detected. Please install MetaMask or another Web3 wallet.');
+      return;
+    }
+
     setError('');
-    return;
+    setTooltip('');
+    showLoading('Connecting to wallet...');
+    
+    try {
+      // Check if wallet is already connected and registered
+      const walletStatus = await getWalletStatus();
+      
+      if (walletStatus.connected) {
+        // Try to authenticate with existing wallet
+        const authResult = await authenticateWithWallet();
+        
+        if (authResult.success) {
+          const user = await getCurrentUser();
+          if (user) {
+            authLogin(user);
+            await refreshUser();
+            handleClose();
+            return;
+          }
+        }
+      }
+      
+      // If not authenticated, register new wallet
+      showLoading('Registering wallet...');
+      const connection = await registerWallet();
+      
+      if (connection) {
+        const user = await getCurrentUser();
+        if (user) {
+          authLogin(user);
+          await refreshUser();
+          handleClose();
+        }
+      }
+      
+    } catch (err: any) {
+      console.error('Wallet authentication error:', err);
+      setError(err.message || 'Wallet authentication failed');
+    } finally {
+      hideLoading();
+    }
   };
 
   const handlePasskeyAuth = async () => {
+    if (!passkeySupported) {
+      setError('Passkeys are not supported on this device or browser.');
+      return;
+    }
+
     if (!email || !email.includes('@')) {
-      setTooltip('Create email account to configure passkey in settings');
+      setTooltip('Enter your email first to register or authenticate with passkey');
       setError('');
       return;
     }
     
     setError('');
     setTooltip('');
-    showLoading('Authenticating with passkey...');
+    showLoading('Setting up passkey authentication...');
     
     try {
-      console.log('Starting passkey auth...');
-      const result = await continueWithPasskey(email);
-      console.log('Passkey result:', result);
+      // Try to authenticate with existing passkey
+      const authResult = await authenticateWithPasskey(email);
       
-      if (result.success && result.user) {
-        authLogin(result.user);
-        await refreshUser();
-        handleClose();
-      } else if (result.message) {
-        setError(result.message);
+      if (authResult.success) {
+        const user = await getCurrentUser();
+        if (user) {
+          authLogin(user);
+          await refreshUser();
+          handleClose();
+          return;
+        }
       }
+      
+      // If authentication failed, try to register new passkey
+      showLoading('Registering new passkey...');
+      const credential = await registerPasskey({
+        email,
+        displayName: email.split('@')[0]
+      });
+      
+      if (credential) {
+        const user = await getCurrentUser();
+        if (user) {
+          authLogin(user);
+          await refreshUser();
+          handleClose();
+        }
+      }
+      
     } catch (err: any) {
-      console.error('Passkey error:', err);
-      setError(handlePasskeyError(err));
+      console.error('Passkey authentication error:', err);
+      setError(err.message || 'Passkey authentication failed');
     } finally {
       hideLoading();
     }
@@ -280,31 +368,49 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                  {/* Passkey & Wallet Buttons */}
                 <div className="flex flex-col md:flex-row gap-3">
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: passkeySupported ? 1.02 : 1 }}
+                    whileTap={{ scale: passkeySupported ? 0.98 : 1 }}
                     onClick={handlePasskeyAuth}
-                    className="flex-1 p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center"
+                    disabled={!passkeySupported}
+                    className={`flex-1 p-4 border rounded-xl transition-all text-center ${
+                      passkeySupported 
+                        ? 'bg-light-card dark:bg-dark-card border-light-border dark:border-dark-border hover:shadow-3d-light dark:hover:shadow-3d-dark cursor-pointer' 
+                        : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-60'
+                    }`}
                   >
-                    <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2 ${
+                      passkeySupported ? 'bg-accent/10' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}>
+                      <svg className={`w-4 h-4 ${passkeySupported ? 'text-accent' : 'text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-4 4-4-4 4-4 4 4 .257-.257A6 6 0 1118 8zm-6-6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <div className="font-medium text-foreground text-sm">Passkey</div>
+                    <div className={`font-medium text-sm ${passkeySupported ? 'text-foreground' : 'text-gray-500'}`}>
+                      Passkey {!passkeySupported && '(Not Available)'}
+                    </div>
                   </motion.button>
 
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: walletAvailable ? 1.02 : 1 }}
+                    whileTap={{ scale: walletAvailable ? 0.98 : 1 }}
                     onClick={handleWalletAuth}
-                    className="flex-1 p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center"
+                    disabled={!walletAvailable}
+                    className={`flex-1 p-4 border rounded-xl transition-all text-center ${
+                      walletAvailable 
+                        ? 'bg-light-card dark:bg-dark-card border-light-border dark:border-dark-border hover:shadow-3d-light dark:hover:shadow-3d-dark cursor-pointer' 
+                        : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-60'
+                    }`}
                   >
-                    <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2 ${
+                      walletAvailable ? 'bg-accent/10' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}>
+                      <svg className={`w-4 h-4 ${walletAvailable ? 'text-accent' : 'text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <div className="font-medium text-foreground text-sm">Wallet</div>
+                    <div className={`font-medium text-sm ${walletAvailable ? 'text-foreground' : 'text-gray-500'}`}>
+                      Wallet {!walletAvailable && '(Not Available)'}
+                    </div>
                   </motion.button>
                 </div>
               </div>
