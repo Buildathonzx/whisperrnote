@@ -113,7 +113,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
   ];
 
   return (
-    <aside className={`hidden md:flex flex-col bg-light-card dark:bg-dark-card border-r-2 border-light-border dark:border-dark-border shadow-[inset_-1px_0_0_rgba(255,255,255,0.1),2px_0_8px_rgba(0,0,0,0.08)] transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} ${className}`}>
+    <aside className={`hidden md:flex flex-col fixed left-0 top-0 h-screen bg-light-card dark:bg-dark-card border-r-2 border-light-border dark:border-dark-border shadow-[inset_-1px_0_0_rgba(255,255,255,0.1),2px_0_8px_rgba(0,0,0,0.08)] transition-all duration-300 z-20 ${isCollapsed ? 'w-16' : 'w-64'} ${className}`}>
       
       {/* Collapse Toggle */}
       <div className="flex items-center justify-end p-4 border-b border-light-border dark:border-dark-border">
