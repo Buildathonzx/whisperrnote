@@ -37,7 +37,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
               {/* Spinning loader */}
               <div className="relative">
                 <div className="w-12 h-12 border-4 border-gray-200 dark:border-gray-700 rounded-full"></div>
-                <div className="absolute top-0 left-0 w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="absolute top-0 left-0 w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
               </div>
               
               {/* Loading text */}

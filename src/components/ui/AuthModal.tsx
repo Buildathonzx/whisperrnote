@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { loginEmailPassword, signupEmailPassword, getCurrentUser } from '@/lib/appwrite';
 import { useAuth } from './AuthContext';
 import { useLoading } from './LoadingContext';
@@ -26,6 +27,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [showPasswordField, setShowPasswordField] = useState(false);
   const { login: authLogin, refreshUser } = useAuth();
   const { showLoading, hideLoading } = useLoading();
+  const router = useRouter();
 
   // Email validation function
   const isValidEmail = (email: string): boolean => {
@@ -72,6 +74,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const handleClose = () => {
     resetForm();
     onClose();
+    // Navigate to landing page when closing auth modal
+    router.push('/');
   };
 
   // Generate username from email

@@ -331,6 +331,11 @@ export const ThreeJsHeroBackground: React.FC<ThreeJsHeroBackgroundProps> = ({
       scene.add(trailMesh);
     });
 
+    // Update colors after initial meshes are created
+    setTimeout(() => {
+      updateThemeColors();
+    }, 100);
+
     let time = 0;
 
     // Animation loop with true fluid dynamics
@@ -393,18 +398,20 @@ export const ThreeJsHeroBackground: React.FC<ThreeJsHeroBackgroundProps> = ({
       
       fluidMeshes.forEach((mesh, index) => {
         const material = mesh.material as THREE.ShaderMaterial;
-        material.uniforms.color.value = fluidBlobs[index].color;
-        material.uniforms.opacity.value = newColors.opacity;
+        if (material && material.uniforms && material.uniforms.color && fluidBlobs[index]) {
+          material.uniforms.color.value = fluidBlobs[index].color;
+          material.uniforms.opacity.value = newColors.opacity;
+        }
       });
 
       trailMeshes.forEach((mesh, index) => {
         const material = mesh.material as THREE.ShaderMaterial;
-        material.uniforms.color.value = fluidBlobs[index].color;
-        material.uniforms.opacity.value = newColors.trailOpacity;
+        if (material && material.uniforms && material.uniforms.color && fluidBlobs[index]) {
+          material.uniforms.color.value = fluidBlobs[index].color;
+          material.uniforms.opacity.value = newColors.trailOpacity;
+        }
       });
     };
-
-    updateThemeColors();
 
     return () => {
       window.removeEventListener('resize', handleResize);
