@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { DesktopSidebar } from '@/components/Navigation';
+import AppHeader from '@/components/AppHeader';
 
 export default function AppLayout({
   children,
@@ -20,8 +21,11 @@ export default function AppLayout({
       {/* Desktop Sidebar */}
       <DesktopSidebar toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
       
+      {/* App Header with AI Selector */}
+      <AppHeader />
+      
       {/* Main Content */}
-      <div className="relative">
+      <div className="relative pt-16 md:pt-16">
         {children}
       </div>
     </div>

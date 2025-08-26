@@ -957,46 +957,21 @@
                     "array": false,
                     "format": "",
                     "default": null
+                },
+                {
+                    "key": "mode",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 200,
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": []
         }
     ],
     "buckets": [
-        {
-            "$id": "67ff068f0036c272503f",
-            "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
-            ],
-            "fileSecurity": false,
-            "name": "notes-attachments",
-            "enabled": true,
-            "maximumFileSize": 5000000000,
-            "allowedFileExtensions": [],
-            "compression": "none",
-            "encryption": true,
-            "antivirus": true
-        },
-        {
-            "$id": "67ff06c2003831f1cd5c",
-            "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
-            ],
-            "fileSecurity": false,
-            "name": "profile-pictures",
-            "enabled": true,
-            "maximumFileSize": 5000000000,
-            "allowedFileExtensions": [],
-            "compression": "none",
-            "encryption": true,
-            "antivirus": true
-        },
         {
             "$id": "profile_pictures",
             "$permissions": [

@@ -140,4 +140,5 @@ export type Settings = Models.Document & {
     settings: string;
     createdAt: string | null;
     updatedAt: string | null;
+    mode: string | null;
 }

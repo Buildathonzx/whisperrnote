@@ -364,7 +364,7 @@ export async function listActivityLogs() {
 
 // --- SETTINGS CRUD ---
 
-export async function createSettings(data: Pick<Settings, 'userId' | 'settings'>) {
+export async function createSettings(data: Pick<Settings, 'userId' | 'settings'> & { mode?: string }) {
   if (!data.userId) throw new Error("userId is required to create settings");
   return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, data.userId, data);
 }
@@ -373,7 +373,7 @@ export async function getSettings(settingsId: string): Promise<Settings> {
   return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, settingsId) as Promise<Settings>;
 }
 
-export async function updateSettings(settingsId: string, data: Partial<Settings>) {
+export async function updateSettings(settingsId: string, data: any) {
   return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, settingsId, data);
 }
 
@@ -383,6 +383,31 @@ export async function deleteSettings(settingsId: string) {
 
 export async function listSettings(queries: any[] = []) {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, queries);
+}
+
+// AI Mode specific functions
+export async function updateAIMode(userId: string, mode: string) {
+  try {
+    await getSettings(userId);
+    return await updateSettings(userId, { mode });
+  } catch (error) {
+    // If settings don't exist, create them with the AI mode
+    return await createSettings({ 
+      userId, 
+      settings: JSON.stringify({ theme: 'light', notifications: true }),
+      mode 
+    });
+  }
+}
+
+export async function getAIMode(userId: string): Promise<string | null> {
+  try {
+    const settings = await getSettings(userId);
+    return (settings as any).mode || 'standard';
+  } catch (error) {
+    return 'standard'; // Default to standard mode
+  }
+}
 }
 
 // --- STORAGE/BUCKETS ---
@@ -557,6 +582,8 @@ export default {
   updateSettings,
   deleteSettings,
   listSettings,
+  updateAIMode,
+  getAIMode,
   uploadFile,
   getFile,
   deleteFile,
