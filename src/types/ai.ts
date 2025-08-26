@@ -131,6 +131,8 @@ export interface AIProviderRegistry {
   getAvailableProviders(): AIProvider[];
   getEnabledProviders(): AIProvider[];
   setProviderEnabled(providerId: string, enabled: boolean): void;
+  getHealthyProviders(): Promise<AIProvider[]>;
+  getProviderMetrics(): Record<string, any>;
 }
 
 export interface AIServiceConfig {

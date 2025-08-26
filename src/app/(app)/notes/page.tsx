@@ -5,7 +5,6 @@ import { listNotes as appwriteListNotes } from '@/lib/appwrite';
 import { useLoading } from '@/components/ui/LoadingContext';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useAI } from '@/components/ui/AIContext';
-import { useToast } from '@/components/ui/Toast';
 import { useSearchParams } from 'next/navigation';
 import type { Notes } from '@/types/appwrite-types';
 import NoteCard from '@/components/ui/NoteCard';
@@ -28,7 +27,6 @@ export default function NotesPage() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const { showLoading, hideLoading } = useLoading();
   const { openOverlay, closeOverlay } = useOverlay();
-  const { showError } = useToast();
   const { isGenerating, setIsGenerating, setAIGenerateHandler } = useAI();
   const searchParams = useSearchParams();
 
@@ -157,11 +155,7 @@ export default function NotesPage() {
       );
       
     } catch (error) {
-      console.error('Failed to generate content:', error);
-      showError(
-        'AI Generation Failed',
-        error instanceof Error ? error.message : 'Unable to generate content. Please try again.'
-      );
+      console.error('AI Generation Failed:', error instanceof Error ? error.message : 'Unable to generate content. Please try again.');
     } finally {
       setIsGenerating(false);
     }
