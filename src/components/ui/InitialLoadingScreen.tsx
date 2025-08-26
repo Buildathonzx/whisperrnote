@@ -29,11 +29,11 @@ export const InitialLoadingScreen: React.FC<InitialLoadingScreenProps> = ({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="bg-white dark:bg-gray-900 rounded-3xl p-12 shadow-2xl border border-gray-200/20 dark:border-gray-700/20 backdrop-blur-lg bg-opacity-95 dark:bg-opacity-95 max-w-md w-full mx-4"
+            className="bg-light-card dark:bg-dark-card rounded-3xl p-12 shadow-3d-light dark:shadow-3d-dark border border-light-border/20 dark:border-dark-border/20 backdrop-blur-lg bg-opacity-95 dark:bg-opacity-95 max-w-md w-full mx-4"
           >
             <div className="flex flex-col items-center space-y-6">
               {/* Logo */}
-              <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center shadow-3d-light dark:shadow-3d-dark">
                 <img 
                   src="/logo/whisperrnote.png" 
                   alt="WhisperNote Logo" 
@@ -42,19 +42,19 @@ export const InitialLoadingScreen: React.FC<InitialLoadingScreenProps> = ({
               </div>
               
               {/* App Title */}
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent text-center">
+              <h1 className="text-4xl font-bold text-foreground text-center">
                 WhisperNote
               </h1>
               
               {/* Loading text */}
-              <p className="text-gray-600 dark:text-gray-400 text-lg font-medium text-center">
+              <p className="text-foreground/60 text-lg font-medium text-center">
                 Loading your creative space...
               </p>
               
               {/* Progress bar */}
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-light-border dark:bg-dark-border rounded-full h-3 overflow-hidden shadow-inner-light dark:shadow-inner-dark">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                  className="h-full bg-accent rounded-full"
                   initial={{ width: "0%" }}
                   animate={{ width: ["0%", "100%", "0%"] }}
                   transition={{ 
@@ -66,8 +66,8 @@ export const InitialLoadingScreen: React.FC<InitialLoadingScreenProps> = ({
               </div>
               
               {/* Footer text */}
-              <p className="text-xs text-gray-500 dark:text-gray-500 text-center mt-4">
-                © 2024 WhisperNote. All Rights Reserved.
+              <p className="text-xs text-foreground/40 text-center mt-4">
+                © 2025 WhisperNote. All Rights Reserved.
               </p>
             </div>
           </motion.div>

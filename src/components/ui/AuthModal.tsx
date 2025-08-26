@@ -204,18 +204,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           className="relative w-full max-w-md mx-4"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-2xl border border-gray-200/20 dark:border-gray-700/20 overflow-hidden">
+          <div className="backdrop-blur-lg bg-light-card/95 dark:bg-dark-card/95 rounded-3xl shadow-3d-light dark:shadow-3d-dark border border-light-border/20 dark:border-dark-border/20 overflow-hidden">
             {/* Header */}
-            <div className="p-6 text-center border-b border-gray-200/20 dark:border-gray-700/20">
+            <div className="p-6 text-center border-b border-light-border/20 dark:border-dark-border/20">
               <img 
                 src="/logo/whisperrnote.png" 
                 alt="WhisperNote Logo" 
-                className="mx-auto mb-4 w-16 h-16 rounded-full shadow-md" 
+                className="mx-auto mb-4 w-16 h-16 rounded-full shadow-3d-light dark:shadow-3d-dark" 
               />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
                 {mode === 'login' ? 'Welcome Back' : 'Create Account'}
               </h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-foreground/60">
                 {mode === 'login' 
                   ? 'Sign in to your WhisperNote account' 
                   : 'Sign up to get started with WhisperNote'
@@ -229,7 +229,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-4"
+                  className="bg-red-100/80 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl mb-4 shadow-inner-light dark:shadow-inner-dark"
                 >
                   {error}
                 </motion.div>
@@ -237,7 +237,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               {authMethod === 'selection' ? (
                 <div className="space-y-4">
-                  <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
+                  <p className="text-center text-foreground/60 mb-6">
                     Choose how you'd like to {mode === 'login' ? 'sign in' : 'create your account'}
                   </p>
                   
@@ -246,17 +246,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setAuthMethod('email')}
-                      className="w-full p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left flex items-center space-x-3"
+                      className="w-full p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-left flex items-center space-x-3"
                     >
-                      <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                           <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                         </svg>
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900 dark:text-white">Continue with Email</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Use your email and password</div>
+                        <div className="font-medium text-foreground">Continue with Email</div>
+                        <div className="text-sm text-foreground/60">Use your email and password</div>
                       </div>
                     </motion.button>
 
@@ -264,16 +264,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handlePasskeyAuth()}
-                      className="w-full p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left flex items-center space-x-3"
+                      className="w-full p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-left flex items-center space-x-3"
                     >
-                      <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-4 4-4-4 4-4 4 4 .257-.257A6 6 0 1118 8zm-6-6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900 dark:text-white">Continue with Passkey</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Use biometric or security key</div>
+                        <div className="font-medium text-foreground">Continue with Passkey</div>
+                        <div className="text-sm text-foreground/60">Use biometric or security key</div>
                       </div>
                     </motion.button>
 
@@ -281,16 +281,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleWalletAuth()}
-                      className="w-full p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left flex items-center space-x-3"
+                      className="w-full p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-left flex items-center space-x-3"
                     >
-                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900 dark:text-white">Continue with Wallet</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Connect your Web3 wallet</div>
+                        <div className="font-medium text-foreground">Continue with Wallet</div>
+                        <div className="text-sm text-foreground/60">Connect your Web3 wallet</div>
                       </div>
                     </motion.button>
                   </div>
@@ -299,104 +299,104 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <form onSubmit={mode === 'login' ? handleLogin : handleSignup} className="space-y-4">
                   {mode === 'signup' && (
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Name
-                      </label>
-                      <input
-                        id="name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-colors"
-                        placeholder="Enter your name"
-                        autoComplete="name"
-                      />
+                        <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+                          Name
+                        </label>
+                        <input
+                          id="name"
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                          className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
+                          placeholder="Enter your name"
+                          autoComplete="name"
+                        />
                     </div>
                   )}
 
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Email
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-colors"
-                      placeholder="Enter your email"
-                      autoComplete="email"
-                    />
-                  </div>
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                          Email
+                        </label>
+                        <input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
+                          placeholder="Enter your email"
+                          autoComplete="email"
+                        />
+                      </div>
 
-                  <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Password
-                    </label>
-                    <input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-colors"
-                      placeholder="Enter your password"
-                      autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                    />
-                  </div>
+                      <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+                          Password
+                        </label>
+                        <input
+                          id="password"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
+                          placeholder="Enter your password"
+                          autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                        />
+                      </div>
 
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    type="submit"
-                    className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-semibold shadow-lg transition-all duration-200"
-                  >
-                    {mode === 'login' ? 'Sign In' : 'Create Account'}
-                  </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="submit"
+                        className="w-full py-3 px-4 bg-accent hover:bg-accent-dark text-light-bg rounded-xl font-semibold shadow-3d-light transition-all duration-200"
+                      >
+                        {mode === 'login' ? 'Sign In' : 'Create Account'}
+                      </motion.button>
 
                   <div className="text-center">
-                    <button
-                      type="button"
-                      onClick={() => setAuthMethod('selection')}
-                      className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 transition-colors"
-                    >
-                      ← Back to options
-                    </button>
-                  </div>
-                </form>
-              )}
+                        <button
+                          type="button"
+                          onClick={() => setAuthMethod('selection')}
+                          className="text-sm text-accent hover:text-accent-dark transition-colors"
+                        >
+                          ← Back to options
+                        </button>
+                      </div>
+                    </form>
+                  )}
 
-              {/* Footer */}
-              <div className="mt-6 text-center space-y-3">
-                {authMethod === 'email' && mode === 'login' && (
-                  <a 
-                    href="/reset" 
-                    className="block text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 transition-colors"
-                    onClick={handleClose}
-                  >
-                    Forgot your password?
-                  </a>
-                )}
-                
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {mode === 'login' ? "Don't have an account?" : "Already have an account?"}{" "}
-                  <button
-                    type="button"
-                    onClick={toggleMode}
-                    className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium transition-colors"
-                  >
-                    {mode === 'login' ? 'Sign up' : 'Sign in'}
-                  </button>
-                </p>
-              </div>
+                  {/* Footer */}
+                  <div className="mt-6 text-center space-y-3">
+                    {authMethod === 'email' && mode === 'login' && (
+                      <a 
+                        href="/reset" 
+                        className="block text-sm text-accent hover:text-accent-dark transition-colors"
+                        onClick={handleClose}
+                      >
+                        Forgot your password?
+                      </a>
+                    )}
+                    
+                    <p className="text-sm text-foreground/60">
+                      {mode === 'login' ? "Don't have an account?" : "Already have an account?"}{" "}
+                      <button
+                        type="button"
+                        onClick={toggleMode}
+                        className="text-accent hover:text-accent-dark font-medium transition-colors"
+                      >
+                        {mode === 'login' ? 'Sign up' : 'Sign in'}
+                      </button>
+                    </p>
+                  </div>
             </div>
 
             {/* Close button */}
             <button
               onClick={handleClose}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+              className="absolute top-4 right-4 text-foreground/40 hover:text-foreground/60 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

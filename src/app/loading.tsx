@@ -35,7 +35,7 @@ export default function Loading() {
       
       {/* Footer */}
       <div className="absolute bottom-4 w-full text-center text-foreground/40 text-xs">
-        © 2024 WhisperRNote. All Rights Reserved.
+        © 2025 WhisperRNote. All Rights Reserved.
       </div>
       
       {/* Background decorative elements */}

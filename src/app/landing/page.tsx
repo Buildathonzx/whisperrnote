@@ -175,7 +175,7 @@ export default function LandingPage() {
               </a>
             </div>
             <p className="text-sm text-gray-400">
-              © 2024 WhisperNote. All rights reserved.
+              © 2025 WhisperNote. All rights reserved.
             </p>
           </div>
         </div>
