@@ -92,7 +92,12 @@ export default function NotesPage() {
       
       try {
         const res = await appwriteListNotes();
-        setAllNotes(Array.isArray(res.documents) ? (res.documents as Notes[]) : []);
+        const notes = Array.isArray(res.documents) ? (res.documents as Notes[]) : [];
+        // Deduplicate notes by $id to prevent duplicate keys
+        const uniqueNotes = notes.filter((note, index, arr) => 
+          arr.findIndex(n => n.$id === note.$id) === index
+        );
+        setAllNotes(uniqueNotes);
       } catch (error) {
         setAllNotes([]);
         console.error('Failed to fetch notes:', error);
@@ -162,7 +167,14 @@ export default function NotesPage() {
   };
 
   const handleNoteCreated = (newNote: Notes) => {
-    setAllNotes((prevNotes) => [newNote, ...prevNotes]);
+    setAllNotes((prevNotes) => {
+      // Check if note already exists to prevent duplicates
+      const exists = prevNotes.some(note => note.$id === newNote.$id);
+      if (exists) {
+        return prevNotes;
+      }
+      return [newNote, ...prevNotes];
+    });
   };
 
   const handleCreateNoteClick = () => {

@@ -101,7 +101,7 @@ export function useSearch<T extends { $id: string; [key: string]: any }>({
     
     const searchTerms = query.toLowerCase().split(' ').filter(term => term.length > 0);
     
-    return items.filter(item => {
+    const filtered = items.filter(item => {
       return searchTerms.every(term => {
         return searchFields.some(field => {
           const fieldValue = item[field];
@@ -117,6 +117,11 @@ export function useSearch<T extends { $id: string; [key: string]: any }>({
         });
       });
     });
+
+    // Deduplicate by $id to prevent duplicate keys
+    return filtered.filter((item, index, arr) => 
+      arr.findIndex(i => i.$id === item.$id) === index
+    );
   }, [searchFields]);
   
   // Backend search function
