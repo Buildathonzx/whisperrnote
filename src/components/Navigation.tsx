@@ -26,19 +26,6 @@ interface NavigationProps {
 
 export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) => {
   const pathname = usePathname();
-  const { openOverlay } = useOverlay();
-
-  const handleCreateClick = () => {
-    // Open the actual CreateNoteForm overlay
-    openOverlay(
-      <CreateNoteForm 
-        onNoteCreated={(newNote) => {
-          // Handle the note creation - could refresh a global state or navigate
-          console.log('Note created:', newNote);
-        }} 
-      />
-    );
-  };
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 
@@ -48,45 +35,46 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
         <div className="flex justify-around items-center">
           <a 
             href="/notes" 
-            className={`flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-200 ${
+            className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
               isActive('/notes') 
                 ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
                 : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
             }`}
           >
             <HomeIcon className="h-6 w-6" />
-            <span className="text-xs font-semibold">Notes</span>
           </a>
-          
-          <button 
-            onClick={handleCreateClick}
-            className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-accent to-accent/80 text-white rounded-2xl shadow-lg hover:shadow-xl hover:transform hover:-translate-y-1 transition-all duration-200"
-          >
-            <PlusCircleIcon className="h-7 w-7" />
-          </button>
           
           <a 
             href="/shared" 
-            className={`flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-200 ${
+            className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
               isActive('/shared') 
                 ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
                 : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
             }`}
           >
             <ShareIcon className="h-6 w-6" />
-            <span className="text-xs font-semibold">Shared</span>
+          </a>
+          
+          <a 
+            href="/tags" 
+            className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
+              isActive('/tags') 
+                ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
+                : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
+            }`}
+          >
+            <TagIcon className="h-6 w-6" />
           </a>
           
           <a 
             href="/settings" 
-            className={`flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-200 ${
+            className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
               isActive('/settings') 
                 ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
                 : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
             }`}
           >
             <Cog6ToothIcon className="h-6 w-6" />
-            <span className="text-xs font-semibold">Settings</span>
           </a>
         </div>
       </nav>
