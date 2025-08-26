@@ -9,10 +9,8 @@ import { useLoading } from './LoadingContext';
 // Type declarations for wallet functionality
 declare global {
   interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: any[] }) => Promise<any>;
-      isMetaMask?: boolean;
-    };
+    ethereum?: any;
+    PublicKeyCredential?: any;
   }
 }
 
@@ -64,11 +62,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     return sanitized.length >= 3 ? sanitized.toLowerCase() : 'user' + Math.random().toString(36).substring(2, 8);
   };
 
-  const handleClose = () => {
-    resetForm();
-    onClose();
-  };
-
   const generateNonce = () => {
     return Math.random().toString(36).substring(2, 15);
   };
@@ -99,22 +92,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         params: [message, account],
       });
 
-      if (signature) {
-        const mockUser = {
-          $id: account,
-          email: null,
-          name: `Wallet ${account.slice(0, 6)}...${account.slice(-4)}`,
-          walletAddress: account,
-        };
-        
-        authLogin(mockUser);
-        await refreshUser();
-        handleClose();
-      } else {
-        setError('Wallet signature verification failed');
+      if (!signature) {
+        setError('Wallet signature required');
+        return;
       }
+
+      const mockUser = {
+        $id: 'wallet_user_' + Date.now(),
+        email: null,
+        name: account.substring(0, 6) + '...' + account.substring(account.length - 4),
+      };
+      
+      authLogin(mockUser);
+      await refreshUser();
+      handleClose();
     } catch (err: any) {
-      if (err?.code === 4001) {
+      if (err.code === 4001) {
         setError('Wallet connection was rejected');
       } else {
         setError(err?.message || 'Wallet authentication failed');
@@ -190,10 +183,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const toggleMode = () => {
-    setError('');
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -205,8 +194,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         className="fixed inset-0 z-50 flex items-center justify-center"
         onClick={handleClose}
       >
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
         
+        {/* Modal */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -233,129 +224,97 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <h3 className="text-center text-lg font-medium text-foreground mb-6">
                   Continue with:
                 </h3>
+                
+                {/* Email Option */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                      </svg>
+                    </div>
+                    <span className="font-medium text-foreground">Email</span>
+                  </div>
                   
-                  {/* Email Option */}
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                        </svg>
-                      </div>
-                      <span className="font-medium text-foreground">Email</span>
-                    </div>
+                  <div className="space-y-3">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
+                      autoComplete="email"
+                    />
                     
-                    <div className="space-y-3">
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email"
+                    {showPasswordField && (
+                      <motion.input
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
                         className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
-                        autoComplete="email"
+                        autoComplete="current-password"
                       />
-                      
-                      {mode === 'signup' && (
-                        <input
-                          type="text"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          placeholder="Enter your name"
-                          className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
-                          autoComplete="name"
-                        />
-                      )}
-                      
-                      {showPasswordField && (
-                        <motion.input
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Enter your password"
-                          className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
-                          autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                        />
-                      )}
-                      
-                      {showPasswordField && (
-                        <motion.button
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (mode === 'login') {
-                              handleLogin(e);
-                            } else {
-                              handleSignup(e);
-                            }
-                          }}
-                          className="w-full bg-accent hover:bg-accent/90 text-white py-2 px-4 rounded-xl font-medium transition-colors shadow-3d-light dark:shadow-3d-dark"
-                        >
-                          {mode === 'login' ? 'Sign In' : 'Sign Up'}
-                        </motion.button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-1 h-px bg-light-border dark:bg-dark-border"></div>
-                    <span className="text-sm text-foreground/60">or</span>
-                    <div className="flex-1 h-px bg-light-border dark:bg-dark-border"></div>
-                  </div>
-
-                  {/* Passkey & Wallet Buttons */}
-                  <div className="flex flex-col md:flex-row gap-3">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handlePasskeyAuth()}
-                      className="flex-1 p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center"
-                    >
-                      <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-4 4-4-4 4-4 4 4 .257-.257A6 6 0 1118 8zm-6-6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <div className="font-medium text-foreground text-sm">Passkey</div>
-                    </motion.button>
-
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleWalletAuth()}
-                      className="flex-1 p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center"
-                    >
-                      <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <div className="font-medium text-foreground text-sm">Wallet</div>
-                    </motion.button>
+                    )}
+                    
+                    {showPasswordField && (
+                      <motion.button
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="button"
+                        onClick={handleAuth}
+                        className="w-full bg-accent hover:bg-accent/90 text-white py-2 px-4 rounded-xl font-medium transition-colors shadow-3d-light dark:shadow-3d-dark"
+                      >
+                        Continue
+                      </motion.button>
+                    )}
                   </div>
                 </div>
 
-              {/* Footer */}
-              <div className="mt-6 text-center space-y-3">
-                <p className="text-sm text-foreground/60">
-                  {mode === 'login' ? "Don't have an account?" : "Already have an account?"}{" "}
-                  <button
-                    type="button"
-                    onClick={toggleMode}
-                    className="text-accent hover:text-accent/80 font-medium transition-colors"
+                {/* Divider */}
+                <div className="flex items-center space-x-4">
+                  <div className="flex-1 h-px bg-light-border dark:bg-dark-border"></div>
+                  <span className="text-sm text-foreground/60">or</span>
+                  <div className="flex-1 h-px bg-light-border dark:bg-dark-border"></div>
+                </div>
+
+                {/* Passkey & Wallet Buttons */}
+                <div className="flex flex-col md:flex-row gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handlePasskeyAuth()}
+                    className="flex-1 p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center"
                   >
-                    {mode === 'login' ? 'Sign up' : 'Sign in'}
-                  </button>
-                </p>
+                    <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-4 4-4-4 4-4 4 4 .257-.257A6 6 0 1118 8zm-6-6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="font-medium text-foreground text-sm">Passkey</div>
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleWalletAuth()}
+                    className="flex-1 p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center"
+                  >
+                    <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="font-medium text-foreground text-sm">Wallet</div>
+                  </motion.button>
+                </div>
               </div>
             </div>
 
