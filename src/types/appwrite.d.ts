@@ -61,6 +61,8 @@ export type Tags = Models.Document & {
     color: string | null;
     description: string | null;
     usageCount: number | null;
+    userId: string | null;
+
 }
 
 export type ApiKeys = Models.Document & {
