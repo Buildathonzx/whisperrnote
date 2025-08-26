@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { loginEmailPassword, signupEmailPassword, getCurrentUser } from '@/lib/appwrite';
+import { continueWithPasskey, handlePasskeyError } from '@/lib/appwrite/passkey';
 import { useAuth } from './AuthContext';
 import { useLoading } from './LoadingContext';
 
@@ -139,28 +140,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handlePasskeyAuth = async () => {
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address first');
+      return;
+    }
+    
     setError('');
     showLoading('Authenticating with passkey...');
     
     try {
-      if (!window.PublicKeyCredential) {
-        setError('Passkeys are not supported in this browser');
-        return;
+      const result = await continueWithPasskey(email);
+      
+      if (result.success && result.user) {
+        authLogin(result.user);
+        await refreshUser();
+        handleClose();
+      } else if (result.message) {
+        setError(result.message);
       }
-
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const mockUser = {
-        $id: 'passkey_user_' + Date.now(),
-        email: null,
-        name: 'Passkey User',
-      };
-      
-      authLogin(mockUser);
-      await refreshUser();
-      handleClose();
     } catch (err: any) {
-      setError(err?.message || 'Passkey authentication failed');
+      setError(handlePasskeyError(err));
     } finally {
       hideLoading();
     }
@@ -315,15 +314,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => handlePasskeyAuth()}
-                    className="flex-1 p-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center"
+                    onClick={handlePasskeyAuth}
+                    disabled={!email || !email.includes('@')}
+                    className={`flex-1 p-4 border border-light-border dark:border-dark-border rounded-xl transition-all text-center ${
+                      !email || !email.includes('@') 
+                        ? 'bg-light-card/50 dark:bg-dark-card/50 opacity-50 cursor-not-allowed' 
+                        : 'bg-light-card dark:bg-dark-card hover:shadow-3d-light dark:hover:shadow-3d-dark'
+                    }`}
                   >
                     <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
                       <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-4 4-4-4 4-4 4 4 .257-.257A6 6 0 1118 8zm-6-6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <div className="font-medium text-foreground text-sm">Passkey</div>
+                    <div className={`font-medium text-foreground text-sm ${
+                      !email || !email.includes('@') ? 'opacity-50' : ''
+                    }`}>Passkey</div>
                   </motion.button>
 
                   <motion.button

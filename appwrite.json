@@ -969,6 +969,64 @@
                 }
             ],
             "indexes": []
+        },
+        {
+            "$id": "auth_passkey_challenges",
+            "$permissions": [],
+            "databaseId": "67ff05a9000296822396",
+            "name": "auth_passkey_challenges",
+            "enabled": true,
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "token",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 8000,
+                    "default": null,
+                    "encrypt": true
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "auth_passkey_credentials",
+            "$permissions": [],
+            "databaseId": "67ff05a9000296822396",
+            "name": "auth_passkey_credentials",
+            "enabled": true,
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "credentials",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 8000,
+                    "default": null,
+                    "encrypt": true
+                }
+            ],
+            "indexes": []
         }
     ],
     "buckets": [
