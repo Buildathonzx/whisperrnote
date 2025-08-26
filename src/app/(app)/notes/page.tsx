@@ -161,9 +161,9 @@ export default function NotesPage() {
       openOverlay(
         <CreateNoteForm 
           initialContent={{
-            title: `AI Generated: ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+            title: `AI Generated: ${type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Content'}`,
             content: generatedContent,
-            tags: [`ai-generated`, type]
+            tags: [`ai-generated`, ...(type ? [type] : [])]
           }}
           onNoteCreated={handleNoteCreated} 
         />
