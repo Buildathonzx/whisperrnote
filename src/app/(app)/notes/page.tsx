@@ -17,6 +17,7 @@ import {
 import CreateNoteForm from './CreateNoteForm';
 import { MobileBottomNav } from '@/components/Navigation';
 import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
+import { MobileFAB } from '@/components/MobileFAB';
 
 export default function NotesPage() {
   const [allNotes, setAllNotes] = useState<Notes[]>([]);
@@ -313,6 +314,9 @@ export default function NotesPage() {
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
+      
+      {/* Mobile FAB */}
+      <MobileFAB />
     </div>
   );
 }

@@ -45,17 +45,6 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
           </a>
           
           <a 
-            href="/shared" 
-            className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
-              isActive('/shared') 
-                ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
-                : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
-            }`}
-          >
-            <ShareIcon className="h-6 w-6" />
-          </a>
-          
-          <a 
             href="/tags" 
             className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
               isActive('/tags') 
@@ -67,14 +56,25 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
           </a>
           
           <a 
-            href="/settings" 
+            href="/blog" 
             className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
-              isActive('/settings') 
+              isActive('/blog') 
                 ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
                 : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
             }`}
           >
-            <Cog6ToothIcon className="h-6 w-6" />
+            <DocumentTextIcon className="h-6 w-6" />
+          </a>
+          
+          <a 
+            href="/extensions" 
+            className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
+              isActive('/extensions') 
+                ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
+                : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
+            }`}
+          >
+            <PuzzlePieceIcon className="h-6 w-6" />
           </a>
         </div>
       </nav>

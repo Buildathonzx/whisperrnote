@@ -1,83 +1,25 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { SparklesIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, ShareIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/components/ui/AuthContext';
-import { useOverlay } from '@/components/ui/OverlayContext';
 import { TopBarSearch } from '@/components/TopBarSearch';
-import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
-import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 
 interface AppHeaderProps {
   className?: string;
 }
 
 export default function AppHeader({ className = '' }: AppHeaderProps) {
-  const { user, isAuthenticated } = useAuth();
-  const { openOverlay, closeOverlay } = useOverlay();
-  const [isGenerating, setIsGenerating] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   useEffect(() => {
     // Component initialization if needed
   }, [isAuthenticated, user]);
 
-  const handleAIGenerateClick = () => {
-    openOverlay(
-      <AIGeneratePromptModal
-        onClose={closeOverlay}
-        onGenerate={handleAIGenerate}
-        isGenerating={isGenerating}
-      />
-    );
-  };
-
-  const handleAIGenerate = async (prompt: string, type: 'topic' | 'brainstorm' | 'research' | 'custom') => {
-    setIsGenerating(true);
-    
-    try {
-      // Simulate AI generation for now
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      let generatedContent = '';
-      switch (type) {
-        case 'topic':
-          generatedContent = `# ${prompt}\n\nThis is a comprehensive note about ${prompt}.\n\n## Key Points\n\n- Important concept 1\n- Important concept 2\n- Important concept 3\n\n## Details\n\nDetailed information about ${prompt} will be generated here. This content will include relevant examples, explanations, and insights.\n\n## Conclusion\n\nSummary of the main points covered.`;
-          break;
-        case 'brainstorm':
-          generatedContent = `# Ideas for: ${prompt}\n\n## Creative Suggestions\n\n1. **Innovative Approach**: A fresh perspective on ${prompt}\n2. **Traditional Method**: Time-tested strategies for ${prompt}\n3. **Technology Integration**: How to leverage technology for ${prompt}\n4. **Collaborative Solution**: Team-based approaches to ${prompt}\n5. **Cost-Effective Option**: Budget-friendly ways to tackle ${prompt}\n\n## Next Steps\n\n- Evaluate each idea\n- Choose the most promising approaches\n- Create an action plan`;
-          break;
-        case 'research':
-          generatedContent = `# Research on: ${prompt}\n\n## Overview\n\nComprehensive research findings on ${prompt}.\n\n## Key Findings\n\n- Finding 1: Important discovery about ${prompt}\n- Finding 2: Statistical data related to ${prompt}\n- Finding 3: Expert opinions on ${prompt}\n\n## Analysis\n\nDetailed analysis of the research data and trends.\n\n## Sources\n\n- Academic papers\n- Industry reports\n- Expert interviews`;
-          break;
-        case 'custom':
-          generatedContent = `# Generated Content\n\n${prompt}\n\n## AI Response\n\nThis content has been generated based on your specific request. The AI has processed your instructions and created relevant information.\n\n## Additional Information\n\nSupplementary details and context have been added to provide a comprehensive response.`;
-          break;
-      }
-      
-      // Close the prompt modal and open create note form with content
-      closeOverlay();
-      
-      // Open the create note form with pre-filled content
-      openOverlay(
-        <CreateNoteForm 
-          initialContent={{
-            title: `AI Generated: ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-            content: generatedContent,
-            tags: [`ai-generated`, type]
-          }}
-          onNoteCreated={(newNote) => {
-            console.log('AI-generated note created:', newNote);
-            closeOverlay();
-          }} 
-        />
-      );
-      
-    } catch (error) {
-      console.error('Failed to generate content:', error);
-      // TODO: Show error toast
-    } finally {
-      setIsGenerating(false);
-    }
+  const handleLogout = () => {
+    setIsAccountMenuOpen(false);
+    logout();
   };
 
   if (!isAuthenticated) {
@@ -104,28 +46,59 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
           <TopBarSearch />
         </div>
         
-        {/* Right: AI Controls */}
-        <div className="hidden md:flex items-center gap-3 shrink-0">
-          {/* AI Generate Button */}
+        {/* Right: Account Menu */}
+        <div className="relative flex items-center gap-3 shrink-0">
           <button
-            onClick={handleAIGenerateClick}
-            disabled={isGenerating}
-            className={`
-              flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-accent
-              bg-gradient-to-r from-accent/10 to-accent/5 text-accent
-              hover:from-accent/20 hover:to-accent/10 hover:shadow-glow-accent
-              transition-all duration-200 font-medium text-sm
-              ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}
-            `}
-            title="Generate AI Note"
+            onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card hover:bg-card/80 transition-all duration-200"
           >
-            {isGenerating ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-accent border-t-transparent"></div>
-            ) : (
-              <SparklesIcon className="h-4 w-4" />
-            )}
-            <span className="hidden sm:inline">Generate</span>
+            <UserCircleIcon className="h-5 w-5 text-foreground" />
+            <span className="hidden sm:inline text-sm font-medium text-foreground">
+              {user?.name || user?.email || 'Account'}
+            </span>
           </button>
+
+          {/* Account Dropdown Menu */}
+          {isAccountMenuOpen && (
+            <>
+              {/* Backdrop */}
+              <div 
+                className="fixed inset-0 z-10"
+                onClick={() => setIsAccountMenuOpen(false)}
+              />
+              
+              {/* Menu */}
+              <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-2xl shadow-lg z-20 py-2">
+                <a
+                  href="/shared"
+                  onClick={() => setIsAccountMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-foreground hover:bg-background transition-colors duration-200"
+                >
+                  <ShareIcon className="h-4 w-4" />
+                  <span className="text-sm font-medium">Shared with Me</span>
+                </a>
+                
+                <a
+                  href="/settings"
+                  onClick={() => setIsAccountMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-foreground hover:bg-background transition-colors duration-200"
+                >
+                  <Cog6ToothIcon className="h-4 w-4" />
+                  <span className="text-sm font-medium">Settings</span>
+                </a>
+                
+                <div className="border-t border-border my-1"></div>
+                
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+                >
+                  <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                  <span className="text-sm font-medium">Logout</span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>
