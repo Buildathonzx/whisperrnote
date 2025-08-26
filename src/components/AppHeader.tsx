@@ -127,7 +127,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
             alt="WhisperRNote Logo" 
             className="w-8 h-8 rounded-lg shadow-lg"
           />
-          <h1 className="text-xl font-black text-light-fg dark:text-dark-fg bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
+          <h1 className="hidden sm:block text-xl font-black text-light-fg dark:text-dark-fg bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
             WhisperRNote
           </h1>
         </div>
