@@ -19,18 +19,11 @@ declare global {
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialMode?: 'login' | 'signup';
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  initialMode = 'login' 
-}) => {
-  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [showPasswordField, setShowPasswordField] = useState(false);
   const { login: authLogin, refreshUser } = useAuth();
@@ -53,9 +46,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const resetForm = () => {
     setEmail('');
     setPassword('');
-    setName('');
     setError('');
     setShowPasswordField(false);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  // Generate username from email
+  const generateUsername = (email: string): string => {
+    const localPart = email.split('@')[0];
+    // Remove numbers and non-alphanumeric characters, keep only letters
+    const sanitized = localPart.replace(/[0-9]/g, '').replace(/[^a-zA-Z]/g, '');
+    // Ensure minimum length and fallback
+    return sanitized.length >= 3 ? sanitized.toLowerCase() : 'user' + Math.random().toString(36).substring(2, 8);
   };
 
   const handleClose = () => {
@@ -146,53 +152,45 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
 
     setError('');
-    showLoading('Signing you in...');
+    showLoading('Authenticating...');
     
     try {
-      await loginEmailPassword(email, password);
-      const user = await getCurrentUser();
-      if (user) {
-        authLogin(user);
-        await refreshUser();
-        handleClose();
+      // First try to login
+      try {
+        await loginEmailPassword(email, password);
+        const user = await getCurrentUser();
+        if (user) {
+          authLogin(user);
+          await refreshUser();
+          handleClose();
+          return;
+        }
+      } catch (loginError: any) {
+        // If login fails, try to signup
+        const username = generateUsername(email);
+        await signupEmailPassword(email, password, username);
+        await loginEmailPassword(email, password);
+        const user = await getCurrentUser();
+        if (user) {
+          authLogin(user);
+          await refreshUser();
+          handleClose();
+          return;
+        }
       }
     } catch (err: any) {
-      setError(err?.message || 'Login failed');
-    } finally {
-      hideLoading();
-    }
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password || !name) return;
-
-    setError('');
-    showLoading('Creating your account...');
-    
-    try {
-      await signupEmailPassword(email, password, name);
-      await loginEmailPassword(email, password);
-      const user = await getCurrentUser();
-      if (user) {
-        authLogin(user);
-        await refreshUser();
-        handleClose();
-      }
-    } catch (err: any) {
-      setError(err?.message || 'Registration failed');
+      setError(err?.message || 'Authentication failed');
     } finally {
       hideLoading();
     }
   };
 
   const toggleMode = () => {
-    setMode(mode === 'login' ? 'signup' : 'login');
     setError('');
   };
 
