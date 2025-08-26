@@ -89,7 +89,7 @@ function generateChallenge(): string {
 export async function registerPasskey(options: PasskeyRegistrationOptions): Promise<PasskeyCredential> {
   try {
     const challenge = options.challenge || generateChallenge();
-    const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    const userId = 'temp_id'; // Will be replaced by server with actual unique ID
     
     // Prepare registration options for WebAuthn
     const registrationOptions = {
@@ -230,7 +230,6 @@ async function createUserAccountWithPasskey(credential: PasskeyCredential): Prom
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        userId: credential.userId,
         email: credential.email,
         displayName: credential.displayName,
         credentialId: credential.credentialId,
@@ -243,10 +242,14 @@ async function createUserAccountWithPasskey(credential: PasskeyCredential): Prom
       throw new Error(error.message || 'User creation failed');
     }
 
-    await response.json();
+    const result = await response.json();
+    
+    // Update credential with the actual userId returned from server
+    credential.userId = result.userId;
+    storeCredential(credential);
     
     // Create session with the token
-    await authenticateWithCustomToken(credential.userId);
+    await authenticateWithCustomToken(result.userId);
     
   } catch (error: any) {
     console.error('Failed to create user account with passkey:', error);

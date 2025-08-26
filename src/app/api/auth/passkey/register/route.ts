@@ -1,22 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Client, Users } from 'node-appwrite';
+import { Client, Users, ID } from 'node-appwrite';
 
 export async function POST(request: NextRequest) {
   try {
     const { 
-      userId, 
       email, 
       displayName, 
       credentialId, 
       publicKey 
     } = await request.json();
 
-    if (!userId || !email || !credentialId) {
+    if (!email || !credentialId) {
       return NextResponse.json(
-        { error: 'Missing required fields: userId, email, credentialId' },
+        { error: 'Missing required fields: email, credentialId' },
         { status: 400 }
       );
     }
+
+    // Generate proper Appwrite userId
+    const userId = ID.unique();
 
     // Initialize server client with API key
     const client = new Client()

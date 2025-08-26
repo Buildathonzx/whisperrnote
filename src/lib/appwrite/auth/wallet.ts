@@ -281,7 +281,6 @@ async function createUserAccountWithWallet(connection: WalletConnection, signatu
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        userId: connection.userId,
         email,
         address: connection.address,
         provider: connection.provider,
@@ -301,10 +300,14 @@ async function createUserAccountWithWallet(connection: WalletConnection, signatu
       throw new Error(error.error || error.message || 'User creation failed');
     }
 
-    await response.json();
+    const result = await response.json();
+    
+    // Update connection with the actual userId returned from server
+    connection.userId = result.userId;
+    storeConnection(connection);
     
     // Create session with the token
-    await authenticateWithCustomToken(connection.userId);
+    await authenticateWithCustomToken(result.userId);
     
   } catch (error: any) {
     console.error('Failed to create user account with wallet:', error);

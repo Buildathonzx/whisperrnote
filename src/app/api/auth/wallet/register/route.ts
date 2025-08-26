@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
     }
 
     const { 
-      userId, 
       email,
       address, 
       provider, 
@@ -24,7 +23,6 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     console.log('Wallet registration request:', {
-      userId,
       email,
       address: address?.toLowerCase(),
       provider,
@@ -32,12 +30,15 @@ export async function POST(request: NextRequest) {
       hasSignature: !!signature
     });
 
-    if (!userId || !email || !address || !signature) {
+    if (!email || !address || !signature) {
       return NextResponse.json(
-        { error: 'Missing required fields: userId, email, address, signature' },
+        { error: 'Missing required fields: email, address, signature' },
         { status: 400 }
       );
     }
+
+    // Generate proper Appwrite userId
+    const userId = ID.unique();
 
     // Initialize server client with API key
     const client = new Client()
