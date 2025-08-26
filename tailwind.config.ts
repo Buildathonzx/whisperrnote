@@ -38,6 +38,10 @@ const config: Config = {
         'foreground': 'var(--foreground)',
         'card': 'var(--card)',
         'border': 'var(--border)',
+        
+        // Additional design system tokens
+        'card-foreground': 'var(--foreground)',
+        'muted-foreground': 'var(--foreground)',
       },
       borderRadius: {
         'xl': '1rem',

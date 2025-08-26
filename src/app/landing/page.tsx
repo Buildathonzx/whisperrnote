@@ -49,32 +49,32 @@ export default function LandingPage() {
           </div>
           <h2 className="text-xl font-bold text-dark-fg">WhisperNote</h2>
         </div>
-        <nav className="hidden flex-1 justify-center gap-8 md:flex">
-          <a
-            className="text-sm font-medium text-gray-400 transition-colors hover:text-dark-fg"
-            href="#"
-          >
-            Product
-          </a>
-          <a
-            className="text-sm font-medium text-gray-400 transition-colors hover:text-dark-fg"
-            href="#"
-          >
-            Solutions
-          </a>
-          <a
-            className="text-sm font-medium text-gray-400 transition-colors hover:text-dark-fg"
-            href="#"
-          >
-            Resources
-          </a>
-          <a
-            className="text-sm font-medium text-gray-400 transition-colors hover:text-dark-fg"
-            href="#"
-          >
-            Pricing
-          </a>
-        </nav>
+          <nav className="hidden flex-1 justify-center gap-8 md:flex">
+            <a
+              className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              href="#"
+            >
+              Product
+            </a>
+            <a
+              className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              href="#"
+            >
+              Solutions
+            </a>
+            <a
+              className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              href="#"
+            >
+              Resources
+            </a>
+            <a
+              className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              href="#"
+            >
+              Pricing
+            </a>
+          </nav>
         <div className="flex items-center gap-3">
           <Button 
             variant="ghost" 
@@ -98,10 +98,10 @@ export default function LandingPage() {
             }}
           ></div>
           <div className="container relative z-10 mx-auto px-5">
-            <h1 className="mb-4 text-4xl font-black leading-tight tracking-tighter text-transparent md:text-6xl bg-clip-text bg-gradient-to-br from-white to-gray-400">
+            <h1 className="mb-4 text-4xl font-black leading-tight tracking-tighter text-foreground md:text-6xl">
               Your Ideas, United.
             </h1>
-            <p className="mx-auto mb-8 max-w-3xl text-lg text-gray-400 md:text-xl">
+            <p className="mx-auto mb-8 max-w-3xl text-lg text-foreground/60 md:text-xl">
               WhisperNote is the fluid, collaborative workspace where your
               team's best ideas take shape. Capture, organize, and act on
               inspiration, together in real-time.
@@ -120,24 +120,24 @@ export default function LandingPage() {
               <h2 className="text-3xl font-bold tracking-tight text-dark-fg md:text-4xl">
                 Everything you need to collaborate
               </h2>
-              <p className="mt-4 text-lg text-gray-400">
+              <p className="mt-4 text-lg text-foreground/60">
                 From brainstorming sessions to project roadmaps, WhisperNote
                 provides the tools to keep your team in sync.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               {features.map((feature, index) => (
-                <Card key={index} className="flex flex-col gap-4 bg-[#1A2532]">
+                <Card key={index} className="flex flex-col gap-4 bg-dark-card">
                   <CardHeader>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent shadow-3d-light dark:shadow-3d-dark">
                       {feature.icon}
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <CardTitle className="text-xl font-bold text-dark-fg">
+                    <CardTitle className="text-xl font-bold text-foreground">
                       {feature.title}
                     </CardTitle>
-                    <p className="text-gray-400">{feature.description}</p>
+                    <p className="text-foreground/60">{feature.description}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -150,31 +150,31 @@ export default function LandingPage() {
           <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="mb-6 flex flex-wrap justify-center gap-6 md:mb-0 md:justify-start">
               <a
-                className="text-sm text-gray-400 transition-colors hover:text-dark-fg"
+                className="text-sm text-foreground/60 transition-colors hover:text-foreground"
                 href="#"
               >
                 About
               </a>
               <a
-                className="text-sm text-gray-400 transition-colors hover:text-dark-fg"
+                className="text-sm text-foreground/60 transition-colors hover:text-foreground"
                 href="#"
               >
                 Contact
               </a>
               <a
-                className="text-sm text-gray-400 transition-colors hover:text-dark-fg"
+                className="text-sm text-foreground/60 transition-colors hover:text-foreground"
                 href="#"
               >
                 Privacy Policy
               </a>
               <a
-                className="text-sm text-gray-400 transition-colors hover:text-dark-fg"
+                className="text-sm text-foreground/60 transition-colors hover:text-foreground"
                 href="#"
               >
                 Terms of Service
               </a>
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-foreground/40">
               © 2025 WhisperNote. All rights reserved.
             </p>
           </div>
