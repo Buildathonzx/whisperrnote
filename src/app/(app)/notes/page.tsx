@@ -20,7 +20,7 @@ import CreateNoteForm from './CreateNoteForm';
 import { MobileBottomNav } from '@/components/Navigation';
 import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
 import { MobileFAB } from '@/components/MobileFAB';
-import { aiService } from '@/lib/ai-service';
+import { aiServiceInstance as aiService } from '@/lib/ai-service';
 
 export default function NotesPage() {
   const [allNotes, setAllNotes] = useState<Notes[]>([]);

@@ -1,3 +1,5 @@
+import { aiService } from '@/lib/ai';
+
 export type GenerationType = 'topic' | 'brainstorm' | 'research' | 'custom';
 
 export interface GenerationResult {
@@ -11,17 +13,8 @@ export class AIService {
     prompt: string, 
     type: GenerationType
   ): Promise<GenerationResult> {
-    console.log('AI temporarily disabled - returning mock content');
-    
-    // Temporary mock response while AI system is being redesigned
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-    
-    return {
-      title: `Mock ${type} Title`,
-      content: `This is mock content for "${prompt}". AI features are temporarily disabled while we redesign the system.`,
-      tags: ['mock', 'temporary', type]
-    };
+    return await aiService.generateContent(prompt, type);
   }
 }
 
-export const aiService = new AIService();
+export const aiServiceInstance = new AIService();

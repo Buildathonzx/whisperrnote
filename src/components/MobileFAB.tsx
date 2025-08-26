@@ -5,7 +5,7 @@ import { PlusIcon, SparklesIcon, DocumentPlusIcon } from '@heroicons/react/24/ou
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
-import { aiService } from '@/lib/ai-service';
+import { aiServiceInstance as aiService } from '@/lib/ai-service';
 
 interface MobileFABProps {
   className?: string;
