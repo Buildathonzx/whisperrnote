@@ -1,9 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, getSettings, createSettings, updateSettings, updateUser, uploadProfilePicture, getProfilePicture, listNotes } from "@/lib/appwrite";
+import { account, getSettings, createSettings, updateSettings, updateUser, uploadProfilePicture, getProfilePicture, listNotes, updateAIMode, getAIMode } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
 import { useOverlay } from "@/components/ui/OverlayContext";
+import { useSubscription } from "@/components/ui/SubscriptionContext";
+import AIModeSelect from "@/components/AIModeSelect";
+import { AIMode, SubscriptionTier, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 
 type TabType = 'profile' | 'settings' | 'preferences';
 
@@ -17,6 +20,8 @@ export default function SettingsPage() {
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState<any[]>([]);
+  const [currentAIMode, setCurrentAIMode] = useState<AIMode>(AIMode.STANDARD);
+  const { userTier } = useSubscription();
   const { openOverlay, closeOverlay } = useOverlay();
   const router = useRouter();
 
@@ -42,6 +47,14 @@ export default function SettingsPage() {
           const newSettings = await createSettings({ userId: u.$id, settings: JSON.stringify({ theme: 'light', notifications: true }) });
           setSettings(newSettings);
         }
+
+        // Load AI mode
+        try {
+          const mode = await getAIMode(u.$id);
+          setCurrentAIMode((mode as AIMode) || AIMode.STANDARD);
+        } catch (e) {
+          console.error('Failed to load AI mode:', e);
+        }
       } catch {
         router.replace("/login");
       } finally {
@@ -65,6 +78,19 @@ export default function SettingsPage() {
 
   const handleSettingChange = (key: string, value: any) => {
     setSettings((prev: any) => ({ ...prev, settings: { ...prev.settings, [key]: value } }));
+  };
+
+  const handleAIModeChange = async (mode: AIMode) => {
+    if (user) {
+      try {
+        await updateAIMode(user.$id, mode);
+        setCurrentAIMode(mode);
+        setSuccess("AI mode updated successfully.");
+      } catch (error) {
+        console.error('Failed to update AI mode:', error);
+        setError("Failed to update AI mode");
+      }
+    }
   };
 
   const handleEditProfile = () => {
@@ -122,7 +148,7 @@ export default function SettingsPage() {
           <div className="p-8">
             {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} notes={notes} onEditProfile={handleEditProfile} />}
             {activeTab === 'settings' && <SettingsTab user={user} settings={settings} isVerified={isVerified} error={error} success={success} onUpdate={handleUpdate} onSettingChange={handleSettingChange} router={router} />}
-            {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} />}
+            {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} currentAIMode={currentAIMode} userTier={userTier} onAIModeChange={handleAIModeChange} />}
           </div>
         </div>
       </main>
@@ -256,7 +282,7 @@ const SettingsTab = ({ user, settings, isVerified, error, success, onUpdate, onS
   </div>
 );
 
-const PreferencesTab = ({ settings, onSettingChange, onUpdate, error, success }: any) => (
+const PreferencesTab = ({ settings, onSettingChange, onUpdate, error, success, currentAIMode, userTier, onAIModeChange }: any) => (
   <div className="space-y-8">
     <h1 className="text-foreground text-3xl font-bold">Preferences</h1>
     
@@ -271,6 +297,28 @@ const PreferencesTab = ({ settings, onSettingChange, onUpdate, error, success }:
         <p className="text-green-800 dark:text-green-200 text-sm">{success}</p>
       </div>
     )}
+
+    {/* AI Mode Section */}
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold text-foreground">AI Generation Mode</h2>
+      <div className="p-6 bg-background border border-border rounded-xl">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <label className="text-sm font-medium text-foreground">Current AI Mode</label>
+            <p className="text-xs text-foreground/70 mt-1">Controls AI behavior across the application</p>
+          </div>
+          <AIModeSelect
+            currentMode={currentAIMode}
+            userTier={userTier}
+            onModeChangeAction={onAIModeChange}
+          />
+        </div>
+        <div className="mt-4 p-4 bg-light-bg dark:bg-dark-bg rounded-lg">
+          <p className="text-sm font-medium text-foreground mb-2">{getAIModeDisplayName(currentAIMode)}</p>
+          <p className="text-xs text-foreground/70">{getAIModeDescription(currentAIMode)}</p>
+        </div>
+      </div>
+    </div>
 
     {settings && (
       <form onSubmit={onUpdate} className="space-y-6">

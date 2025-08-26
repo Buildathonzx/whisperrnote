@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/ui/AuthContext';
+import { useSubscription } from '@/components/ui/SubscriptionContext';
 import AIModeSelect from '@/components/AIModeSelect';
-import { AIMode, SubscriptionTier } from '@/types/ai';
+import { AIMode } from '@/types/ai';
 import { updateAIMode, getAIMode } from '@/lib/appwrite';
 
 interface AppHeaderProps {
@@ -12,8 +13,8 @@ interface AppHeaderProps {
 
 export default function AppHeader({ className = '' }: AppHeaderProps) {
   const { user, isAuthenticated } = useAuth();
+  const { userTier } = useSubscription();
   const [currentAIMode, setCurrentAIMode] = useState<AIMode>(AIMode.STANDARD);
-  const [userTier, setUserTier] = useState<SubscriptionTier>(SubscriptionTier.FREE);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,10 +23,6 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
         try {
           const mode = await getAIMode(user.$id);
           setCurrentAIMode((mode as AIMode) || AIMode.STANDARD);
-          
-          // TODO: Get actual user subscription tier from user data
-          // For now, defaulting to FREE
-          setUserTier(SubscriptionTier.FREE);
         } catch (error) {
           console.error('Failed to load AI mode:', error);
         } finally {
