@@ -1,16 +1,23 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, getSettings, createSettings, updateSettings } from "@/lib/appwrite";
+import { account, getSettings, createSettings, updateSettings, updateUser, uploadProfilePicture, getProfilePicture, listNotes } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
+import { useOverlay } from "@/components/ui/OverlayContext";
+
+type TabType = 'profile' | 'settings' | 'preferences';
 
 export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [user, setUser] = useState<any>(null);
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isVerified, setIsVerified] = useState<boolean>(false);
+  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
+  const [notes, setNotes] = useState<any[]>([]);
+  const { openOverlay, closeOverlay } = useOverlay();
   const router = useRouter();
 
   useEffect(() => {
@@ -20,11 +27,18 @@ export default function SettingsPage() {
         setUser(u);
         setIsVerified(!!u.emailVerification);
 
+        if (u.prefs?.profilePicId) {
+          const url = await getProfilePicture(u.prefs.profilePicId);
+          setProfilePicUrl(url.href);
+        }
+
+        const notesResponse = await listNotes();
+        setNotes(notesResponse.documents);
+
         try {
           const s = await getSettings(u.$id);
           setSettings(s);
         } catch (e) {
-          // If settings don't exist, create them
           const newSettings = await createSettings({ userId: u.$id, settings: JSON.stringify({ theme: 'light', notifications: true }) });
           setSettings(newSettings);
         }
@@ -53,6 +67,22 @@ export default function SettingsPage() {
     setSettings((prev: any) => ({ ...prev, settings: { ...prev.settings, [key]: value } }));
   };
 
+  const handleEditProfile = () => {
+    openOverlay(
+      <EditProfileForm
+        user={user}
+        onClose={closeOverlay}
+        onProfileUpdate={async (updatedUser, newProfilePic) => {
+          setUser(updatedUser);
+          if (newProfilePic) {
+            const url = await getProfilePicture(updatedUser.prefs.profilePicId);
+            setProfilePicUrl(url.href);
+          }
+        }}
+      />
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -61,87 +91,294 @@ export default function SettingsPage() {
     );
   }
 
+  const tabs = [
+    { id: 'profile' as TabType, label: 'Profile' },
+    { id: 'settings' as TabType, label: 'Settings' },
+    { id: 'preferences' as TabType, label: 'Preferences' }
+  ];
+
   return (
     <div className="bg-background text-foreground min-h-screen">
-      <main className="px-6 md:px-20 lg:px-40 py-12 max-w-4xl mx-auto">
-        <div className="bg-card border border-border rounded-2xl p-8 shadow-3d-light dark:shadow-3d-dark">
-          <h1 className="text-foreground text-3xl font-bold mb-6">Account Settings</h1>
-          
-          <div className="mb-6 p-4 bg-background rounded-xl border border-border">
-            <p className="text-foreground text-sm">
-              Email status:{" "}
-              {isVerified ? (
-                <span className="text-green-600 dark:text-green-400 font-medium">Verified</span>
-              ) : (
-                <span className="text-red-600 dark:text-red-400 font-medium">
-                  Not verified{" "}
-                  <Button variant="link" size="sm" onClick={() => router.push("/verify")}>
-                    Verify email
-                  </Button>
-                </span>
-              )}
-            </p>
+      <main className="px-6 md:px-20 lg:px-40 py-12 max-w-6xl mx-auto">
+        <div className="bg-card border border-border rounded-2xl shadow-3d-light dark:shadow-3d-dark">
+          <div className="border-b border-border">
+            <div className="flex px-6 gap-8">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex flex-col items-center justify-center border-b-2 pb-3 pt-4 transition-colors ${
+                    activeTab === tab.id
+                      ? 'border-accent text-accent'
+                      : 'border-transparent text-foreground/60 hover:text-accent hover:border-accent'
+                  }`}
+                >
+                  <p className="text-base font-bold">{tab.label}</p>
+                </button>
+              ))}
+            </div>
           </div>
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl">
-              <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
-            </div>
-          )}
-          
-          {success && (
-            <div className="mb-6 p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl">
-              <p className="text-green-800 dark:text-green-200 text-sm">{success}</p>
-            </div>
-          )}
-
-          {settings && (
-            <form onSubmit={handleUpdate} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Email</label>
-                <input
-                  type="email"
-                  value={user?.email || ''}
-                  disabled
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground opacity-50 cursor-not-allowed"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Name</label>
-                <input
-                  type="text"
-                  value={user?.name || ''}
-                  disabled
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground opacity-50 cursor-not-allowed"
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
-                <div>
-                  <label className="text-sm font-medium text-foreground">Enable Notifications</label>
-                  <p className="text-xs text-foreground/70 mt-1">Receive email notifications for important updates</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={settings.settings.notifications}
-                    onChange={(e) => handleSettingChange('notifications', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-                </label>
-              </div>
-
-              <div className="pt-4">
-                <Button type="submit" className="w-full">
-                  Update Settings
-                </Button>
-              </div>
-            </form>
-          )}
+          <div className="p-8">
+            {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} notes={notes} onEditProfile={handleEditProfile} />}
+            {activeTab === 'settings' && <SettingsTab user={user} settings={settings} isVerified={isVerified} error={error} success={success} onUpdate={handleUpdate} onSettingChange={handleSettingChange} router={router} />}
+            {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} />}
+          </div>
         </div>
       </main>
     </div>
   );
 }
+
+const ProfileTab = ({ user, profilePicUrl, notes, onEditProfile }: any) => (
+  <div className="space-y-8">
+    <h1 className="text-foreground text-3xl font-bold">Profile</h1>
+    
+    <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+      <div className="flex flex-col items-center gap-4 flex-shrink-0">
+        <div
+          className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-40 border-4 border-accent shadow-lg"
+          style={{ backgroundImage: `url(${profilePicUrl || 'https://via.placeholder.com/150'})` }}
+        ></div>
+        <div className="flex flex-col items-center justify-center text-center">
+          <p className="text-foreground text-3xl font-bold">{user?.name}</p>
+          <p className="text-foreground/70 text-lg">{user?.email}</p>
+          <p className="text-foreground/60 text-base">Joined {new Date(user?.$createdAt).getFullYear()}</p>
+        </div>
+        <Button onClick={onEditProfile}>Edit Profile</Button>
+      </div>
+      
+      <div className="w-full mt-8 md:mt-0">
+        <div className="border-b border-border mb-6">
+          <div className="flex px-4 gap-8">
+            <div className="flex flex-col items-center justify-center border-b-2 border-accent text-accent pb-3 pt-4">
+              <p className="text-base font-bold">Notes</p>
+            </div>
+          </div>
+        </div>
+        <div className="divide-y divide-border">
+          {notes.map((note: any) => (
+            <div key={note.$id} className="p-6 bg-card/50 rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300 my-4 border border-border">
+              <div className="flex items-start justify-between gap-6">
+                <div className="flex flex-col gap-3">
+                  <p className="text-foreground/60 text-sm">Published</p>
+                  <p className="text-foreground text-xl font-bold">{note.title}</p>
+                  <p className="text-foreground/70 text-base">{note.content.substring(0, 100)}...</p>
+                  <Button variant="secondary">Read Note</Button>
+                </div>
+                <div className="w-full bg-center bg-no-repeat aspect-[4/3] bg-cover rounded-lg flex-1 shadow-lg border border-border" style={{backgroundImage: `url(${note.coverImage || 'https://via.placeholder.com/300x200'})`}}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const SettingsTab = ({ user, settings, isVerified, error, success, onUpdate, onSettingChange, router }: any) => (
+  <div className="space-y-8">
+    <h1 className="text-foreground text-3xl font-bold">Settings</h1>
+    
+    <div className="p-4 bg-background rounded-xl border border-border">
+      <p className="text-foreground text-sm">
+        Email status:{" "}
+        {isVerified ? (
+          <span className="text-green-600 dark:text-green-400 font-medium">Verified</span>
+        ) : (
+          <span className="text-red-600 dark:text-red-400 font-medium">
+            Not verified{" "}
+            <Button variant="link" size="sm" onClick={() => router.push("/verify")}>
+              Verify email
+            </Button>
+          </span>
+        )}
+      </p>
+    </div>
+
+    {error && (
+      <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl">
+        <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+      </div>
+    )}
+    
+    {success && (
+      <div className="p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl">
+        <p className="text-green-800 dark:text-green-200 text-sm">{success}</p>
+      </div>
+    )}
+
+    {settings && (
+      <form onSubmit={onUpdate} className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+          <input
+            type="email"
+            value={user?.email || ''}
+            disabled
+            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground opacity-50 cursor-not-allowed"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">Name</label>
+          <input
+            type="text"
+            value={user?.name || ''}
+            disabled
+            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground opacity-50 cursor-not-allowed"
+          />
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
+          <div>
+            <label className="text-sm font-medium text-foreground">Enable Notifications</label>
+            <p className="text-xs text-foreground/70 mt-1">Receive email notifications for important updates</p>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={settings.settings.notifications}
+              onChange={(e) => onSettingChange('notifications', e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+          </label>
+        </div>
+
+        <div className="pt-4">
+          <Button type="submit" className="w-full">
+            Update Settings
+          </Button>
+        </div>
+      </form>
+    )}
+  </div>
+);
+
+const PreferencesTab = ({ settings, onSettingChange, onUpdate, error, success }: any) => (
+  <div className="space-y-8">
+    <h1 className="text-foreground text-3xl font-bold">Preferences</h1>
+    
+    {error && (
+      <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl">
+        <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+      </div>
+    )}
+    
+    {success && (
+      <div className="p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl">
+        <p className="text-green-800 dark:text-green-200 text-sm">{success}</p>
+      </div>
+    )}
+
+    {settings && (
+      <form onSubmit={onUpdate} className="space-y-6">
+        <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
+          <div>
+            <label className="text-sm font-medium text-foreground">Theme</label>
+            <p className="text-xs text-foreground/70 mt-1">Choose your preferred theme</p>
+          </div>
+          <select
+            value={settings.settings.theme || 'light'}
+            onChange={(e) => onSettingChange('theme', e.target.value)}
+            className="px-4 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+          >
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="system">System</option>
+          </select>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
+          <div>
+            <label className="text-sm font-medium text-foreground">Auto-save Notes</label>
+            <p className="text-xs text-foreground/70 mt-1">Automatically save notes while typing</p>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={settings.settings.autoSave ?? true}
+              onChange={(e) => onSettingChange('autoSave', e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+          </label>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
+          <div>
+            <label className="text-sm font-medium text-foreground">Show Note Previews</label>
+            <p className="text-xs text-foreground/70 mt-1">Display note content previews in lists</p>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={settings.settings.showPreviews ?? true}
+              onChange={(e) => onSettingChange('showPreviews', e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+          </label>
+        </div>
+
+        <div className="pt-4">
+          <Button type="submit" className="w-full">
+            Update Preferences
+          </Button>
+        </div>
+      </form>
+    )}
+  </div>
+);
+
+const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
+  const [name, setName] = useState(user?.name || '');
+  const [profilePic, setProfilePic] = useState<File | null>(null);
+
+  const handleSaveChanges = async () => {
+    try {
+      let prefs = user.prefs;
+      if (profilePic) {
+        const uploadedFile = await uploadProfilePicture(profilePic);
+        prefs = { ...prefs, profilePicId: uploadedFile.$id };
+      }
+      const updatedUser = await updateUser(user.$id, { name, prefs });
+      onProfileUpdate(updatedUser, !!profilePic);
+      onClose();
+    } catch (error) {
+      console.error('Failed to save changes:', error);
+    }
+  };
+
+  return (
+    <div className="p-8 bg-card border border-border rounded-2xl shadow-3d-light dark:shadow-3d-dark max-w-md mx-auto">
+      <h2 className="text-2xl font-bold text-foreground mb-6">Edit Profile</h2>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+            placeholder="Enter your name"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">Profile Picture</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setProfilePic(e.target.files ? e.target.files[0] : null)}
+            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-accent file:text-light-bg hover:file:bg-accent-dark"
+          />
+        </div>
+      </div>
+      <div className="flex justify-end gap-4 mt-8">
+        <Button variant="secondary" onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSaveChanges}>Save Changes</Button>
+      </div>
+    </div>
+  );
+};

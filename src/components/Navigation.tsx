@@ -81,15 +81,15 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
           </a>
           
           <a 
-            href="/profile" 
+            href="/settings" 
             className={`flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-200 ${
-              isActive('/profile') 
+              isActive('/settings') 
                 ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
                 : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
             }`}
           >
-            <UserIcon className="h-6 w-6" />
-            <span className="text-xs font-semibold">Profile</span>
+            <Cog6ToothIcon className="h-6 w-6" />
+            <span className="text-xs font-semibold">Settings</span>
           </a>
         </div>
       </nav>

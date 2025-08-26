@@ -165,7 +165,7 @@ Secondary content and tools slide in from edges:
 4. **Blog Listing** (`/blog`) - Public blog posts discovery
 5. **Blog Post View** (`/blog/[id]`) - Individual blog post reading
 6. **Shared Notes** (`/shared`) - Notes shared with user
-7. **Profile Page** (`/profile`) - Public user profile view
+7. **Settings Page** (`/settings`) - Unified settings with Profile, Settings, and Preferences tabs
 
 ### Overlays (Modal-style, Context Preserving)
 - **Authentication Suite**: Login, signup, verification, password reset
