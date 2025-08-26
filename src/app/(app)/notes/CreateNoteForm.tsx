@@ -82,7 +82,7 @@ export default function CreateNoteForm({ onNoteCreated }: CreateNoteFormProps) {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-light-card dark:bg-dark-card rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] border-2 border-light-border dark:border-dark-border overflow-hidden">
+    <div className="w-full max-w-2xl mx-auto bg-light-card dark:bg-dark-card rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] border-2 border-light-border dark:border-dark-border overflow-hidden max-h-[calc(100vh-4rem)]">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-light-border dark:border-dark-border bg-gradient-to-r from-accent/5 to-accent/10">
         <div className="flex items-center gap-3">
@@ -102,146 +102,148 @@ export default function CreateNoteForm({ onNoteCreated }: CreateNoteFormProps) {
         </button>
       </div>
 
-      {/* Form Content */}
-      <div className="p-6 space-y-6">
-        {/* Title Input */}
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Title</label>
-          <input
-            type="text"
-            placeholder="Give your note a memorable title..."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-4 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 transition-all duration-200"
-            maxLength={255}
-          />
-        </div>
-
-        {/* Content Textarea */}
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Content</label>
-          <textarea
-            placeholder="Start writing your beautiful notes here... You can always edit and enhance them later."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full h-48 p-4 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 resize-none transition-all duration-200"
-            maxLength={5000}
-          />
-          <div className="text-xs text-light-fg/50 dark:text-dark-fg/50 text-right">
-            {content.length}/5000 characters
-          </div>
-        </div>
-
-        {/* Tags Section */}
-        <div className="space-y-3">
-          <label className="text-sm font-semibold text-light-fg dark:text-dark-fg flex items-center gap-2">
-            <TagIcon className="h-4 w-4" />
-            Tags
-          </label>
-          
-          {/* Tag Input */}
-          <div className="flex gap-2">
+      {/* Form Content - Scrollable */}
+      <div className="max-h-[calc(100vh-12rem)] overflow-y-auto">
+        <div className="p-6 space-y-6">
+          {/* Title Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Title</label>
             <input
               type="text"
-              placeholder="Add a tag..."
-              value={currentTag}
-              onChange={(e) => setCurrentTag(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="flex-1 p-3 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 transition-all duration-200"
-              maxLength={50}
+              placeholder="Give your note a memorable title..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full p-4 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 transition-all duration-200"
+              maxLength={255}
             />
-            <button
-              onClick={handleAddTag}
-              disabled={!currentTag.trim()}
-              className="px-4 py-3 bg-accent hover:bg-accent/90 disabled:bg-accent/50 text-white rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed"
-            >
-              <PlusIcon className="h-5 w-5" />
-            </button>
           </div>
 
-          {/* Tag Display */}
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-accent/10 text-accent border border-accent/20 rounded-xl text-sm font-medium"
-                >
-                  {tag}
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className="hover:bg-accent/20 rounded-full p-0.5 transition-all duration-200"
+          {/* Content Textarea */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Content</label>
+            <textarea
+              placeholder="Start writing your beautiful notes here... You can always edit and enhance them later."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="w-full h-48 p-4 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 resize-none transition-all duration-200"
+              maxLength={5000}
+            />
+            <div className="text-xs text-light-fg/50 dark:text-dark-fg/50 text-right">
+              {content.length}/5000 characters
+            </div>
+          </div>
+
+          {/* Tags Section */}
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-light-fg dark:text-dark-fg flex items-center gap-2">
+              <TagIcon className="h-4 w-4" />
+              Tags
+            </label>
+            
+            {/* Tag Input */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Add a tag..."
+                value={currentTag}
+                onChange={(e) => setCurrentTag(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="flex-1 p-3 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 transition-all duration-200"
+                maxLength={50}
+              />
+              <button
+                onClick={handleAddTag}
+                disabled={!currentTag.trim()}
+                className="px-4 py-3 bg-accent hover:bg-accent/90 disabled:bg-accent/50 text-white rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed"
+              >
+                <PlusIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Tag Display */}
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-accent/10 text-accent border border-accent/20 rounded-xl text-sm font-medium"
                   >
-                    <XMarkIcon className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Settings Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Visibility Setting */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Visibility</label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setIsPublic(false)}
-                className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl font-medium transition-all duration-200 ${
-                  !isPublic 
-                    ? 'bg-accent text-white shadow-lg' 
-                    : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
-                }`}
-              >
-                <LockClosedIcon className="h-4 w-4" />
-                Private
-              </button>
-              <button
-                onClick={() => setIsPublic(true)}
-                className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl font-medium transition-all duration-200 ${
-                  isPublic 
-                    ? 'bg-accent text-white shadow-lg' 
-                    : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
-                }`}
-              >
-                <GlobeAltIcon className="h-4 w-4" />
-                Public
-              </button>
-            </div>
+                    {tag}
+                    <button
+                      onClick={() => handleRemoveTag(tag)}
+                      className="hover:bg-accent/20 rounded-full p-0.5 transition-all duration-200"
+                    >
+                      <XMarkIcon className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Status Setting */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Status</label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setStatus(Status.DRAFT)}
-                className={`flex-1 p-3 rounded-xl font-medium transition-all duration-200 ${
-                  status === Status.DRAFT 
-                    ? 'bg-accent text-white shadow-lg' 
-                    : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
-                }`}
-              >
-                Draft
-              </button>
-              <button
-                onClick={() => setStatus(Status.PUBLISHED)}
-                className={`flex-1 p-3 rounded-xl font-medium transition-all duration-200 ${
-                  status === Status.PUBLISHED 
-                    ? 'bg-accent text-white shadow-lg' 
-                    : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
-                }`}
-              >
-                Published
-              </button>
+          {/* Settings Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Visibility Setting */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Visibility</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setIsPublic(false)}
+                  className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl font-medium transition-all duration-200 ${
+                    !isPublic 
+                      ? 'bg-accent text-white shadow-lg' 
+                      : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
+                  }`}
+                >
+                  <LockClosedIcon className="h-4 w-4" />
+                  Private
+                </button>
+                <button
+                  onClick={() => setIsPublic(true)}
+                  className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl font-medium transition-all duration-200 ${
+                    isPublic 
+                      ? 'bg-accent text-white shadow-lg' 
+                      : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
+                  }`}
+                >
+                  <GlobeAltIcon className="h-4 w-4" />
+                  Public
+                </button>
+              </div>
+            </div>
+
+            {/* Status Setting */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Status</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setStatus(Status.DRAFT)}
+                  className={`flex-1 p-3 rounded-xl font-medium transition-all duration-200 ${
+                    status === Status.DRAFT 
+                      ? 'bg-accent text-white shadow-lg' 
+                      : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
+                  }`}
+                >
+                  Draft
+                </button>
+                <button
+                  onClick={() => setStatus(Status.PUBLISHED)}
+                  className={`flex-1 p-3 rounded-xl font-medium transition-all duration-200 ${
+                    status === Status.PUBLISHED 
+                      ? 'bg-accent text-white shadow-lg' 
+                      : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
+                  }`}
+                >
+                  Published
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Footer Actions */}
-      <div className="flex justify-end gap-3 p-6 border-t border-light-border dark:border-dark-border bg-light-bg/50 dark:bg-dark-bg/50">
+      {/* Footer Actions - Always visible at bottom */}
+      <div className="flex justify-end gap-3 p-6 border-t border-light-border dark:border-dark-border bg-light-bg/50 dark:bg-dark-bg/50 sticky bottom-0">
         <Button 
           variant="secondary" 
           onClick={closeOverlay}
