@@ -95,8 +95,6 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
 };
 
 export const DesktopSidebar: React.FC<NavigationProps> = ({ 
-  toggleTheme, 
-  isDarkMode, 
   className = '' 
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
