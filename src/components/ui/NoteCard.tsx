@@ -8,14 +8,14 @@ interface NoteCardProps {
 
 const NoteCard: React.FC<NoteCardProps> = ({ note }) => {
   return (
-    <Card className="flex flex-col bg-dark-card note-card">
+    <Card className="flex flex-col bg-card border border-border note-card">
       <CardHeader>
-        <CardTitle className="text-lg font-bold text-white">
+        <CardTitle className="text-lg font-bold text-foreground">
           {note.title}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-foreground/70">
           {note.content}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">

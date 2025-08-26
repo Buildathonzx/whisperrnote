@@ -8,7 +8,6 @@ import { useSearchParams } from 'next/navigation';
 import type { Notes } from '@/types/appwrite-types';
 import NoteCard from '@/components/ui/NoteCard';
 import { Button } from '@/components/ui/Button';
-import { SearchBar } from '@/components/ui/SearchBar';
 import { Pagination } from '@/components/ui/Pagination';
 import { useSearch } from '@/hooks/useSearch';
 import {
@@ -207,17 +206,6 @@ export default function NotesPage() {
           </Button>
         </div>
       </header>
-
-      {/* Search Bar */}
-      <div className="mb-6">
-        <SearchBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          placeholder="Search notes by title, content, or tags..."
-          isSearching={isSearching}
-          onClear={clearSearch}
-        />
-      </div>
 
       {/* Tags Filter */}
       {tags.length > 0 && (
