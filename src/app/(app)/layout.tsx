@@ -17,7 +17,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       <AppHeader />
       
       {/* Main Content */}
-      <div className={`relative pt-16 md:pt-16 pb-24 md:pb-0 transition-all duration-300 ${isCollapsed ? 'md:ml-20' : 'md:ml-72'}`}>
+      <div className={`relative pt-16 md:pt-16 pb-24 md:pb-0 transition-all duration-300 ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
         {children}
       </div>
       
