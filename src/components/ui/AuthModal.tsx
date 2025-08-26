@@ -140,6 +140,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handlePasskeyAuth = async () => {
+    console.log('Passkey button clicked', { email });
+    
     if (!email || !email.includes('@')) {
       setError('Please enter a valid email address first');
       return;
@@ -149,7 +151,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     showLoading('Authenticating with passkey...');
     
     try {
+      console.log('Starting passkey auth...');
       const result = await continueWithPasskey(email);
+      console.log('Passkey result:', result);
       
       if (result.success && result.user) {
         authLogin(result.user);
@@ -159,6 +163,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         setError(result.message);
       }
     } catch (err: any) {
+      console.error('Passkey error:', err);
       setError(handlePasskeyError(err));
     } finally {
       hideLoading();
