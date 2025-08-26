@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
 
 interface LoadingContextType {
   isLoading: boolean;
@@ -18,14 +18,14 @@ interface LoadingProviderProps {
 export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("Loading your creative space...");
-  const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const showLoading = useCallback((customMessage?: string) => {
     setMessage(customMessage || "Loading your creative space...");
     
     // Clear any existing timeout
-    if (loadingTimeout) {
-      clearTimeout(loadingTimeout);
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
     }
     
     // Only show loading if it takes longer than 100ms to prevent flashing for quick operations
@@ -33,16 +33,16 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
       setIsLoading(true);
     }, 100);
     
-    setLoadingTimeout(timeout);
-  }, [loadingTimeout]);
+    loadingTimeoutRef.current = timeout;
+  }, []);
 
   const hideLoading = useCallback(() => {
-    if (loadingTimeout) {
-      clearTimeout(loadingTimeout);
-      setLoadingTimeout(null);
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+      loadingTimeoutRef.current = null;
     }
     setIsLoading(false);
-  }, [loadingTimeout]);
+  }, []);
 
   return (
     <LoadingContext.Provider value={{ isLoading, message, showLoading, hideLoading }}>
