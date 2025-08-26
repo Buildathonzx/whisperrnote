@@ -408,7 +408,6 @@ export async function getAIMode(userId: string): Promise<string | null> {
     return 'standard'; // Default to standard mode
   }
 }
-}
 
 // --- STORAGE/BUCKETS ---
 
@@ -471,7 +470,7 @@ export async function uploadProfilePicture(file: File) {
 }
 
 export async function getProfilePicture(fileId: string) {
-  return getFile(APPWRITE_BUCKET_PROFILE_PICTURES, fileId);
+  return storage.getFileView(APPWRITE_BUCKET_PROFILE_PICTURES, fileId);
 }
 
 export async function deleteProfilePicture(fileId: string) {

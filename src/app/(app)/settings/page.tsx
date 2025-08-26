@@ -34,7 +34,7 @@ export default function SettingsPage() {
 
         if (u.prefs?.profilePicId) {
           const url = await getProfilePicture(u.prefs.profilePicId);
-          setProfilePicUrl(url.href);
+          setProfilePicUrl(url as string);
         }
 
         const notesResponse = await listNotes();
@@ -102,7 +102,7 @@ export default function SettingsPage() {
           setUser(updatedUser);
           if (newProfilePic) {
             const url = await getProfilePicture(updatedUser.prefs.profilePicId);
-            setProfilePicUrl(url.href);
+            setProfilePicUrl(url as string);
           }
         }}
       />
