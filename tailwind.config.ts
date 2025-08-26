@@ -10,38 +10,60 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'brown-dark': '#2d221e',
-        'brown-light': '#f5f2f0',
-        'ash-dark': '#3c3c3c',
-        'ash-light': '#f3f3f3',
+        // Base color palette (very dark brown & brownish white per UI spec)
+        'brown-darkest': '#1a120e', // very dark brown for dark mode foregrounds
+        'brown-dark': '#2d221e',    // dark brown
+        'brown-medium': '#6b5b4f',  // medium brown
+        'brown-light': '#a69080',   // light brown
+        'brown-lightest': '#f5f2f0', // brownish white for light mode foregrounds
+        
+        // Ash colors (dark ash & ash-white per UI spec) 
+        'ash-darkest': '#0f0f0f',   // very dark ash for dark mode backgrounds
+        'ash-dark': '#1a1a1a',      // dark ash
+        'ash-medium': '#3c3c3c',    // medium ash
+        'ash-light': '#d1d1d1',     // light ash
+        'ash-lightest': '#f8f8f8',  // ash-white for light mode backgrounds
+        
+        // Sun yellow accent (as specified for avoiding monotony)
         'sun-yellow': '#ffc700',
         'sun-yellow-dark': '#d9a900',
+        'sun-yellow-light': '#ffe066',
 
-        // Light mode
-        'light-bg': '#f3f3f3', // ash-light
-        'light-fg': '#2d221e', // brown-dark
-        'light-card': '#ffffff',
-        'light-border': '#e0e0e0',
+        // Light mode theme (brownish white fg, ash-white bg)
+        'light-bg': '#f8f8f8',      // ash-white background
+        'light-fg': '#1a120e',      // very dark brown foreground  
+        'light-card': '#ffffff',    // pure white for cards
+        'light-border': '#e8e8e8',  // very light ash border
+        'light-muted': '#6b5b4f',   // medium brown for muted text
 
-        // Dark mode
-        'dark-bg': '#1a1a1a', // very dark ash
-        'dark-fg': '#f5f2f0', // brown-light
-        'dark-card': '#252525',
-        'dark-border': '#424242',
+        // Dark mode theme (very dark brown fg, dark ash bg)
+        'dark-bg': '#0f0f0f',       // very dark ash background
+        'dark-fg': '#f5f2f0',       // brownish white foreground
+        'dark-card': '#1a1a1a',     // dark ash for cards
+        'dark-border': '#2a2a2a',   // medium dark ash border  
+        'dark-muted': '#a69080',    // light brown for muted text
 
-        // Accent
-        'accent': '#ffc700', // sun-yellow
-        'accent-dark': '#d9a900',
+        // Accent colors
+        'accent': '#ffc700',        // sun-yellow
+        'accent-hover': '#ffe066',  // lighter sun-yellow
+        'accent-dark': '#d9a900',   // darker sun-yellow
+        
+        // Success, warning, error states
+        'success': '#10b981',
+        'warning': '#f59e0b', 
+        'error': '#ef4444',
+        'info': '#3b82f6',
 
-        // CSS variable-based colors
+        // CSS variable-based colors for dynamic theming
         'background': 'var(--background)',
         'foreground': 'var(--foreground)',
         'card': 'var(--card)',
         'border': 'var(--border)',
+        'muted': 'var(--muted)',
         
         // Additional design system tokens
         'card-foreground': 'var(--foreground)',
-        'muted-foreground': 'var(--foreground)',
+        'muted-foreground': 'var(--muted)',
       },
       borderRadius: {
         'xl': '1rem',
@@ -50,10 +72,23 @@ const config: Config = {
         '4xl': '2.5rem',
       },
       boxShadow: {
-        '3d-light': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-        '3d-dark': '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)',
+        // 3D effect shadows as per UI spec
+        '3d-light': '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+        '3d-dark': '0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
+        '3d-elevated': '0 20px 40px -12px rgba(0, 0, 0, 0.25)',
+        
+        // Inner shadows for sunken effect
         'inner-light': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-        'inner-dark': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.5)',
+        'inner-dark': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.3)',
+        'inner-deep': 'inset 0 4px 8px 0 rgba(0, 0, 0, 0.4)',
+        
+        // Soft glows
+        'glow-accent': '0 0 20px rgba(255, 199, 0, 0.3)',
+        'glow-soft': '0 0 15px rgba(255, 255, 255, 0.1)',
+        
+        // Card shadows with brown/ash tints
+        'card-light': '0 4px 16px rgba(45, 34, 30, 0.1), 0 2px 4px rgba(45, 34, 30, 0.06)',
+        'card-dark': '0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2)',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',

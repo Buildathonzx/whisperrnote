@@ -17,12 +17,17 @@ import {
 
 interface CreateNoteFormProps {
   onNoteCreated: (note: Notes) => void;
+  initialContent?: {
+    title?: string;
+    content?: string;
+    tags?: string[];
+  };
 }
 
-export default function CreateNoteForm({ onNoteCreated }: CreateNoteFormProps) {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
+export default function CreateNoteForm({ onNoteCreated, initialContent }: CreateNoteFormProps) {
+  const [title, setTitle] = useState(initialContent?.title || '');
+  const [content, setContent] = useState(initialContent?.content || '');
+  const [tags, setTags] = useState<string[]>(initialContent?.tags || []);
   const [currentTag, setCurrentTag] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [status, setStatus] = useState<Status>(Status.DRAFT);

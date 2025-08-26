@@ -6,7 +6,6 @@ import {
   HomeIcon, 
   PlusCircleIcon, 
   ShareIcon, 
-  UserIcon,
   TagIcon,
   Cog6ToothIcon,
   PuzzlePieceIcon,
@@ -229,11 +228,11 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
 };
 
 // Default export that includes both components
-export default function Navigation({ toggleTheme, isDarkMode }: NavigationProps) {
+export default function Navigation({ className }: NavigationProps) {
   return (
     <>
-      <DesktopSidebar toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
-      <MobileBottomNav />
+      <DesktopSidebar className={className} />
+      <MobileBottomNav className={className} />
     </>
   );
 }

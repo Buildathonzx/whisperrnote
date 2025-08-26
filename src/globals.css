@@ -4,24 +4,30 @@
 
 @layer base {
   :root {
+    /* Light mode: ash-white bg, very dark brown fg */
     --background: theme('colors.light-bg');
     --foreground: theme('colors.light-fg');
     --card: theme('colors.light-card');
     --border: theme('colors.light-border');
+    --muted: theme('colors.light-muted');
     --accent: theme('colors.accent');
   }
 
   .dark {
+    /* Dark mode: very dark ash bg, brownish white fg */
     --background: theme('colors.dark-bg');
     --foreground: theme('colors.dark-fg');
     --card: theme('colors.dark-card');
     --border: theme('colors.dark-border');
+    --muted: theme('colors.dark-muted');
     --accent: theme('colors.accent');
   }
 
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    /* Smooth transitions for theme changes */
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -38,6 +44,36 @@
 
   h3 {
     @apply text-2xl;
+  }
+  
+  /* Enhanced 3D styling for UI elements */
+  .card-3d {
+    @apply shadow-card-light dark:shadow-card-dark;
+    @apply border border-border;
+    @apply rounded-xl;
+    transition: all 0.2s ease;
+  }
+  
+  .card-3d:hover {
+    @apply shadow-3d-light dark:shadow-3d-dark;
+    transform: translateY(-1px);
+  }
+  
+  .btn-3d {
+    @apply shadow-3d-light dark:shadow-3d-dark;
+    @apply border border-border;
+    @apply rounded-xl;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-3d:hover {
+    @apply shadow-3d-elevated;
+    transform: translateY(-2px);
+  }
+  
+  .btn-3d:active {
+    @apply shadow-inner-light dark:shadow-inner-dark;
+    transform: translateY(0);
   }
 }
 
