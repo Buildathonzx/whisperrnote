@@ -9,6 +9,7 @@ import { RouteGuard } from "@/components/ui/RouteGuard";
 import { AuthModalContainer } from "@/components/ui/AuthModalContainer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AIProvider } from "@/components/ui/AIContext";
+import { ToastProvider } from "@/components/ui/Toast";
 import Overlay from "@/components/ui/Overlay";
 
 export default function RootLayout({
@@ -20,21 +21,23 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ThemeProvider>
-          <AppWithLoading>
-            <AuthProvider>
-              <SubscriptionProvider>
-                <OverlayProvider>
-                  <AIProvider>
-                    <RouteGuard>
-                      {children}
-                    </RouteGuard>
-                    <AuthModalContainer />
-                    <Overlay />
-                  </AIProvider>
-                </OverlayProvider>
-              </SubscriptionProvider>
-            </AuthProvider>
-          </AppWithLoading>
+          <ToastProvider>
+            <AppWithLoading>
+              <AuthProvider>
+                <SubscriptionProvider>
+                  <OverlayProvider>
+                    <AIProvider>
+                      <RouteGuard>
+                        {children}
+                      </RouteGuard>
+                      <AuthModalContainer />
+                      <Overlay />
+                    </AIProvider>
+                  </OverlayProvider>
+                </SubscriptionProvider>
+              </AuthProvider>
+            </AppWithLoading>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

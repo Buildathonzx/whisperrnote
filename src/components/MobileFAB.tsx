@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { PlusIcon, SparklesIcon, DocumentPlusIcon } from '@heroicons/react/24/outline';
 import { useOverlay } from '@/components/ui/OverlayContext';
+import { useToast } from '@/components/ui/Toast';
 import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 import { aiServiceInstance as aiService } from '@/lib/ai-service';
@@ -13,6 +14,7 @@ interface MobileFABProps {
 
 export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
   const { openOverlay, closeOverlay } = useOverlay();
+  const { showError } = useToast();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -65,7 +67,10 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
       
     } catch (error) {
       console.error('Failed to generate content:', error);
-      alert(`Failed to generate content: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showError(
+        'AI Generation Failed',
+        error instanceof Error ? error.message : 'Unable to generate content. Please try again.'
+      );
     } finally {
       setIsGenerating(false);
     }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, List, ListItem, ListItemText, Divider, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { listCollaborators, createCollaborator, deleteCollaborator } from '@/lib/appwrite';
+import { useToast } from '@/components/ui/Toast';
 import type { Collaborators, Users } from '@/types/appwrite-types';
 import { listUsers } from '@/lib/appwrite';
 
@@ -15,6 +16,7 @@ export default function CollaboratorsSection({ noteId }: CollaboratorsProps) {
   const [users, setUsers] = useState<Users[]>([]);
   const [newCollaboratorEmail, setNewCollaboratorEmail] = useState('');
   const [permission, setPermission] = useState('read');
+  const { showError, showSuccess } = useToast();
 
   useEffect(() => {
     const fetchCollaborators = async () => {
@@ -43,19 +45,21 @@ export default function CollaboratorsSection({ noteId }: CollaboratorsProps) {
     if (!newCollaboratorEmail.trim()) return;
     const user = users.find(u => u.email === newCollaboratorEmail);
     if (!user) {
-      alert('User not found');
+      showError('User Not Found', 'Please check the email address and try again.');
       return;
     }
     try {
       const collaborator = await createCollaborator({
         noteId,
         userId: user.$id,
-        permission,
+        permission: permission as 'read' | 'write' | 'admin',
       });
-      setCollaborators(prev => [collaborator, ...prev]);
+      setCollaborators(prev => [collaborator as any, ...prev]);
       setNewCollaboratorEmail('');
+      showSuccess('Collaborator Added', `${user.email} has been added as a collaborator.`);
     } catch (error) {
       console.error('Failed to add collaborator:', error);
+      showError('Failed to Add Collaborator', 'Please try again.');
     }
   };
 
