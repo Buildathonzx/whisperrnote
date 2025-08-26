@@ -217,6 +217,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleInternetIdentity = () => {
+    // Open Internet Identity in a new, smaller window
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    
+    window.open(
+      'https://identity.internetcomputer.org/',
+      'internet-identity',
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    );
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || !isValidEmail(email)) return;
@@ -378,16 +392,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     whileTap={{ scale: passkeySupported ? 0.98 : 1 }}
                     onClick={handlePasskeyAuth}
                     disabled={!passkeySupported}
-                    className={`flex-1 p-4 border rounded-xl transition-all text-center ${
+                    className={`flex-1 p-3 border rounded-xl transition-all text-center ${
                       passkeySupported 
                         ? 'bg-light-card dark:bg-dark-card border-light-border dark:border-dark-border hover:shadow-3d-light dark:hover:shadow-3d-dark cursor-pointer' 
                         : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-60'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2 ${
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto mb-1.5 ${
                       passkeySupported ? 'bg-accent/10' : 'bg-gray-300 dark:bg-gray-600'
                     }`}>
-                      <svg className={`w-4 h-4 ${passkeySupported ? 'text-accent' : 'text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20">
+                      <svg className={`w-3.5 h-3.5 ${passkeySupported ? 'text-accent' : 'text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-4 4-4-4 4-4 4 4 .257-.257A6 6 0 1118 8zm-6-6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                       </svg>
                     </div>
@@ -401,16 +415,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     whileTap={{ scale: walletAvailable ? 0.98 : 1 }}
                     onClick={handleWalletAuth}
                     disabled={!walletAvailable}
-                    className={`flex-1 p-4 border rounded-xl transition-all text-center ${
+                    className={`flex-1 p-3 border rounded-xl transition-all text-center ${
                       walletAvailable 
                         ? 'bg-light-card dark:bg-dark-card border-light-border dark:border-dark-border hover:shadow-3d-light dark:hover:shadow-3d-dark cursor-pointer' 
                         : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-60'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2 ${
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto mb-1.5 ${
                       walletAvailable ? 'bg-accent/10' : 'bg-gray-300 dark:bg-gray-600'
                     }`}>
-                      <svg className={`w-4 h-4 ${walletAvailable ? 'text-accent' : 'text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20">
+                      <svg className={`w-3.5 h-3.5 ${walletAvailable ? 'text-accent' : 'text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                       </svg>
                     </div>
@@ -419,6 +433,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     </div>
                   </motion.button>
                 </div>
+
+                {/* Internet Identity Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleInternetIdentity}
+                  className="w-full p-3 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center cursor-pointer"
+                >
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center">
+                      <svg className="w-3.5 h-3.5 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zM9 9V6h2v3h3v2h-3v3H9v-3H6V9h3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <span className="font-medium text-sm text-foreground">Internet Identity</span>
+                  </div>
+                </motion.button>
               </div>
             </div>
 
