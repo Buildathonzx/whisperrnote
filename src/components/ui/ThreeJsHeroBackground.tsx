@@ -15,8 +15,6 @@ export const ThreeJsHeroBackground: React.FC<ThreeJsHeroBackgroundProps> = ({
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const animationRef = useRef<number | undefined>(undefined);
-  const waveGeometriesRef = useRef<THREE.PlaneGeometry[]>([]);
-  const waveMaterialsRef = useRef<THREE.ShaderMaterial[]>([]);
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -33,7 +31,7 @@ export const ThreeJsHeroBackground: React.FC<ThreeJsHeroBackgroundProps> = ({
       0.1,
       1000
     );
-    camera.position.z = 8;
+    camera.position.z = 12;
 
     // Renderer setup
     const renderer = new THREE.WebGLRenderer({ 
@@ -47,250 +45,331 @@ export const ThreeJsHeroBackground: React.FC<ThreeJsHeroBackgroundProps> = ({
     rendererRef.current = renderer;
     mountRef.current.appendChild(renderer.domElement);
 
-    // Theme-aware colors with much better visibility
+    // Theme-aware colors
     const getThemeColors = () => {
       if (theme === 'dark') {
         return {
-          primary: new THREE.Color(0xfaf8f6),   // brownish white - much brighter
+          primary: new THREE.Color(0xfaf8f6),   // brownish white
           secondary: new THREE.Color(0xd4c4b0), // warm beige
           accent: new THREE.Color(0xffc700),    // sun yellow
-          wave1: new THREE.Color(0x8b7355),     // warm brown
-          wave2: new THREE.Color(0xa69080),     // light brown
-          opacity: 0.4,  // Much higher opacity for dark mode
-          waveOpacity: 0.25
+          fluid1: new THREE.Color(0xb8a082),    // light brown
+          fluid2: new THREE.Color(0x8b7355),    // medium brown
+          opacity: 0.5,
+          trailOpacity: 0.3
         };
       } else {
         return {
           primary: new THREE.Color(0x0f0a08),   // very dark brown
           secondary: new THREE.Color(0x3d2f26), // dark brown
           accent: new THREE.Color(0xd9a900),    // darker yellow
-          wave1: new THREE.Color(0x6b5b4f),     // medium brown
-          wave2: new THREE.Color(0x8b7355),     // warm brown
-          opacity: 0.25, // Higher opacity for light mode too
-          waveOpacity: 0.15
+          fluid1: new THREE.Color(0x6b5b4f),    // medium brown
+          fluid2: new THREE.Color(0x8b7355),    // warm brown
+          opacity: 0.35,
+          trailOpacity: 0.2
         };
       }
     };
 
     const colors = getThemeColors();
 
-    // Create flowing wave geometry with more complexity
-    const createWaveGeometry = (segments = 64) => {
-      return new THREE.PlaneGeometry(20, 20, segments, segments);
-    };
+    // Fluid dynamics simulation
+    class FluidBlob {
+      position: THREE.Vector3;
+      velocity: THREE.Vector3;
+      acceleration: THREE.Vector3;
+      size: number;
+      targetSize: number;
+      shape: number[];
+      color: THREE.Color;
+      trail: THREE.Vector3[];
+      angle: number;
+      angularVelocity: number;
+      lifespan: number;
+      maxLifespan: number;
+      direction: THREE.Vector3;
+      
+      constructor(x: number, y: number, color: THREE.Color) {
+        this.position = new THREE.Vector3(x, y, 0);
+        this.velocity = new THREE.Vector3(
+          (Math.random() - 0.5) * 4,
+          (Math.random() - 0.5) * 4,
+          (Math.random() - 0.5) * 2
+        );
+        this.acceleration = new THREE.Vector3(0, 0, 0);
+        this.size = Math.random() * 2 + 1;
+        this.targetSize = this.size;
+        this.shape = Array.from({length: 16}, () => Math.random() * 0.5 + 0.5);
+        this.color = color.clone();
+        this.trail = [];
+        this.angle = Math.random() * Math.PI * 2;
+        this.angularVelocity = (Math.random() - 0.5) * 0.1;
+        this.lifespan = Math.random() * 200 + 100;
+        this.maxLifespan = this.lifespan;
+        this.direction = new THREE.Vector3(
+          Math.cos(this.angle),
+          Math.sin(this.angle),
+          0
+        ).normalize();
+      }
 
-    // Advanced wave shader with flowing patterns
-    const createWaveMaterial = (colorA: THREE.Color, colorB: THREE.Color, speed: number, complexity: number) => {
+      update(time: number, allBlobs: FluidBlob[]) {
+        // Store trail positions
+        this.trail.push(this.position.clone());
+        if (this.trail.length > 15) {
+          this.trail.shift();
+        }
+
+        // Unpredictable directional changes
+        if (Math.random() < 0.02) {
+          this.angularVelocity += (Math.random() - 0.5) * 0.2;
+          this.direction.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.angularVelocity);
+        }
+
+        // Dynamic size changes like liquid splashing
+        if (Math.random() < 0.05) {
+          this.targetSize = Math.random() * 3 + 0.5;
+        }
+        this.size += (this.targetSize - this.size) * 0.1;
+
+        // Shape deformation like liquid flow
+        for (let i = 0; i < this.shape.length; i++) {
+          this.shape[i] += Math.sin(time * 0.01 + i + this.position.x * 0.1) * 0.02;
+          this.shape[i] = Math.max(0.2, Math.min(1.5, this.shape[i]));
+        }
+
+        // Fluid physics - attraction and repulsion
+        this.acceleration.set(0, 0, 0);
+        
+        allBlobs.forEach(other => {
+          if (other === this) return;
+          
+          const distance = this.position.distanceTo(other.position);
+          const force = new THREE.Vector3()
+            .subVectors(other.position, this.position)
+            .normalize();
+
+          if (distance < 4) {
+            // Repulsion when too close (like surface tension)
+            force.multiplyScalar(-0.5 / distance);
+            this.acceleration.add(force);
+          } else if (distance < 8) {
+            // Attraction at medium distance (like viscosity)
+            force.multiplyScalar(0.1 / distance);
+            this.acceleration.add(force);
+          }
+        });
+
+        // Add unpredictable flow forces
+        const flowForce = new THREE.Vector3(
+          Math.sin(time * 0.003 + this.position.y * 0.05) * 0.2,
+          Math.cos(time * 0.005 + this.position.x * 0.03) * 0.15,
+          Math.sin(time * 0.007 + this.position.x * 0.02 + this.position.y * 0.02) * 0.1
+        );
+        this.acceleration.add(flowForce);
+
+        // Gravity-like directional pull (changes direction)
+        const gravityDirection = new THREE.Vector3(
+          Math.sin(time * 0.001) * 2,
+          Math.cos(time * 0.0008) * 1.5,
+          0
+        );
+        this.acceleration.add(gravityDirection.multiplyScalar(0.01));
+
+        // Update velocity and position
+        this.velocity.add(this.acceleration);
+        this.velocity.multiplyScalar(0.98); // Fluid drag
+        this.position.add(this.velocity);
+
+        // Bounce off screen edges with unpredictability
+        const bounds = 15;
+        if (Math.abs(this.position.x) > bounds) {
+          this.velocity.x *= -0.8;
+          this.position.x = Math.sign(this.position.x) * bounds;
+          this.angularVelocity += (Math.random() - 0.5) * 0.3;
+        }
+        if (Math.abs(this.position.y) > bounds) {
+          this.velocity.y *= -0.8;
+          this.position.y = Math.sign(this.position.y) * bounds;
+          this.angularVelocity += (Math.random() - 0.5) * 0.3;
+        }
+
+        this.lifespan--;
+        if (this.lifespan <= 0) {
+          this.reset();
+        }
+      }
+
+      reset() {
+        this.position.set(
+          (Math.random() - 0.5) * 20,
+          (Math.random() - 0.5) * 20,
+          (Math.random() - 0.5) * 4
+        );
+        this.velocity.set(
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 1
+        );
+        this.lifespan = this.maxLifespan;
+        this.trail = [];
+      }
+    }
+
+    // Create fluid blob instances
+    const fluidBlobs: FluidBlob[] = [];
+    for (let i = 0; i < 12; i++) {
+      const color = i % 3 === 0 ? colors.accent : 
+                   i % 3 === 1 ? colors.fluid1 : colors.fluid2;
+      fluidBlobs.push(new FluidBlob(
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20,
+        color
+      ));
+    }
+
+    // Create fluid rendering system
+    const createFluidMaterial = (color: THREE.Color, opacity: number) => {
       return new THREE.ShaderMaterial({
         uniforms: {
           time: { value: 0 },
-          colorA: { value: colorA },
-          colorB: { value: colorB },
-          opacity: { value: colors.waveOpacity },
-          speed: { value: speed },
-          complexity: { value: complexity }
+          color: { value: color },
+          opacity: { value: opacity },
+          size: { value: 1.0 }
         },
         vertexShader: `
           uniform float time;
-          uniform float speed;
-          uniform float complexity;
+          uniform float size;
+          attribute float shapeVariation;
+          attribute vec3 fluidVelocity;
           varying vec2 vUv;
-          varying vec3 vPosition;
-          varying float vWave;
+          varying float vShape;
+          varying vec3 vVelocity;
 
           void main() {
             vUv = uv;
-            vPosition = position;
-            
-            // Create multiple wave layers for fluid motion
-            float wave1 = sin(position.x * 0.5 + time * speed) * 0.8;
-            float wave2 = cos(position.y * 0.3 + time * speed * 1.2) * 0.6;
-            float wave3 = sin((position.x + position.y) * 0.2 + time * speed * 0.8) * 0.4;
-            
-            // Add complexity with smaller ripples
-            float ripple1 = sin(position.x * 2.0 + time * speed * 2.0) * 0.2;
-            float ripple2 = cos(position.y * 1.5 + time * speed * 1.8) * 0.15;
-            
-            // Combine waves for organic motion
-            float combinedWave = wave1 + wave2 + wave3 + ripple1 + ripple2;
-            vWave = combinedWave * complexity;
+            vShape = shapeVariation;
+            vVelocity = fluidVelocity;
             
             vec3 pos = position;
-            pos.z += combinedWave * complexity;
             
-            // Add horizontal flow
-            pos.x += sin(time * speed * 0.5 + position.y * 0.1) * 0.3;
-            pos.y += cos(time * speed * 0.7 + position.x * 0.1) * 0.2;
+            // Fluid deformation based on velocity
+            float velocityMagnitude = length(fluidVelocity);
+            pos *= size * (1.0 + velocityMagnitude * 0.2);
+            
+            // Stretch in direction of movement
+            vec3 stretchDirection = normalize(fluidVelocity);
+            pos += stretchDirection * velocityMagnitude * 0.5;
             
             gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
           }
         `,
         fragmentShader: `
-          uniform float time;
-          uniform vec3 colorA;
-          uniform vec3 colorB;
+          uniform vec3 color;
           uniform float opacity;
-          uniform float speed;
+          uniform float time;
           varying vec2 vUv;
-          varying vec3 vPosition;
-          varying float vWave;
+          varying float vShape;
+          varying vec3 vVelocity;
 
           void main() {
-            // Create flowing color patterns
-            float colorMix = sin(vUv.x * 3.14159 + time * speed) * 0.5 + 0.5;
-            colorMix += cos(vUv.y * 2.0 + time * speed * 1.3) * 0.3;
-            colorMix += sin((vUv.x + vUv.y) * 1.5 + time * speed * 0.8) * 0.2;
+            vec2 center = vUv - vec2(0.5);
+            float dist = length(center);
             
-            // Add wave-based color variation
-            colorMix += vWave * 0.3;
-            colorMix = clamp(colorMix, 0.0, 1.0);
+            // Create irregular fluid shape
+            float angle = atan(center.y, center.x);
+            float shapeNoise = sin(angle * 6.0 + time * 0.01) * 0.1 * vShape;
+            float fluidEdge = 0.3 + shapeNoise;
             
-            vec3 color = mix(colorA, colorB, colorMix);
+            if (dist > fluidEdge) discard;
             
-            // Create soft edges with distance-based falloff
-            float distanceFromCenter = distance(vUv, vec2(0.5));
-            float edgeFalloff = 1.0 - smoothstep(0.2, 0.8, distanceFromCenter);
+            // Velocity-based color intensity
+            float velocityFactor = length(vVelocity) * 0.5 + 0.5;
             
-            // Pulsing effect
-            float pulse = sin(time * speed * 2.0 + vPosition.x + vPosition.y) * 0.1 + 0.9;
+            // Soft edges with velocity distortion
+            float alpha = 1.0 - smoothstep(0.1, fluidEdge, dist);
+            alpha *= velocityFactor;
             
-            float finalOpacity = opacity * edgeFalloff * pulse;
-            
-            gl_FragColor = vec4(color, finalOpacity);
+            gl_FragColor = vec4(color, alpha * opacity);
           }
         `,
         transparent: true,
         blending: THREE.AdditiveBlending,
-        side: THREE.DoubleSide,
         depthWrite: false
       });
     };
 
-    // Create multiple wave layers for rich visual depth
-    const waveConfigs = [
-      { color1: colors.primary, color2: colors.accent, speed: 1.0, complexity: 0.8, scale: 1.2, rotation: 0 },
-      { color1: colors.wave1, color2: colors.wave2, speed: 0.7, complexity: 0.6, scale: 1.5, rotation: Math.PI / 4 },
-      { color1: colors.secondary, color2: colors.primary, speed: 1.3, complexity: 0.4, scale: 1.8, rotation: Math.PI / 2 },
-      { color1: colors.wave2, color2: colors.accent, speed: 0.5, complexity: 1.0, scale: 2.2, rotation: Math.PI / 3 }
-    ];
+    // Create fluid meshes
+    const fluidMeshes: THREE.Mesh[] = [];
+    const trailMeshes: THREE.Mesh[] = [];
 
-    const waves: THREE.Mesh[] = [];
+    fluidBlobs.forEach((blob, index) => {
+      // Main fluid blob
+      const geometry = new THREE.PlaneGeometry(4, 4, 8, 8);
+      const positions = geometry.attributes.position.array as Float32Array;
+      const shapeVariations = new Float32Array(positions.length / 3);
+      const velocities = new Float32Array(positions.length);
 
-    waveConfigs.forEach((config, index) => {
-      const geometry = createWaveGeometry(48);
-      const material = createWaveMaterial(config.color1, config.color2, config.speed, config.complexity);
+      for (let i = 0; i < shapeVariations.length; i++) {
+        shapeVariations[i] = Math.random();
+      }
+
+      geometry.setAttribute('shapeVariation', new THREE.BufferAttribute(shapeVariations, 1));
+      geometry.setAttribute('fluidVelocity', new THREE.BufferAttribute(velocities, 3));
+
+      const material = createFluidMaterial(blob.color, colors.opacity);
+      const mesh = new THREE.Mesh(geometry, material);
       
-      waveGeometriesRef.current.push(geometry);
-      waveMaterialsRef.current.push(material);
+      fluidMeshes.push(mesh);
+      scene.add(mesh);
+
+      // Trail system
+      const trailGeometry = new THREE.PlaneGeometry(2, 2);
+      const trailMaterial = createFluidMaterial(blob.color, colors.trailOpacity * 0.5);
+      const trailMesh = new THREE.Mesh(trailGeometry, trailMaterial);
       
-      const wave = new THREE.Mesh(geometry, material);
-      wave.rotation.z = config.rotation;
-      wave.scale.set(config.scale, config.scale, 1);
-      wave.position.z = -index * 2; // Layer waves in depth
-      
-      waves.push(wave);
-      scene.add(wave);
+      trailMeshes.push(trailMesh);
+      scene.add(trailMesh);
     });
-
-    // Add floating particle bubbles for creativity accent
-    const particleCount = 80;
-    const particlePositions = new Float32Array(particleCount * 3);
-    const particleVelocities = new Float32Array(particleCount * 3);
-
-    for (let i = 0; i < particleCount; i++) {
-      const i3 = i * 3;
-      particlePositions[i3] = (Math.random() - 0.5) * 25;
-      particlePositions[i3 + 1] = (Math.random() - 0.5) * 25;
-      particlePositions[i3 + 2] = (Math.random() - 0.5) * 10;
-      
-      particleVelocities[i3] = (Math.random() - 0.5) * 0.02;
-      particleVelocities[i3 + 1] = (Math.random() - 0.5) * 0.02;
-      particleVelocities[i3 + 2] = (Math.random() - 0.5) * 0.01;
-    }
-
-    const particleGeometry = new THREE.BufferGeometry();
-    particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-
-    const particleMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        time: { value: 0 },
-        primaryColor: { value: colors.accent },
-        opacity: { value: colors.opacity * 0.6 }
-      },
-      vertexShader: `
-        uniform float time;
-        varying vec3 vPosition;
-        
-        void main() {
-          vPosition = position;
-          
-          vec3 pos = position;
-          pos.x += sin(time * 0.8 + position.y * 0.1) * 0.5;
-          pos.y += cos(time * 1.2 + position.x * 0.1) * 0.3;
-          pos.z += sin(time * 0.5 + position.x * 0.05 + position.y * 0.05) * 0.8;
-          
-          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-          gl_PointSize = 3.0 * (300.0 / -mvPosition.z);
-          gl_Position = projectionMatrix * mvPosition;
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 primaryColor;
-        uniform float opacity;
-        
-        void main() {
-          vec2 center = gl_PointCoord - vec2(0.5);
-          float dist = length(center);
-          if (dist > 0.5) discard;
-          
-          float alpha = 1.0 - smoothstep(0.2, 0.5, dist);
-          gl_FragColor = vec4(primaryColor, alpha * opacity);
-        }
-      `,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false
-    });
-
-    const particles = new THREE.Points(particleGeometry, particleMaterial);
-    scene.add(particles);
 
     let time = 0;
 
-    // Enhanced animation loop with fluid motion
+    // Animation loop with true fluid dynamics
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate);
-      time += 0.016;
+      time += 1;
 
-      // Update all wave materials
-      waveMaterialsRef.current.forEach((material) => {
-        material.uniforms.time.value = time;
-      });
+      // Update fluid physics
+      fluidBlobs.forEach(blob => blob.update(time, fluidBlobs));
 
-      // Update particle material
-      particleMaterial.uniforms.time.value = time;
+      // Update mesh positions and properties
+    fluidBlobs.forEach((blob, index) => {
+      // Main fluid blob
+      const geometry = new THREE.PlaneGeometry(4, 4, 8, 8);
+      const positions = geometry.attributes.position.array as Float32Array;
+      const shapeVariations = new Float32Array(positions.length / 3);
+      const velocities = new Float32Array(positions.length);
 
-      // Gentle wave rotations for organic flow
-      waves.forEach((wave, index) => {
-        wave.rotation.z += 0.001 * (index + 1);
-        wave.rotation.x = Math.sin(time * 0.2 + index) * 0.1;
-        wave.rotation.y = Math.cos(time * 0.15 + index) * 0.05;
-      });
-
-      // Animate particles
-      const positions = particleGeometry.attributes.position.array as Float32Array;
-      for (let i = 0; i < particleCount; i++) {
-        const i3 = i * 3;
-        positions[i3] += particleVelocities[i3];
-        positions[i3 + 1] += particleVelocities[i3 + 1];
-        positions[i3 + 2] += particleVelocities[i3 + 2];
-        
-        // Wrap around boundaries
-        if (Math.abs(positions[i3]) > 12) particleVelocities[i3] *= -1;
-        if (Math.abs(positions[i3 + 1]) > 12) particleVelocities[i3 + 1] *= -1;
-        if (Math.abs(positions[i3 + 2]) > 5) particleVelocities[i3 + 2] *= -1;
+      for (let i = 0; i < shapeVariations.length; i++) {
+        shapeVariations[i] = Math.random();
       }
-      particleGeometry.attributes.position.needsUpdate = true;
+
+      geometry.setAttribute('shapeVariation', new THREE.BufferAttribute(shapeVariations, 1));
+      geometry.setAttribute('fluidVelocity', new THREE.BufferAttribute(velocities, 3));
+
+      const material = createFluidMaterial(blob.color, colors.opacity);
+      const mesh = new THREE.Mesh(geometry, material);
+      
+      fluidMeshes.push(mesh);
+      scene.add(mesh);
+
+      // Trail system
+      const trailGeometry = new THREE.PlaneGeometry(2, 2);
+      const trailMaterial = createFluidMaterial(blob.color, colors.trailOpacity * 0.5);
+      const trailMesh = new THREE.Mesh(trailGeometry, trailMaterial);
+      
+      trailMeshes.push(trailMesh);
+      scene.add(trailMesh);
+    });
 
       renderer.render(scene, camera);
     };
@@ -312,17 +391,17 @@ export const ThreeJsHeroBackground: React.FC<ThreeJsHeroBackgroundProps> = ({
     const updateThemeColors = () => {
       const newColors = getThemeColors();
       
-      waveMaterialsRef.current.forEach((material, index) => {
-        const config = waveConfigs[index];
-        if (config) {
-          material.uniforms.colorA.value = config.color1;
-          material.uniforms.colorB.value = config.color2;
-          material.uniforms.opacity.value = newColors.waveOpacity;
-        }
+      fluidMeshes.forEach((mesh, index) => {
+        const material = mesh.material as THREE.ShaderMaterial;
+        material.uniforms.color.value = fluidBlobs[index].color;
+        material.uniforms.opacity.value = newColors.opacity;
       });
-      
-      particleMaterial.uniforms.primaryColor.value = newColors.accent;
-      particleMaterial.uniforms.opacity.value = newColors.opacity * 0.6;
+
+      trailMeshes.forEach((mesh, index) => {
+        const material = mesh.material as THREE.ShaderMaterial;
+        material.uniforms.color.value = fluidBlobs[index].color;
+        material.uniforms.opacity.value = newColors.trailOpacity;
+      });
     };
 
     updateThemeColors();
@@ -333,11 +412,15 @@ export const ThreeJsHeroBackground: React.FC<ThreeJsHeroBackgroundProps> = ({
         cancelAnimationFrame(animationRef.current);
       }
       
-      // Cleanup geometries and materials
-      waveGeometriesRef.current.forEach(geometry => geometry.dispose());
-      waveMaterialsRef.current.forEach(material => material.dispose());
-      particleGeometry.dispose();
-      particleMaterial.dispose();
+      // Cleanup
+      fluidMeshes.forEach(mesh => {
+        mesh.geometry.dispose();
+        (mesh.material as THREE.Material).dispose();
+      });
+      trailMeshes.forEach(mesh => {
+        mesh.geometry.dispose();
+        (mesh.material as THREE.Material).dispose();
+      });
       
       if (mountRef.current && renderer.domElement && mountRef.current.contains(renderer.domElement)) {
         mountRef.current.removeChild(renderer.domElement);
