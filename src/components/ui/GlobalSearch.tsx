@@ -13,6 +13,10 @@ import {
   ListItemIcon,
   Typography,
   useTheme,
+  Menu,
+  MenuItem,
+  Avatar,
+  Divider,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -22,8 +26,14 @@ import {
   Person as PersonIcon,
   Label as TagIcon,
   History as HistoryIcon,
+  AccountCircle as AccountIcon,
+  Logout as LogoutIcon,
+  MoreVert as MoreIcon,
 } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from './AuthContext';
+import { logout } from '@/lib/auth';
 
 interface SearchResult {
   id: string;
@@ -82,10 +92,13 @@ export default function GlobalSearch({
   showFilters = true,
 }: GlobalSearchProps) {
   const theme = useTheme();
+  const router = useRouter();
+  const { user, logout: authLogout } = useAuth();
   const [query, setQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     if (query.length > 0) {
@@ -121,6 +134,35 @@ export default function GlobalSearch({
     );
   };
 
+  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setUserMenuAnchor(event.currentTarget);
+  };
+
+  const handleUserMenuClose = () => {
+    setUserMenuAnchor(null);
+  };
+
+  const handleNavigateToNotes = () => {
+    router.push('/notes');
+    handleUserMenuClose();
+  };
+
+  const handleNavigateToTags = () => {
+    router.push('/tags');
+    handleUserMenuClose();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      authLogout();
+      router.push('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+    handleUserMenuClose();
+  };
+
   const filters = [
     { id: 'notes', label: 'Notes', icon: <NoteIcon /> },
     { id: 'people', label: 'People', icon: <PersonIcon /> },
@@ -151,26 +193,50 @@ export default function GlobalSearch({
             },
           },
         }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon color="action" />
-            </InputAdornment>
-          ),
-          endAdornment: (
-            <InputAdornment position="end">
-              {query && (
-                <IconButton size="small" onClick={handleClear}>
-                  <ClearIcon />
-                </IconButton>
-              )}
-              {showFilters && (
-                <IconButton size="small">
-                  <FilterIcon />
-                </IconButton>
-              )}
-            </InputAdornment>
-          ),
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon color="action" />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                {query && (
+                  <IconButton size="small" onClick={handleClear}>
+                    <ClearIcon />
+                  </IconButton>
+                )}
+                {showFilters && (
+                  <IconButton size="small">
+                    <FilterIcon />
+                  </IconButton>
+                )}
+                {user && (
+                  <IconButton 
+                    size="small" 
+                    onClick={handleUserMenuOpen}
+                    sx={{ ml: 1 }}
+                  >
+                    {user.name ? (
+                      <Avatar 
+                        sx={{ 
+                          width: 24, 
+                          height: 24, 
+                          fontSize: '0.75rem',
+                          backgroundColor: 'primary.main'
+                        }}
+                      >
+                        {user.name.charAt(0).toUpperCase()}
+                      </Avatar>
+                    ) : (
+                      <AccountIcon />
+                    )}
+                  </IconButton>
+                )}
+              </InputAdornment>
+            ),
+          }
         }}
       />
 
@@ -302,6 +368,46 @@ export default function GlobalSearch({
           )}
         </Paper>
       )}
+
+      {/* User Menu */}
+      <Menu
+        anchorEl={userMenuAnchor}
+        open={Boolean(userMenuAnchor)}
+        onClose={handleUserMenuClose}
+        PaperProps={{
+          sx: {
+            borderRadius: '12px',
+            minWidth: 180,
+            border: `1px solid ${theme.palette.divider}`,
+            boxShadow: `
+              0 8px 32px rgba(0, 0, 0, 0.12),
+              0 4px 16px rgba(0, 0, 0, 0.08)
+            `,
+          }
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <MenuItem onClick={handleNavigateToNotes}>
+          <ListItemIcon>
+            <NoteIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Notes" />
+        </MenuItem>
+        <MenuItem onClick={handleNavigateToTags}>
+          <ListItemIcon>
+            <TagIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Tags" />
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <LogoutIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Logout" />
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }

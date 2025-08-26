@@ -43,7 +43,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
     
     // If user is not authenticated and trying to access protected route
     if (!isAuthenticated && !publicRoute) {
-      showAuthModal('login');
+      showAuthModal();
       return;
     }
 

@@ -96,7 +96,7 @@ export default function LandingPage() {
           ) : (
             <Button 
               variant="ghost" 
-              onClick={() => showAuthModal('login')}
+              onClick={() => showAuthModal()}
             >
               Login
             </Button>
@@ -124,9 +124,9 @@ export default function LandingPage() {
             </p>
             <Button 
               size="lg" 
-              onClick={() => showAuthModal('signup')}
+              onClick={() => showAuthModal()}
             >
-              Sign up for free
+              Get started
             </Button>
           </div>
         </section>
