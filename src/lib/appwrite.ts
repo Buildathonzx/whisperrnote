@@ -163,7 +163,13 @@ export async function listNotes(queries: any[] = []) {
   // By default, fetch all notes for the current user
   if (!queries.length) {
     const user = await getCurrentUser();
-    if (!user || !user.$id) throw new Error("User not authenticated");
+    if (!user || !user.$id) {
+      // Return empty result instead of throwing error for unauthenticated users
+      return { 
+        documents: [], 
+        total: 0 
+      };
+    }
     queries = [Query.equal("userId", user.$id)];
   }
   // Cast documents to Notes[]
