@@ -39,6 +39,10 @@ export async function POST(request: NextRequest) {
 
     // Generate proper Appwrite userId
     const userId = ID.unique();
+    
+    // Create clean display name from email (before @, sanitized)
+    const emailUsername = email.split('@')[0];
+    const cleanName = emailUsername.replace(/[^a-zA-Z]/g, ''); // Remove numbers and special chars
 
     // Initialize server client with API key
     const client = new Client()
@@ -57,7 +61,7 @@ export async function POST(request: NextRequest) {
         email, // Use the provided email
         undefined, // phone
         undefined, // password (not used for wallet auth)
-        address // Use wallet address as display name
+        cleanName || 'User' // Use sanitized email username as display name
       );
     } catch (createError: any) {
       console.error('User creation failed:', {
