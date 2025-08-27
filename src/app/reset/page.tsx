@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { account } from "@/lib/appwrite";
 import { motion } from "framer-motion";
 
@@ -39,74 +39,90 @@ function PasswordResetInner() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4 }}
-      className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100"
-    >
+    <div className="min-h-screen bg-light-bg dark:bg-dark-bg flex items-center justify-center p-4">
       <motion.div
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="backdrop-blur-lg bg-white/80 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-purple-100 animate-fade-in"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-md"
       >
-        <img src="/logo/whisperrnote.png" alt="WhisperrNote Logo" className="mx-auto mb-6 w-20 h-20 rounded-full shadow-lg" />
-        <h2 className="text-3xl font-extrabold mb-2 text-center text-purple-700 tracking-tight">Reset Password</h2>
-        <p className="mb-6 text-center text-gray-500">Enter your new password below</p>
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 text-red-500 text-center animate-shake"
-          >
-            {error}
-          </motion.p>
-        )}
-        {message && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 text-green-600 text-center"
-          >
-            {message}
-          </motion.p>
-        )}
-        <form onSubmit={e => e.preventDefault()} className="space-y-4">
-          <motion.input
-            whileFocus={{ borderColor: "#a78bfa" }}
-            type="password"
-            placeholder="New Password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/90 placeholder-gray-400 transition"
-            autoComplete="new-password"
-          />
-          <motion.input
-            whileFocus={{ borderColor: "#a78bfa" }}
-            type="password"
-            placeholder="Confirm Password"
-            value={confirm}
-            onChange={e => setConfirm(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/90 placeholder-gray-400 transition"
-            autoComplete="new-password"
-          />
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            type="button"
-            onClick={handleReset}
-            disabled={loading}
-            className="w-full py-3 px-4 bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl font-bold shadow transition-all duration-200"
-          >
-            {loading ? "Resetting..." : "Reset Password"}
-          </motion.button>
-        </form>
-        <p className="mt-6 text-center text-gray-600">
-          <a href="/login" className="text-purple-600 hover:underline">Back to Login</a>
-        </p>
+        <div className="backdrop-blur-lg bg-light-card/95 dark:bg-dark-card/95 rounded-3xl shadow-3d-light dark:shadow-3d-dark border border-light-border/20 dark:border-dark-border/20 overflow-hidden">
+          <div className="p-6">
+            {/* Logo */}
+            <div className="flex justify-center mb-6">
+              <img 
+                src="/logo/whisperrnote.png" 
+                alt="WhisperrNote Logo" 
+                className="w-16 h-16 rounded-2xl shadow-card-light dark:shadow-card-dark" 
+              />
+            </div>
+            
+            {/* Header */}
+            <h2 className="text-2xl font-bold text-center text-foreground mb-2">Reset Password</h2>
+            <p className="text-center text-muted mb-6">Enter your new password below</p>
+            
+            {/* Error Message */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-100/80 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl mb-4 shadow-inner-light dark:shadow-inner-dark"
+              >
+                {error}
+              </motion.div>
+            )}
+            
+            {/* Success Message */}
+            {message && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-green-100/80 dark:bg-green-900/30 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl mb-4 shadow-inner-light dark:shadow-inner-dark"
+              >
+                {message}
+              </motion.div>
+            )}
+            
+            {/* Form */}
+            <form onSubmit={e => e.preventDefault()} className="space-y-4">
+              <input
+                type="password"
+                placeholder="New Password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
+                autoComplete="new-password"
+              />
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={confirm}
+                onChange={e => setConfirm(e.target.value)}
+                className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
+                autoComplete="new-password"
+              />
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="button"
+                onClick={handleReset}
+                disabled={loading}
+                className="w-full bg-accent hover:bg-accent-hover text-brown-darkest py-2 px-4 rounded-xl font-medium transition-colors shadow-3d-light dark:shadow-3d-dark disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {loading ? "Resetting..." : "Reset Password"}
+              </motion.button>
+            </form>
+            
+            {/* Back Link */}
+            <p className="mt-6 text-center">
+              <a href="/" className="text-accent hover:text-accent-hover transition-colors font-medium">
+                Back to Home
+              </a>
+            </p>
+          </div>
+        </div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 }
 
