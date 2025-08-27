@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { listNotes as appwriteListNotes, updateNote, deleteNote } from '@/lib/appwrite';
+import { listNotes as appwriteListNotes, getAllNotes, updateNote, deleteNote } from '@/lib/appwrite';
 import { useLoading } from '@/components/ui/LoadingContext';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useAI } from '@/components/ui/AIContext';
@@ -36,18 +36,20 @@ export default function NotesPage() {
 
   // Fetch notes action for the search hook
   const fetchNotesAction = async (queries: string[]) => {
-    const result = await appwriteListNotes(queries);
+    // For now, we'll fetch all notes and let the search hook handle filtering
+    // In a production app with many notes, you'd want server-side search
+    const result = await getAllNotes();
     return {
       documents: result.documents as Notes[],
-      total: result.documents.length
+      total: result.total
     };
   };
 
   // Search and pagination configuration
   const searchConfig = {
     searchFields: ['title', 'content', 'tags'],
-    localSearch: true, // Use frontend search for better UX with small datasets
-    threshold: 200, // Switch to backend search if more than 200 notes
+    localSearch: true, // Use frontend search for better UX with larger datasets
+    threshold: 500, // Switch to backend search if more than 500 notes (increased from 200)
     debounceMs: 300
   };
 
@@ -95,7 +97,7 @@ export default function NotesPage() {
       }
       
       try {
-        const res = await appwriteListNotes();
+        const res = await getAllNotes();
         const notes = Array.isArray(res.documents) ? (res.documents as Notes[]) : [];
         // Deduplicate notes by $id to prevent duplicate keys
         const uniqueNotes = notes.filter((note, index, arr) => 

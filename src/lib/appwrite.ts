@@ -170,7 +170,7 @@ export async function deleteNote(noteId: string) {
   return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId);
 }
 
-export async function listNotes(queries: any[] = []) {
+export async function listNotes(queries: any[] = [], limit: number = 100) {
   // By default, fetch all notes for the current user
   if (!queries.length) {
     const user = await getCurrentUser();
@@ -183,9 +183,60 @@ export async function listNotes(queries: any[] = []) {
     }
     queries = [Query.equal("userId", user.$id)];
   }
+  
+  // Add limit and ordering
+  const finalQueries = [
+    ...queries,
+    Query.limit(limit),
+    Query.orderDesc("$createdAt") // Order by creation date, newest first
+  ];
+  
   // Cast documents to Notes[]
-  const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, queries);
+  const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, finalQueries);
   return { ...res, documents: res.documents as unknown as Notes[] };
+}
+
+// New function to get all notes with cursor pagination
+export async function getAllNotes(): Promise<{ documents: Notes[], total: number }> {
+  const user = await getCurrentUser();
+  if (!user || !user.$id) {
+    return { documents: [], total: 0 };
+  }
+
+  let allNotes: Notes[] = [];
+  let cursor: string | undefined = undefined;
+  const batchSize = 100; // Appwrite's max limit
+  
+  while (true) {
+    const queries = [
+      Query.equal("userId", user.$id),
+      Query.limit(batchSize),
+      Query.orderDesc("$createdAt")
+    ];
+    
+    // Add cursor for pagination
+    if (cursor) {
+      queries.push(Query.cursorAfter(cursor));
+    }
+    
+    const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, queries);
+    const notes = res.documents as unknown as Notes[];
+    
+    allNotes = [...allNotes, ...notes];
+    
+    // If we got fewer results than requested, we've reached the end
+    if (notes.length < batchSize) {
+      break;
+    }
+    
+    // Set cursor to the last document's ID for next batch
+    cursor = notes[notes.length - 1].$id;
+  }
+  
+  return {
+    documents: allNotes,
+    total: allNotes.length
+  };
 }
 
 // --- TAGS CRUD ---
@@ -231,7 +282,7 @@ export async function deleteTag(tagId: string) {
   return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, tagId);
 }
 
-export async function listTags(queries: any[] = []) {
+export async function listTags(queries: any[] = [], limit: number = 100) {
   // By default, fetch all tags for the current user
   if (!queries.length) {
     const user = await getCurrentUser();
@@ -244,9 +295,57 @@ export async function listTags(queries: any[] = []) {
     }
     queries = [Query.equal("userId", user.$id)];
   }
+  
+  // Add limit and ordering
+  const finalQueries = [
+    ...queries,
+    Query.limit(limit),
+    Query.orderDesc("$createdAt")
+  ];
+  
   // Cast documents to Tags[]
-  const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, queries);
+  const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, finalQueries);
   return { ...res, documents: res.documents as unknown as Tags[] };
+}
+
+// New function to get all tags with cursor pagination
+export async function getAllTags(): Promise<{ documents: Tags[], total: number }> {
+  const user = await getCurrentUser();
+  if (!user || !user.$id) {
+    return { documents: [], total: 0 };
+  }
+
+  let allTags: Tags[] = [];
+  let cursor: string | undefined = undefined;
+  const batchSize = 100;
+  
+  while (true) {
+    const queries = [
+      Query.equal("userId", user.$id),
+      Query.limit(batchSize),
+      Query.orderDesc("$createdAt")
+    ];
+    
+    if (cursor) {
+      queries.push(Query.cursorAfter(cursor));
+    }
+    
+    const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, queries);
+    const tags = res.documents as unknown as Tags[];
+    
+    allTags = [...allTags, ...tags];
+    
+    if (tags.length < batchSize) {
+      break;
+    }
+    
+    cursor = tags[tags.length - 1].$id;
+  }
+  
+  return {
+    documents: allTags,
+    total: allTags.length
+  };
 }
 
 export async function listTagsByUser(userId: string) {
@@ -592,11 +691,13 @@ export default {
   updateNote,
   deleteNote,
   listNotes,
+  getAllNotes,
   createTag,
   getTag,
   updateTag,
   deleteTag,
   listTags,
+  getAllTags,
   listTagsByUser,
   createApiKey,
   getApiKey,
