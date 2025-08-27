@@ -131,10 +131,10 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="w-full h-48 p-4 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 resize-none transition-all duration-200"
-              maxLength={5000}
+              maxLength={65000}
             />
             <div className="text-xs text-light-fg/50 dark:text-dark-fg/50 text-right">
-              {content.length}/5000 characters
+              {content.length}/65000 characters
             </div>
           </div>
 

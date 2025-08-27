@@ -51,8 +51,13 @@ export default function NoteEditor({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           disabled={isSaving}
+          maxLength={65000}
           className="w-full min-h-[200px] p-4 border border-light-300 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-sm resize-vertical focus:outline-none focus:ring-2 focus:ring-accent"
         />
+
+        <div className="text-sm text-gray-500 text-right">
+          {content.length}/65000 characters
+        </div>
 
         <div className="flex justify-end">
           <Button
