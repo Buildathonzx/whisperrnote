@@ -4,16 +4,15 @@ import React, { useState } from 'react';
 import {
   Card, CardContent, Typography, CardActions, IconButton, Stack, Chip, Box,
   Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, Tooltip
+  Button
 } from '@mui/material';
-import { Edit, Delete, Share, AccessTime, PushPin, Archive, Lock, LockOpen, Visibility, MoreVert, Analytics } from '@mui/icons-material';
+import { Delete, Share, Lock, LockOpen, MoreVert, Analytics } from '@mui/icons-material';
 import type { Notes } from "@/types/appwrite-types";
 import { motion } from "framer-motion";
 const MotionCard = motion(Card);
 
 interface NoteComponentProps {
   note: Notes;
-  onEdit?: (note: Notes) => void;
   onDelete?: (noteId: string) => void;
   onShare?: (noteId: string) => void;
   onTogglePublic?: (noteId: string, isPublic: boolean) => void;
@@ -21,7 +20,6 @@ interface NoteComponentProps {
 
 export default function NoteComponent({
   note,
-  onEdit,
   onDelete,
   onShare,
   onTogglePublic
@@ -226,7 +224,7 @@ export default function NoteComponent({
         <DialogTitle>Share Note</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Share "{note.title}" with other users or generate a public link.
+            Share &quot;{note.title}&quot; with other users or generate a public link.
           </Typography>
           {/* TODO: Implement sharing UI */}
         </DialogContent>

@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardActions, Typography, IconButton, Box, Chip, Menu, MenuItem } from '@mui/material';
 import { Share, MoreVert, Lock, LockOpen, Edit, Delete } from '@mui/icons-material';
-import { useBlockchain } from './providers/BlockchainProvider';
-import { decryptNote } from '@/lib/encryption/crypto';
-import { format } from 'date-fns';
 import Link from 'next/link';
 
 interface NoteCardProps {
@@ -66,7 +63,7 @@ export default function NoteCard({
         </Box>
 
         <Typography variant="body2" color="text.secondary">
-          Last updated: {format(updatedAt, 'PPP')}
+          Last updated: {new Date(updatedAt).toLocaleDateString()}
         </Typography>
 
         {sharedWith.length > 0 && (

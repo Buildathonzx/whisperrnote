@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { 
   HomeIcon, 
   PlusCircleIcon, 
@@ -33,7 +34,7 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
     <footer className={`fixed bottom-4 left-4 right-4 z-50 md:hidden ${className}`}>
       <nav className="bg-light-card dark:bg-dark-card border-2 border-light-border dark:border-dark-border rounded-2xl px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.12),0_4px_8px_rgba(0,0,0,0.08)] backdrop-blur-sm">
         <div className="flex justify-around items-center">
-          <a 
+          <Link 
             href="/notes" 
             className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
               isActive('/notes') 
@@ -42,7 +43,7 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
             }`}
           >
             <HomeIcon className="h-6 w-6" />
-          </a>
+          </Link>
           
           <a 
             href="/tags" 
@@ -55,7 +56,7 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
             <TagIcon className="h-6 w-6" />
           </a>
           
-          <a 
+          <Link 
             href="/blog" 
             className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
               isActive('/blog') 
@@ -64,7 +65,7 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
             }`}
           >
             <DocumentTextIcon className="h-6 w-6" />
-          </a>
+          </Link>
           
           <a 
             href="/extensions" 

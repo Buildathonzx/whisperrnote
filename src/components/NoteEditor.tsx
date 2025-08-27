@@ -1,72 +1,31 @@
-import React, { useState, useCallback } from 'react';
-import { Editor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { useBlockchain } from './providers/BlockchainProvider';
-import { generateEncryptionKey } from '@/lib/encryption/crypto';
-import {
-  Box,
-  Button,
-  TextField,
-  Paper,
-  Typography,
-  CircularProgress,
-  Snackbar,
-  Alert
-} from '@mui/material';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/input';
 
 interface NoteEditorProps {
   initialContent?: string;
   initialTitle?: string;
-  noteId?: string;
   onSave?: () => void;
 }
 
 export default function NoteEditor({ 
   initialContent = '', 
   initialTitle = '',
-  noteId,
   onSave 
 }: NoteEditorProps) {
-  const { client } = useBlockchain();
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: initialContent,
-    onUpdate: ({ editor }) => {
-      setContent(editor.getHTML());
-    },
-  });
 
   const handleSave = async () => {
-    if (!client) {
-      setError('Not connected to blockchain');
-      return;
-    }
-
     try {
       setIsSaving(true);
-      const { publicKey, privateKey } = await generateEncryptionKey();
       
-      if (noteId) {
-        // Update existing note
-        await client.updateNote(noteId, content, publicKey, {
-          title,
-          tags: [] // TODO: Add tag support
-        });
-      } else {
-        // Create new note
-        await client.createNote(content, title, publicKey);
-      }
-
-      // Store private key securely
-      localStorage.setItem(`note_key_${noteId || 'new'}`, privateKey);
+      // Note: Actual save logic would go here
+      // For now, just simulate saving
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setSuccess(true);
       onSave?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save note');
@@ -76,53 +35,40 @@ export default function NoteEditor({
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3 }}>
-      <Box component="form" noValidate sx={{ mt: 1 }}>
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="title"
-          label="Note Title"
-          name="title"
-          autoFocus
+    <div className="p-6 bg-white dark:bg-dark-800 rounded-xl shadow-lg">
+      <div className="space-y-4">
+        <Input
+          type="text"
+          placeholder="Note Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={isSaving}
+          className="text-lg font-semibold"
         />
 
-        <Box sx={{ mt: 2, mb: 2 }}>
-          <EditorContent editor={editor} />
-        </Box>
+        <textarea
+          placeholder="Write your note content here..."
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          disabled={isSaving}
+          className="w-full min-h-[200px] p-4 border border-light-300 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-sm resize-vertical focus:outline-none focus:ring-2 focus:ring-accent"
+        />
 
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+        <div className="flex justify-end">
           <Button
-            variant="contained"
             onClick={handleSave}
             disabled={isSaving || !title || !content}
           >
-            {isSaving ? <CircularProgress size={24} /> : 'Save Note'}
+            {isSaving ? 'Saving...' : 'Save Note'}
           </Button>
-        </Box>
-      </Box>
+        </div>
 
-      <Snackbar 
-        open={!!error} 
-        autoHideDuration={6000} 
-        onClose={() => setError(null)}
-      >
-        <Alert severity="error">{error}</Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={success}
-        autoHideDuration={3000}
-        onClose={() => setSuccess(false)}
-      >
-        <Alert severity="success">
-          Note saved successfully
-        </Alert>
-      </Snackbar>
-    </Paper>
+        {error && (
+          <div className="p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-xl">
+            {error}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

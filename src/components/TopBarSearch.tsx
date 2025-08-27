@@ -15,7 +15,7 @@ export function TopBarSearch({ className = '' }: TopBarSearchProps) {
   const [isSearching, setIsSearching] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -92,15 +92,16 @@ export function TopBarSearch({ className = '' }: TopBarSearchProps) {
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     
-    // Clear previous timeout
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
     // Debounce search
-    searchTimeoutRef.current = setTimeout(() => {
-      performSearch(value);
-    }, 300);
+    if (value.trim()) {
+      searchTimeoutRef.current = setTimeout(() => {
+        performSearch(value);
+      }, 300);
+    }
   };
 
   const handleClear = () => {
@@ -215,7 +216,7 @@ export function TopBarSearch({ className = '' }: TopBarSearchProps) {
             <div className="p-6 text-center">
               <MagnifyingGlassIcon className="h-12 w-12 text-muted mx-auto mb-3" />
               <p className="text-sm text-muted">
-                No notes found for "{searchQuery}"
+                No notes found for &quot;{searchQuery}&quot;
               </p>
               <p className="text-xs text-muted mt-1">
                 Try different keywords or check your spelling

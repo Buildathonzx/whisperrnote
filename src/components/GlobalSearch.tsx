@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   Box, 
   TextField, 
-  Popper, 
   Paper, 
   List, 
   ListItem, 
@@ -13,7 +12,6 @@ import {
   Typography,
   InputAdornment,
   Chip,
-  Divider,
   IconButton
 } from '@mui/material';
 import { 
@@ -21,8 +19,7 @@ import {
   NoteOutlined, 
   FolderOutlined, 
   LocalOfferOutlined,
-  Close,
-  AccessTime 
+  Close
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import debounce from 'lodash/debounce';
@@ -40,7 +37,6 @@ export default function GlobalSearch() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   const handleSearch = debounce(async (term: string) => {
     if (!term) {
@@ -101,19 +97,21 @@ export default function GlobalSearch() {
           handleSearch(e.target.value);
         }}
         onFocus={() => setIsOpen(true)}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Search />
-            </InputAdornment>
-          ),
-          endAdornment: searchTerm && (
-            <InputAdornment position="end">
-              <IconButton size="small" onClick={clearSearch}>
-                <Close />
-              </IconButton>
-            </InputAdornment>
-          )
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+            endAdornment: searchTerm && (
+              <InputAdornment position="end">
+                <IconButton size="small" onClick={clearSearch}>
+                  <Close />
+                </IconButton>
+              </InputAdornment>
+            )
+          }
         }}
         sx={{
           '& .MuiOutlinedInput-root': {
@@ -151,38 +149,12 @@ export default function GlobalSearch() {
                 borderRadius: 2
               }}
             >
-              {!searchTerm && recentSearches.length > 0 && (
-                <>
-                  <Box sx={{ p: 2, pb: 1 }}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Recent Searches
-                    </Typography>
-                  </Box>
-                  <List dense>
-                    {recentSearches.map((term, index) => (
-                      <ListItem 
-                        key={index}
-                        button
-                        onClick={() => setSearchTerm(term)}
-                      >
-                        <ListItemIcon>
-                          <AccessTime fontSize="small" />
-                        </ListItemIcon>
-                        <ListItemText primary={term} />
-                      </ListItem>
-                    ))}
-                  </List>
-                  <Divider />
-                </>
-              )}
-
               {results.length > 0 ? (
                 <List>
                   {results.map((result) => (
                     <ListItem 
                       key={result.id}
-                      button
-                      sx={{ py: 1.5 }}
+                      sx={{ py: 1.5, cursor: 'pointer' }}
                     >
                       <ListItemIcon>
                         {getIcon(result.type)}
@@ -231,7 +203,7 @@ export default function GlobalSearch() {
               ) : searchTerm && (
                 <Box sx={{ p: 3, textAlign: 'center' }}>
                   <Typography color="text.secondary">
-                    No results found for "{searchTerm}"
+                    No results found for &quot;{searchTerm}&quot;
                   </Typography>
                 </Box>
               )}

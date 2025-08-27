@@ -332,7 +332,7 @@ export default function GlobalSearch({
           ) : query ? (
             <Box sx={{ p: 3, textAlign: 'center' }}>
               <Typography color="text.secondary">
-                No results found for "{query}"
+                No results found for &quot;{query}&quot;
               </Typography>
             </Box>
           ) : (

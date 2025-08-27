@@ -53,7 +53,7 @@ export default function NotFound() {
               </div>
               {/* Speech bubble */}
               <div className="absolute -top-8 -right-4 bg-foreground text-background px-3 py-1 rounded-2xl text-xs font-medium">
-                "Where am I?"
+                &quot;Where am I?&quot;
                 <div className="absolute bottom-0 left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground transform translate-y-full"></div>
               </div>
             </div>
@@ -67,7 +67,7 @@ export default function NotFound() {
           {/* Description */}
           <p className="text-foreground/70 mb-8 text-lg leading-relaxed">
             This page seems to have wandered off like a rogue whisper note. 
-            Maybe it's hiding in someone else's collection? 🕵️‍♀️
+            Maybe it&apos;s hiding in someone else&apos;s collection? 🕵️‍♀️
           </p>
 
           {/* Action buttons */}
@@ -90,7 +90,7 @@ export default function NotFound() {
           {/* Fun footer message */}
           <div className="mt-8 pt-6 border-t border-border">
             <p className="text-sm text-foreground/50 italic">
-              "Not all who wander are lost... but this page definitely is." 📝✨
+              &quot;Not all who wander are lost... but this page definitely is.&quot; 📝✨
             </p>
           </div>
         </div>

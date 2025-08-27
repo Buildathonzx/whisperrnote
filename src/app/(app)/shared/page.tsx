@@ -62,7 +62,7 @@ export default function SharedNotesPage() {
               No shared notes yet
             </h3>
             <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6 max-w-md">
-              When others share notes with you, they'll appear here. Start collaborating by sharing your own notes!
+              When others share notes with you, they&apos;ll appear here. Start collaborating by sharing your own notes!
             </p>
           </div>
         ) : (

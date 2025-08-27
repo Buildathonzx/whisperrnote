@@ -51,14 +51,19 @@ export default function TagManager({ selectedTags, onChange }: TagManagerProps) 
           onChange(newValue.map(tag => tag.$id));
         }}
         renderTags={(value, getTagProps) =>
-          value.map((option, index) => (
-            <Chip
-              variant="outlined"
-              label={option.name}
-              style={{ backgroundColor: option.color || undefined }}
-              {...getTagProps({ index })}
-            />
-          ))
+          value.map((option, index) => {
+            const tagProps = getTagProps({ index });
+            const { key: _key, ...restProps } = tagProps;
+            return (
+              <Chip
+                key={option.$id}
+                variant="outlined"
+                label={option.name}
+                style={{ backgroundColor: option.color || undefined }}
+                {...restProps}
+              />
+            );
+          })
         }
         renderInput={(params) => (
           <TextField
