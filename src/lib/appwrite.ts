@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Storage, Functions, ID, Query } from 'appwrite';
+import { Client, Account, Databases, Storage, Functions, ID, Query, Permission, Role } from 'appwrite';
 import type {
   Users,
   Notes,
@@ -46,7 +46,7 @@ export const APPWRITE_BUCKET_EXTENSION_ASSETS = process.env.NEXT_PUBLIC_APPWRITE
 export const APPWRITE_BUCKET_BACKUPS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_BACKUPS!;
 export const APPWRITE_BUCKET_TEMP_UPLOADS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_TEMP_UPLOADS!;
 
-export { client, account, databases, storage, functions, ID, Query };
+export { client, account, databases, storage, functions, ID, Query, Permission, Role };
 
 // --- AUTHENTICATION ---
 
@@ -143,6 +143,14 @@ export async function createNote(data: Partial<Notes>) {
   // Create note with proper timestamps
   const now = new Date().toISOString();
   const cleanData = cleanDocumentData(data);
+  
+  // Set initial permissions - private by default (only owner can access)
+  const initialPermissions = [
+    Permission.read(Role.user(user.$id)),
+    Permission.update(Role.user(user.$id)),
+    Permission.delete(Role.user(user.$id))
+  ];
+  
   const doc = await databases.createDocument(
     APPWRITE_DATABASE_ID,
     APPWRITE_COLLECTION_ID_NOTES,
@@ -153,7 +161,8 @@ export async function createNote(data: Partial<Notes>) {
       id: null, // id will be set after creation
       createdAt: now,
       updatedAt: now
-    }
+    },
+    initialPermissions
   );
   
   // Patch the note to set id = $id (Appwrite does not set this automatically)

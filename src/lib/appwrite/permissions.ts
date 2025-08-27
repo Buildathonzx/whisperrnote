@@ -3,9 +3,16 @@
  * Handles public/private notes and sharing functionality
  */
 
-import { Permission, Role } from 'appwrite';
+import { Permission, Role, Client, Databases } from 'appwrite';
 import { getCurrentUser, databases, APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES } from '../appwrite';
 import type { Notes } from '@/types/appwrite-types';
+
+// Create a separate client for guest/public access
+const guestClient = new Client()
+  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
+  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
+
+const guestDatabases = new Databases(guestClient);
 
 /**
  * Permission levels for notes
@@ -95,23 +102,31 @@ export function getShareableUrl(noteId: string): string {
 /**
  * Validate note access for public sharing
  * Returns the note if accessible, null if not found or not accessible
+ * Uses a guest client to ensure unauthenticated access works
  */
 export async function validatePublicNoteAccess(noteId: string): Promise<Notes | null> {
   try {
-    // Try to get the note directly
-    const note = await databases.getDocument(
+    console.log('Attempting to access public note:', noteId);
+    
+    // Use guest client to access public notes without authentication
+    const note = await guestDatabases.getDocument(
       APPWRITE_DATABASE_ID, 
       APPWRITE_COLLECTION_ID_NOTES, 
       noteId
     ) as unknown as Notes;
 
+    console.log('Successfully retrieved note:', note.title, 'isPublic:', note.isPublic);
+
     // Check if note is public
     if (!isNotePublic(note)) {
+      console.log('Note is not public, denying access');
       return null;
     }
 
+    console.log('Note is public, granting access');
     return note;
   } catch (error) {
+    console.error('Error accessing public note:', error);
     // Note doesn't exist or no access
     return null;
   }
