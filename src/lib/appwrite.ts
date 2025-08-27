@@ -429,6 +429,7 @@ export async function createComment(noteId: string, content: string) {
     noteId,
     content,
     userId: user.$id,
+    createdAt: new Date().toISOString(),
   };
   return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, ID.unique(), data);
 }
@@ -640,7 +641,241 @@ export async function listPublicNotes() {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, [Query.equal('isPublic', true)]);
 }
 
-// --- PUBLIC SHARING ---
+// --- PRIVATE SHARING ---
+
+export async function shareNoteWithUser(noteId: string, email: string, permission: 'read' | 'write' | 'admin' = 'read') {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("User not authenticated");
+
+    // First check if note exists and user owns it
+    const note = await getNote(noteId);
+    if (note.userId !== currentUser.$id) {
+      throw new Error("Only note owner can share notes");
+    }
+
+    // Find user by email (check in Users collection)
+    const usersList = await databases.listDocuments(
+      APPWRITE_DATABASE_ID, 
+      APPWRITE_COLLECTION_ID_USERS, 
+      [Query.equal('email', email)]
+    );
+
+    let targetUserId: string;
+    if (usersList.documents.length === 0) {
+      throw new Error(`No user found with email: ${email}`);
+    } else {
+      const userId = usersList.documents[0].id || usersList.documents[0].$id;
+      if (!userId) throw new Error(`Invalid user data for email: ${email}`);
+      targetUserId = userId;
+    }
+
+    // Check if already shared
+    const existingShares = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_ID_COLLABORATORS,
+      [
+        Query.equal('noteId', noteId),
+        Query.equal('userId', targetUserId)
+      ]
+    );
+
+    if (existingShares.documents.length > 0) {
+      // Update existing permission
+      await databases.updateDocument(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_COLLECTION_ID_COLLABORATORS,
+        existingShares.documents[0].$id,
+        { permission }
+      );
+    } else {
+      // Create new sharing record
+      await databases.createDocument(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_COLLECTION_ID_COLLABORATORS,
+        ID.unique(),
+        {
+          noteId,
+          userId: targetUserId,
+          permission,
+          invitedAt: new Date().toISOString(),
+          accepted: true // Auto-accept for now
+        }
+      );
+    }
+
+    return { success: true, message: `Note shared with ${email}` };
+  } catch (error: any) {
+    console.error('shareNoteWithUser error:', error);
+    throw new Error(error.message || 'Failed to share note');
+  }
+}
+
+export async function getSharedUsers(noteId: string) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("User not authenticated");
+
+    // Get all collaborations for this note
+    const collaborations = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_ID_COLLABORATORS,
+      [Query.equal('noteId', noteId)]
+    );
+
+    // Get user details for each collaborator
+    const sharedUsers = await Promise.all(
+      collaborations.documents.map(async (collab: any) => {
+        try {
+          const user = await databases.getDocument(
+            APPWRITE_DATABASE_ID,
+            APPWRITE_COLLECTION_ID_USERS,
+            collab.userId
+          );
+          return {
+            id: collab.userId,
+            email: user.email,
+            permission: collab.permission,
+            collaborationId: collab.$id
+          };
+        } catch (error) {
+          console.error('Error fetching user details:', error);
+          return null;
+        }
+      })
+    );
+
+    return sharedUsers.filter(user => user !== null);
+  } catch (error: any) {
+    console.error('getSharedUsers error:', error);
+    throw new Error(error.message || 'Failed to get shared users');
+  }
+}
+
+export async function removeNoteSharing(noteId: string, targetUserId: string) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("User not authenticated");
+
+    // Check if user owns the note
+    const note = await getNote(noteId);
+    if (note.userId !== currentUser.$id) {
+      throw new Error("Only note owner can remove sharing");
+    }
+
+    // Find and delete the collaboration record
+    const collaborations = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_ID_COLLABORATORS,
+      [
+        Query.equal('noteId', noteId),
+        Query.equal('userId', targetUserId)
+      ]
+    );
+
+    if (collaborations.documents.length > 0) {
+      await databases.deleteDocument(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_COLLECTION_ID_COLLABORATORS,
+        collaborations.documents[0].$id
+      );
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('removeNoteSharing error:', error);
+    throw new Error(error.message || 'Failed to remove sharing');
+  }
+}
+
+export async function getSharedNotes(): Promise<{ documents: Notes[], total: number }> {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return { documents: [], total: 0 };
+
+    // Get all collaborations where current user is a collaborator
+    const collaborations = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_ID_COLLABORATORS,
+      [Query.equal('userId', currentUser.$id)]
+    );
+
+    // Get note details for each collaboration
+    const sharedNotes = await Promise.all(
+      collaborations.documents.map(async (collab: any) => {
+        try {
+          const note = await databases.getDocument(
+            APPWRITE_DATABASE_ID,
+            APPWRITE_COLLECTION_ID_NOTES,
+            collab.noteId
+          ) as unknown as Notes;
+          
+          // Add sharing info to note
+          (note as any).sharedPermission = collab.permission;
+          (note as any).sharedAt = collab.invitedAt;
+          
+          return note;
+        } catch (error) {
+          console.error('Error fetching shared note:', error);
+          return null;
+        }
+      })
+    );
+
+    const validNotes = sharedNotes.filter(note => note !== null) as Notes[];
+    
+    return {
+      documents: validNotes,
+      total: validNotes.length
+    };
+  } catch (error: any) {
+    console.error('getSharedNotes error:', error);
+    return { documents: [], total: 0 };
+  }
+}
+
+export async function getNoteWithSharing(noteId: string): Promise<(Notes & { isSharedWithUser?: boolean, sharePermission?: string, sharedBy?: any }) | null> {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return null;
+
+    const note = await getNote(noteId);
+    
+    // Check if note is shared with current user
+    const collaboration = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_ID_COLLABORATORS,
+      [
+        Query.equal('noteId', noteId),
+        Query.equal('userId', currentUser.$id)
+      ]
+    );
+
+    let sharedBy = null;
+    if (collaboration.documents.length > 0 && note.userId && note.userId !== currentUser.$id) {
+      // Get details about who shared this note
+      try {
+        sharedBy = await databases.getDocument(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_COLLECTION_ID_USERS,
+          note.userId
+        );
+      } catch (error) {
+        console.error('Error fetching note owner details:', error);
+      }
+    }
+
+    return {
+      ...note,
+      isSharedWithUser: collaboration.documents.length > 0,
+      sharePermission: collaboration.documents.length > 0 ? collaboration.documents[0].permission : undefined,
+      sharedBy: sharedBy ? { name: sharedBy.name, email: sharedBy.email } : null
+    };
+  } catch (error) {
+    console.error('getNoteWithSharing error:', error);
+    return null;
+  }
+}
 
 export async function getPublicNote(noteId: string): Promise<Notes | null> {
   try {
@@ -793,6 +1028,12 @@ export default {
   searchNotesByTag,
   listNotesByUser,
   listPublicNotes,
+  getPublicNote,
+  shareNoteWithUser,
+  getSharedUsers,
+  removeNoteSharing,
+  getSharedNotes,
+  getNoteWithSharing,
   uploadProfilePicture,
   getProfilePicture,
   deleteProfilePicture,

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './Card';
 import { ContextMenu } from './ContextMenu';
 import { useDynamicSidebar } from './DynamicSidebar';
 import { NoteDetailSidebar } from './NoteDetailSidebar';
+import { ShareNoteModal } from '../ShareNoteModal';
 import { toggleNoteVisibility, getShareableUrl, isNotePublic } from '@/lib/appwrite/permissions';
 import type { Notes } from '@/types/appwrite-types';
 import { 
@@ -12,7 +13,8 @@ import {
   DocumentDuplicateIcon,
   GlobeAltIcon,
   LockClosedIcon,
-  ClipboardDocumentIcon
+  ClipboardDocumentIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline';
 
 interface NoteCardProps {
@@ -23,6 +25,7 @@ interface NoteCardProps {
 
 const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
   const { openSidebar } = useDynamicSidebar();
 
   const handleRightClick = (e: React.MouseEvent) => {
@@ -93,6 +96,11 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
     // You could add a toast notification here
   };
 
+  const handleShareWith = () => {
+    setShowShareModal(true);
+    setContextMenu(null);
+  };
+
   const noteIsPublic = isNotePublic(note);
 
   const contextMenuItems = [
@@ -112,6 +120,11 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
       onClick: handleDuplicate
     },
     // Sharing options
+    {
+      label: 'Share With',
+      icon: <UserGroupIcon className="w-4 h-4" />,
+      onClick: handleShareWith
+    },
     {
       label: noteIsPublic ? 'Make Private' : 'Make Public',
       icon: noteIsPublic ? <LockClosedIcon className="w-4 h-4" /> : <GlobeAltIcon className="w-4 h-4" />,
@@ -183,6 +196,15 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
           items={contextMenuItems}
+        />
+      )}
+
+      {showShareModal && note.$id && (
+        <ShareNoteModal
+          isOpen={showShareModal}
+          onOpenChange={setShowShareModal}
+          noteId={note.$id}
+          noteTitle={note.title || 'Untitled Note'}
         />
       )}
     </>
