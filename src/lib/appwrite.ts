@@ -89,6 +89,16 @@ export async function getEmailVerificationStatus(): Promise<boolean> {
   }
 }
 
+// --- PASSWORD RESET ---
+
+export async function sendPasswordResetEmail(email: string, redirectUrl: string) {
+  return account.createRecovery(email, redirectUrl);
+}
+
+export async function completePasswordReset(userId: string, secret: string, password: string) {
+  return account.updateRecovery(userId, secret, password);
+}
+
 // --- USERS CRUD ---
 
 // Helper function to clean document properties
@@ -570,6 +580,8 @@ export default {
   sendEmailVerification,
   completeEmailVerification,
   getEmailVerificationStatus,
+  sendPasswordResetEmail,
+  completePasswordReset,
   createUser,
   getUser,
   updateUser,

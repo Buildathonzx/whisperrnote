@@ -1,7 +1,7 @@
 "use client";
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { account } from "@/lib/appwrite";
+import { completePasswordReset } from "@/lib/appwrite";
 import { motion } from "framer-motion";
 
 // Extract the inner component that uses useSearchParams
@@ -29,7 +29,7 @@ function PasswordResetInner() {
     setError("");
     setMessage("");
     try {
-      await account.updateRecovery(userId, secret, password);
+      await completePasswordReset(userId, secret, password);
       setMessage("Password reset successful. You can now log in.");
     } catch (err: any) {
       setError(err?.message || "Failed to reset password");

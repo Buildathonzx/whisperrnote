@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, listNotes, updateAIMode, getAIMode } from "@/lib/appwrite";
+import { account, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useAuth } from "@/components/ui/AuthContext";
@@ -39,6 +39,8 @@ export default function SettingsPage() {
     passkeySupported: false,
     walletAvailable: false
   });
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const { userTier } = useSubscription();
   const { openOverlay, closeOverlay } = useOverlay();
   const router = useRouter();
@@ -141,6 +143,33 @@ export default function SettingsPage() {
     } catch {
       setError("Failed to remove authentication method");
     }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!user?.email) {
+      setError("User email not found");
+      return;
+    }
+
+    try {
+      setError("");
+      setSuccess("");
+      
+      const resetUrl = `${window.location.origin}/reset`;
+      await sendPasswordResetEmail(user.email, resetUrl);
+      
+      setResetEmailSent(true);
+      setSuccess(`Password reset email sent to ${user.email}`);
+    } catch (err: any) {
+      setError(err?.message || "Failed to send password reset email");
+    }
+  };
+
+  const handleCancelPasswordReset = () => {
+    setShowPasswordReset(false);
+    setResetEmailSent(false);
+    setError("");
+    setSuccess("");
   };
 
   const handleEditProfile = () => {
@@ -310,18 +339,74 @@ const SettingsTab = ({ user, settings, isVerified, error, success, onUpdate, onS
           </div>
         </div>
         
-        <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-          <div>
-            <p className="text-sm font-medium text-foreground">Account Password</p>
-            <p className="text-xs text-foreground/60">Reset or set your account password</p>
+        <div className="p-3 bg-card rounded-lg border border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">Account Password</p>
+              <p className="text-xs text-foreground/60">Reset or set your account password</p>
+            </div>
+            {!showPasswordReset ? (
+              <Button 
+                variant="secondary" 
+                size="sm"
+                onClick={() => setShowPasswordReset(true)}
+              >
+                Reset
+              </Button>
+            ) : null}
           </div>
-          <Button 
-            variant="secondary" 
-            size="sm"
-            onClick={() => router.push('/reset')}
-          >
-            Reset
-          </Button>
+          
+          {/* Password Reset Flow */}
+          {showPasswordReset && (
+            <div className="mt-4 pt-4 border-t border-border">
+              {!resetEmailSent ? (
+                <div className="space-y-3">
+                  <div className="p-3 bg-yellow-100/50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium mb-1">
+                      Send password reset link to:
+                    </p>
+                    <p className="text-sm text-accent font-medium">{user?.email}</p>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={handlePasswordReset}
+                      className="flex-1"
+                    >
+                      Yes, Send Reset Link
+                    </Button>
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      onClick={handleCancelPasswordReset}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="p-3 bg-green-100/50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
+                    <p className="text-sm text-green-800 dark:text-green-300">
+                      Password reset email sent! Check your inbox and follow the instructions.
+                    </p>
+                  </div>
+                  
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={handleCancelPasswordReset}
+                    className="w-full"
+                  >
+                    Done
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

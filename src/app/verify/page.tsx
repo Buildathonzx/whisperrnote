@@ -50,13 +50,16 @@ function EmailVerifyInner() {
         setUser(u as unknown as Users);
         if (u.emailVerification) {
           setIsVerified(true);
-          router.replace("/notes");
+          // If already verified and no params, redirect to notes
+          if (!userId && !secret) {
+            setTimeout(() => router.replace("/notes"), 2000);
+          }
         }
       })
       .catch(() => {
         showAuthModal();
       });
-  }, [router]);
+  }, [router, userId, secret]);
 
   const handleSendVerification = async () => {
     setLoading(true);
@@ -158,6 +161,14 @@ function EmailVerifyInner() {
             <h2 className="text-2xl font-bold text-center text-foreground mb-2">
               {user?.name ? `Welcome, ${user.name}` : "Verify Email"}
             </h2>
+            
+            {/* Show user email */}
+            {user?.email && (
+              <p className="text-center text-accent font-medium mb-2">
+                {user.email}
+              </p>
+            )}
+            
             <p className="text-center text-muted mb-6">
               {isVerified
                 ? "Your email is already verified. Redirecting to notes..."
@@ -185,6 +196,17 @@ function EmailVerifyInner() {
                 className="bg-green-100/80 dark:bg-green-900/30 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl mb-4 shadow-inner-light dark:shadow-inner-dark"
               >
                 {message}
+              </motion.div>
+            )}
+            
+            {/* Success Message for Already Verified */}
+            {isVerified && !userId && !secret && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-green-100/80 dark:bg-green-900/30 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl mb-4 shadow-inner-light dark:shadow-inner-dark"
+              >
+                Your email is already verified! Redirecting to your notes...
               </motion.div>
             )}
             
