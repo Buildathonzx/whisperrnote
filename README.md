@@ -159,18 +159,7 @@ npm install && npm run build
 
 <div align="center">
 
-*See WhisperRNote's AI and blockchain technologies in action*
-
-<img src="public/demo/1.png" alt="AI Enhancement Demo" width="45%" style="margin: 10px"/>
-<img src="public/demo/2.png" alt="Blockchain Security" width="45%" style="margin: 10px"/>
-
-<img src="public/demo/3.png" alt="Cross-Platform Sync" width="45%" style="margin: 10px"/>
-<img src="public/demo/4.png" alt="Smart Organization" width="45%" style="margin: 10px"/>
-
-<img src="public/demo/5.png" alt="Real-time Collaboration" width="45%" style="margin: 10px"/>
-<img src="public/demo/6.png" alt="Advanced Analytics" width="45%" style="margin: 10px"/>
-
-</div>
+*See Whisperrnote's AI and blockchain technologies in action*
 
 ---
 
