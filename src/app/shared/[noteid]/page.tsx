@@ -4,28 +4,36 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { validatePublicNoteAccess } from '@/lib/appwrite/permissions';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
+import { useAuth } from '@/components/ui/AuthContext';
 import type { Notes } from '@/types/appwrite-types';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   ShareIcon,
   EyeIcon,
   ClockIcon,
-  UserIcon,
+  UserCircleIcon,
   TagIcon,
   DocumentTextIcon,
   ExclamationTriangleIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  Cog6ToothIcon,
+  ArrowRightOnRectangleIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
 
 export default function SharedNotePage() {
   const params = useParams();
   const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
   const [note, setNote] = useState<Notes | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   const noteId = params.noteid as string;
+  const isOwner = note && user && note.userId === user.$id;
 
   useEffect(() => {
     async function loadSharedNote() {
@@ -63,6 +71,20 @@ export default function SharedNotePage() {
     router.push('/');
   };
 
+  const handleGoToNotes = () => {
+    router.push('/notes');
+  };
+
+  const handleLogout = () => {
+    setIsAccountMenuOpen(false);
+    logout();
+  };
+
+  const handleViewAnalytics = () => {
+    // TODO: Navigate to analytics page when implemented
+    console.log('Analytics not implemented yet');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-light-bg dark:bg-dark-bg flex items-center justify-center">
@@ -87,10 +109,23 @@ export default function SharedNotePage() {
                 </div>
                 <h1 className="text-xl font-bold text-light-fg dark:text-dark-fg">WhisperRNote</h1>
               </div>
-              <Button onClick={handleJoinWhisperRNote} className="gap-2">
-                Join WhisperRNote
-                <ArrowRightIcon className="h-4 w-4" />
-              </Button>
+              
+              <div className="flex items-center gap-3">
+                {isAuthenticated ? (
+                  <Button onClick={handleGoToNotes} className="gap-2">
+                    My Notes
+                    <ArrowRightIcon className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <>
+                    <ThemeToggle size="sm" />
+                    <Button onClick={handleJoinWhisperRNote} className="gap-2">
+                      Join WhisperRNote
+                      <ArrowRightIcon className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </header>
@@ -109,16 +144,33 @@ export default function SharedNotePage() {
             </div>
 
             <div className="bg-light-card dark:bg-dark-card rounded-2xl p-8 border-2 border-light-border dark:border-dark-border max-w-md mx-auto">
-              <h2 className="text-xl font-semibold text-light-fg dark:text-dark-fg mb-4">
-                Create Your Own Notes
-              </h2>
-              <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6">
-                Join WhisperRNote to create, organize, and share your own notes with the world.
-              </p>
-              <Button onClick={handleJoinWhisperRNote} className="w-full gap-2">
-                Get Started Free
-                <ArrowRightIcon className="h-4 w-4" />
-              </Button>
+              {isAuthenticated ? (
+                <>
+                  <h2 className="text-xl font-semibold text-light-fg dark:text-dark-fg mb-4">
+                    Create Your Own Notes
+                  </h2>
+                  <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6">
+                    Continue creating and sharing your thoughts with WhisperRNote.
+                  </p>
+                  <Button onClick={handleGoToNotes} className="w-full gap-2">
+                    Go to My Notes
+                    <ArrowRightIcon className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-semibold text-light-fg dark:text-dark-fg mb-4">
+                    Create Your Own Notes
+                  </h2>
+                  <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6">
+                    Join WhisperRNote to create, organize, and share your own notes with the world.
+                  </p>
+                  <Button onClick={handleJoinWhisperRNote} className="w-full gap-2">
+                    Get Started Free
+                    <ArrowRightIcon className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </main>
@@ -127,34 +179,108 @@ export default function SharedNotePage() {
   }
 
   return (
-    <div className="min-h-screen bg-light-bg dark:bg-dark-bg">
-      {/* Header */}
-      <header className="border-b border-light-border dark:border-dark-border bg-white/50 dark:bg-black/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-                <DocumentTextIcon className="h-5 w-5 text-white" />
+      <div className="min-h-screen bg-light-bg dark:bg-dark-bg">
+        {/* Header */}
+        <header className="border-b border-light-border dark:border-dark-border bg-white/50 dark:bg-black/50 backdrop-blur-sm sticky top-0 z-10">
+          <div className="max-w-6xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              {/* Left: Logo */}
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
+                  <DocumentTextIcon className="h-5 w-5 text-white" />
+                </div>
+                <h1 className="text-xl font-bold text-light-fg dark:text-dark-fg">WhisperRNote</h1>
+                <Badge variant="secondary" className="gap-1">
+                  <ShareIcon className="h-3 w-3" />
+                  Shared
+                </Badge>
               </div>
-              <h1 className="text-xl font-bold text-light-fg dark:text-dark-fg">WhisperRNote</h1>
-              <Badge variant="secondary" className="gap-1">
-                <ShareIcon className="h-3 w-3" />
-                Shared
-              </Badge>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="secondary" onClick={handleCopyLink} className="gap-2">
-                <ShareIcon className="h-4 w-4" />
-                Copy Link
-              </Button>
-              <Button onClick={handleJoinWhisperRNote} className="gap-2">
-                Join WhisperRNote
-                <ArrowRightIcon className="h-4 w-4" />
-              </Button>
+
+              {/* Right: Dynamic actions based on auth status */}
+              <div className="flex items-center gap-3">
+                {isAuthenticated ? (
+                  <>
+                    {/* Authenticated User Actions */}
+                    <Button variant="secondary" onClick={handleCopyLink} className="gap-2">
+                      <ShareIcon className="h-4 w-4" />
+                      Copy Link
+                    </Button>
+                    
+                    {/* Account Menu */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card hover:bg-light-card/80 dark:hover:bg-dark-card/80 transition-all duration-200"
+                      >
+                        <UserCircleIcon className="h-5 w-5 text-light-fg dark:text-dark-fg" />
+                        <span className="hidden sm:inline text-sm font-medium text-light-fg dark:text-dark-fg">
+                          {user?.name || user?.email || 'Account'}
+                        </span>
+                      </button>
+
+                      {/* Account Dropdown */}
+                      {isAccountMenuOpen && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-10"
+                            onClick={() => setIsAccountMenuOpen(false)}
+                          />
+                          <div className="absolute top-full right-0 mt-2 w-48 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-lg z-20 py-2">
+                            <button
+                              onClick={() => {
+                                setIsAccountMenuOpen(false);
+                                handleGoToNotes();
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-3 text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg transition-colors duration-200"
+                            >
+                              <DocumentTextIcon className="h-4 w-4" />
+                              <span className="text-sm font-medium">My Notes</span>
+                            </button>
+                            
+                            <a
+                              href="/settings"
+                              onClick={() => setIsAccountMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-3 text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg transition-colors duration-200"
+                            >
+                              <Cog6ToothIcon className="h-4 w-4" />
+                              <span className="text-sm font-medium">Settings</span>
+                            </a>
+                            
+                            <div className="flex items-center justify-between px-4 py-3">
+                              <span className="text-sm font-medium text-light-fg dark:text-dark-fg">Theme</span>
+                              <ThemeToggle size="sm" />
+                            </div>
+                            
+                            <div className="border-t border-light-border dark:border-dark-border my-1"></div>
+                            
+                            <button
+                              onClick={handleLogout}
+                              className="w-full flex items-center gap-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+                            >
+                              <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                              <span className="text-sm font-medium">Logout</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Unauthenticated User Actions */}
+                    <div className="flex items-center gap-3">
+                      <ThemeToggle size="sm" />
+                      <Button onClick={handleJoinWhisperRNote} className="gap-2">
+                        Join WhisperRNote
+                        <ArrowRightIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
       {/* Note Content */}
       <main className="max-w-4xl mx-auto px-6 py-8">
@@ -214,19 +340,70 @@ export default function SharedNotePage() {
           </footer>
         </article>
 
-        {/* Call to Action */}
+        {/* Analytics Section - Only show for note owner */}
+        {isOwner && (
+          <div className="mt-8">
+            <div className="bg-light-card dark:bg-dark-card rounded-2xl border border-light-border dark:border-dark-border p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-light-fg dark:text-dark-fg">Your Shared Note Analytics</h2>
+                <Button 
+                  variant="secondary" 
+                  onClick={handleViewAnalytics}
+                  className="gap-2"
+                  disabled
+                >
+                  <ChartBarIcon className="h-4 w-4" />
+                  View Analytics
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-light-bg dark:bg-dark-bg rounded-xl p-4 border border-light-border dark:border-dark-border">
+                  <div className="text-2xl font-bold text-light-fg dark:text-dark-fg">-</div>
+                  <div className="text-sm text-light-fg/60 dark:text-dark-fg/60">Total Visits</div>
+                  <div className="text-xs text-light-fg/40 dark:text-dark-fg/40 mt-1">Coming soon</div>
+                </div>
+                
+                <div className="bg-light-bg dark:bg-dark-bg rounded-xl p-4 border border-light-border dark:border-dark-border">
+                  <div className="text-2xl font-bold text-light-fg dark:text-dark-fg">-</div>
+                  <div className="text-sm text-light-fg/60 dark:text-dark-fg/60">Distinct Views</div>
+                  <div className="text-xs text-light-fg/40 dark:text-dark-fg/40 mt-1">Coming soon</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Call to Action - Dynamic based on auth status */}
         <div className="mt-12 text-center">
           <div className="bg-gradient-to-r from-accent/10 to-accent/5 rounded-2xl p-8 border border-accent/20">
-            <h2 className="text-2xl font-bold text-light-fg dark:text-dark-fg mb-4">
-              Create Your Own Notes
-            </h2>
-            <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6 max-w-lg mx-auto">
-              Join thousands of users who trust WhisperRNote to capture, organize, and share their thoughts.
-            </p>
-            <Button onClick={handleJoinWhisperRNote} size="lg" className="gap-2">
-              Start Writing for Free
-              <ArrowRightIcon className="h-5 w-5" />
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <h2 className="text-2xl font-bold text-light-fg dark:text-dark-fg mb-4">
+                  Share Your Thoughts
+                </h2>
+                <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6 max-w-lg mx-auto">
+                  Create and share your own notes with the world. Join the conversation.
+                </p>
+                <Button onClick={handleGoToNotes} size="lg" className="gap-2">
+                  Create Your Notes
+                  <ArrowRightIcon className="h-5 w-5" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold text-light-fg dark:text-dark-fg mb-4">
+                  Create Your Own Notes
+                </h2>
+                <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6 max-w-lg mx-auto">
+                  Join thousands of users who trust WhisperRNote to capture, organize, and share their thoughts.
+                </p>
+                <Button onClick={handleJoinWhisperRNote} size="lg" className="gap-2">
+                  Start Writing for Free
+                  <ArrowRightIcon className="h-5 w-5" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </main>
