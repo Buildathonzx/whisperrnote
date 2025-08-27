@@ -1,11 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Notes } from '@/types/appwrite-types';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, UserIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
 import { Modal } from './modal';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
+import { getNoteWithSharing } from '@/lib/appwrite';
+
+interface NoteDetailSidebarProps {
+  note: Notes;
+  onUpdate: (updatedNote: Notes) => void;
+  onDelete: (noteId: string) => void;
+}
+
+interface EnhancedNote extends Notes {
+  isSharedWithUser?: boolean;
+  sharePermission?: string;
+  sharedBy?: { name: string; email: string } | null;
+}
 
 interface NoteDetailSidebarProps {
   note: Notes;
@@ -19,6 +32,25 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [tags, setTags] = useState(note.tags?.join(', ') || '');
+  const [enhancedNote, setEnhancedNote] = useState<EnhancedNote | null>(null);
+
+  // Load enhanced note with sharing information
+  useEffect(() => {
+    const loadEnhancedNote = async () => {
+      if (note.$id) {
+        try {
+          const enhanced = await getNoteWithSharing(note.$id);
+          if (enhanced) {
+            setEnhancedNote(enhanced);
+          }
+        } catch (error) {
+          console.error('Error loading note sharing info:', error);
+        }
+      }
+    };
+
+    loadEnhancedNote();
+  }, [note.$id]);
 
   const handleSave = () => {
     const updatedNote = {
@@ -142,6 +174,23 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
           <div className="text-sm text-light-fg/60 dark:text-dark-fg/60">
             Updated: {formatNoteUpdatedDate(note)}
           </div>
+          
+          {/* Sharing Information */}
+          {enhancedNote?.isSharedWithUser && enhancedNote?.sharedBy && (
+            <div className="pt-2 border-t border-light-border dark:border-dark-border">
+              <div className="flex items-center gap-2 text-sm text-light-fg/60 dark:text-dark-fg/60">
+                <UserIcon className="h-4 w-4" />
+                <span>
+                  Shared by {enhancedNote.sharedBy.name || enhancedNote.sharedBy.email}
+                </span>
+              </div>
+              {enhancedNote.sharePermission && (
+                <div className="text-xs text-light-fg/50 dark:text-dark-fg/50 mt-1">
+                  Permission: {enhancedNote.sharePermission}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -165,7 +214,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
       >
         <div className="space-y-4">
           <p className="text-light-fg dark:text-dark-fg">
-            Are you sure you want to delete "{note.title || 'this note'}"? This action cannot be undone.
+            Are you sure you want to delete &quot;{note.title || 'this note'}&quot;? This action cannot be undone.
           </p>
           <div className="flex gap-2">
             <Button

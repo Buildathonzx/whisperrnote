@@ -76,9 +76,9 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
       showToast(`Note shared with ${email}`);
       setEmail('');
       await loadSharedUsers(); // Refresh the list
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to share note:', error);
-      showToast(error.message || 'Failed to share note', 'error');
+      showToast((error as Error).message || 'Failed to share note', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -89,9 +89,9 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
       await removeNoteSharing(noteId, sharedUserId);
       showToast(`Removed sharing with ${userEmail}`);
       await loadSharedUsers(); // Refresh the list
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to remove sharing:', error);
-      showToast(error.message || 'Failed to remove sharing', 'error');
+      showToast((error as Error).message || 'Failed to remove sharing', 'error');
     }
   };
 
@@ -104,7 +104,7 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     >
       <div className="space-y-4">
         <p className="text-sm text-light-600 dark:text-dark-400 mb-4">
-          Share "{noteTitle}" with other users by email
+          Share &quot;{noteTitle}&quot; with other users by email
         </p>
 
         {/* Email Input */}
