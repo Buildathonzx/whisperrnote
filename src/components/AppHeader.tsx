@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { UserCircleIcon, ShareIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/components/ui/AuthContext';
 import { useAI } from '@/components/ui/AIContext';
 import { TopBarSearch } from '@/components/TopBarSearch';
@@ -91,15 +91,6 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
               
               {/* Menu */}
               <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-2xl shadow-lg z-20 py-2">
-                <a
-                  href="/shared"
-                  onClick={() => setIsAccountMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-foreground hover:bg-background transition-colors duration-200"
-                >
-                  <ShareIcon className="h-4 w-4" />
-                  <span className="text-sm font-medium">Shared</span>
-                </a>
-                
                 <a
                   href="/settings"
                   onClick={() => setIsAccountMenuOpen(false)}
