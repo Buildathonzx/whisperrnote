@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { listNotes as appwriteListNotes } from '@/lib/appwrite';
+import { listNotes as appwriteListNotes, updateNote, deleteNote } from '@/lib/appwrite';
 import { useLoading } from '@/components/ui/LoadingContext';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useAI } from '@/components/ui/AIContext';
@@ -20,6 +20,8 @@ import CreateNoteForm from './CreateNoteForm';
 import { MobileBottomNav } from '@/components/Navigation';
 import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
 import { MobileFAB } from '@/components/MobileFAB';
+import { useSidebar } from '@/components/ui/SidebarContext';
+import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { aiServiceInstance as aiService } from '@/lib/ai-service';
 
 export default function NotesPage() {
@@ -28,6 +30,8 @@ export default function NotesPage() {
   const { showLoading, hideLoading } = useLoading();
   const { openOverlay, closeOverlay } = useOverlay();
   const { isGenerating, setIsGenerating, setAIGenerateHandler } = useAI();
+  const { isCollapsed } = useSidebar();
+  const { isOpen: isDynamicSidebarOpen } = useDynamicSidebar();
   const searchParams = useSearchParams();
 
   // Fetch notes action for the search hook
@@ -177,8 +181,47 @@ export default function NotesPage() {
     });
   };
 
+  const handleNoteUpdated = async (updatedNote: Notes) => {
+    try {
+      await updateNote(updatedNote.$id || '', updatedNote);
+      setAllNotes((prevNotes) =>
+        prevNotes.map(note => 
+          note.$id === updatedNote.$id ? updatedNote : note
+        )
+      );
+    } catch (error) {
+      console.error('Failed to update note:', error);
+    }
+  };
+
+  const handleNoteDeleted = async (noteId: string) => {
+    try {
+      await deleteNote(noteId);
+      setAllNotes((prevNotes) => 
+        prevNotes.filter(note => note.$id !== noteId)
+      );
+    } catch (error) {
+      console.error('Failed to delete note:', error);
+    }
+  };
+
   const handleCreateNoteClick = () => {
     openOverlay(<CreateNoteForm onNoteCreated={handleNoteCreated} />);
+  };
+
+  // Calculate available space and determine optimal card size
+  const getGridClasses = () => {
+    // Determine available space based on sidebar states
+    if (!isCollapsed && isDynamicSidebarOpen) {
+      // Both sidebars open - very constrained space
+      return 'grid gap-3 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]';
+    } else if (!isCollapsed || isDynamicSidebarOpen) {
+      // One sidebar open - moderate space
+      return 'grid gap-3 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]';
+    } else {
+      // Full space available - optimal distribution
+      return 'grid gap-4 grid-cols-[repeat(auto-fill,minmax(240px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(320px,1fr))]';
+    }
   };
 
   // Get tags from existing notes for filtering
@@ -211,9 +254,8 @@ export default function NotesPage() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <Button onClick={handleCreateNoteClick} className="gap-2">
+          <Button onClick={handleCreateNoteClick} size="icon">
             <PlusCircleIcon className="h-5 w-5" />
-            Create Note
           </Button>
         </div>
       </header>
@@ -299,9 +341,14 @@ export default function NotesPage() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className={getGridClasses()}>
           {paginatedNotes.map((note) => (
-            <NoteCard key={note.$id} note={note} />
+            <NoteCard 
+              key={note.$id} 
+              note={note} 
+              onUpdate={handleNoteUpdated}
+              onDelete={handleNoteDeleted}
+            />
           ))}
         </div>
       )}

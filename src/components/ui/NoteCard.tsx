@@ -47,7 +47,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
   const handleDuplicate = () => {
     const duplicatedNote: Notes = {
       ...note,
-      $id: undefined,
+      $id: '',
       title: `${note.title} (Copy)`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
