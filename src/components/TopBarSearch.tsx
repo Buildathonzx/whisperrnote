@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Notes } from '@/types/appwrite-types';
+import { formatNoteCreatedDate } from '@/lib/date-utils';
 
 interface TopBarSearchProps {
   className?: string;
@@ -205,7 +206,7 @@ export function TopBarSearch({ className = '' }: TopBarSearchProps) {
                         )}
                       </div>
                       <div className="ml-3 text-xs text-muted">
-                        {new Date(note.$createdAt).toLocaleDateString()}
+                        {formatNoteCreatedDate(note, { year: 'numeric', month: 'short', day: 'numeric' })}
                       </div>
                     </div>
                   </a>

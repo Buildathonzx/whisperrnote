@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { getNote, getUser } from '@/lib/appwrite';
 import type { Notes, Users } from '@/types/appwrite-types';
+import { formatNoteCreatedDate } from '@/lib/date-utils';
 import { Button } from '@/components/ui/Button';
 
 export default function BlogDetailPage() {
@@ -61,7 +62,7 @@ export default function BlogDetailPage() {
             </div>
             <div className="flex items-center justify-between mb-6 text-sm text-foreground/60">
               <p>By {author?.name || 'Unknown'}</p>
-              <p>Published on {note.createdAt ? new Date(note.createdAt).toLocaleDateString() : ''}</p>
+              <p>Published on {formatNoteCreatedDate(note, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
             </div>
             <div className="flex gap-3 mb-8 flex-wrap">
               {note.tags?.map((tag, index) => (

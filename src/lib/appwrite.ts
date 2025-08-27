@@ -108,7 +108,13 @@ function cleanDocumentData<T>(data: Partial<T>): Record<string, any> {
 }
 
 export async function createUser(data: Partial<Users>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_USERS, ID.unique(), cleanDocumentData(data));
+  const now = new Date().toISOString();
+  const userData = {
+    ...cleanDocumentData(data),
+    createdAt: now,
+    updatedAt: now
+  };
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_USERS, ID.unique(), userData);
 }
 
 export async function getUser(userId: string): Promise<Users> {
@@ -133,7 +139,9 @@ export async function createNote(data: Partial<Notes>) {
   // Get current user for userId
   const user = await getCurrentUser();
   if (!user || !user.$id) throw new Error("User not authenticated");
-  // Create note, set userId and id
+  
+  // Create note with proper timestamps
+  const now = new Date().toISOString();
   const cleanData = cleanDocumentData(data);
   const doc = await databases.createDocument(
     APPWRITE_DATABASE_ID,
@@ -142,9 +150,12 @@ export async function createNote(data: Partial<Notes>) {
     {
       ...cleanData,
       userId: user.$id,
-      id: null // id will be set after creation
+      id: null, // id will be set after creation
+      createdAt: now,
+      updatedAt: now
     }
   );
+  
   // Patch the note to set id = $id (Appwrite does not set this automatically)
   await databases.updateDocument(
     APPWRITE_DATABASE_ID,
@@ -152,6 +163,7 @@ export async function createNote(data: Partial<Notes>) {
     doc.$id,
     { id: doc.$id }
   );
+  
   // Return the updated document as Notes type
   return await getNote(doc.$id);
 }
@@ -163,7 +175,14 @@ export async function getNote(noteId: string): Promise<Notes> {
 export async function updateNote(noteId: string, data: Partial<Notes>) {
   // Do not allow updating id or userId directly
   const { id, userId, ...rest } = data;
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, rest) as Promise<Notes>;
+  
+  // Add updatedAt timestamp
+  const updatedData = {
+    ...rest,
+    updatedAt: new Date().toISOString()
+  };
+  
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, updatedData) as Promise<Notes>;
 }
 
 export async function deleteNote(noteId: string) {
@@ -245,7 +264,9 @@ export async function createTag(data: Partial<Tags>) {
   // Get current user for userId
   const user = await getCurrentUser();
   if (!user || !user.$id) throw new Error("User not authenticated");
-  // Create tag with userId
+  
+  // Create tag with proper timestamps
+  const now = new Date().toISOString();
   const cleanData = cleanDocumentData(data);
   const doc = await databases.createDocument(
     APPWRITE_DATABASE_ID,
@@ -254,9 +275,11 @@ export async function createTag(data: Partial<Tags>) {
     {
       ...cleanData,
       userId: user.$id,
-      id: null // id will be set after creation
+      id: null, // id will be set after creation
+      createdAt: now
     }
   );
+  
   // Patch the tag to set id = $id (Appwrite does not set this automatically)
   await databases.updateDocument(
     APPWRITE_DATABASE_ID,
@@ -264,6 +287,7 @@ export async function createTag(data: Partial<Tags>) {
     doc.$id,
     { id: doc.$id }
   );
+  
   // Return the updated document as Tags type
   return await getTag(doc.$id);
 }

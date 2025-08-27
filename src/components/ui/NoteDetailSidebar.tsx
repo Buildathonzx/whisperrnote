@@ -5,6 +5,7 @@ import { Notes } from '@/types/appwrite-types';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
 import { Modal } from './modal';
+import { formatNoteCreatedDate, formatNoteUpdatedDate, noteHasBeenUpdated } from '@/lib/date-utils';
 
 interface NoteDetailSidebarProps {
   note: Notes;
@@ -41,16 +42,6 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   const handleDelete = () => {
     onDelete(note.$id || '');
     setShowDeleteConfirm(false);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   };
 
   return (
@@ -146,11 +137,11 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
         {/* Metadata */}
         <div className="pt-4 border-t border-light-border dark:border-dark-border space-y-2">
           <div className="text-sm text-light-fg/60 dark:text-dark-fg/60">
-            Created: {formatDate(note.createdAt || '')}
+            Created: {formatNoteCreatedDate(note)}
           </div>
-          {note.updatedAt && note.updatedAt !== note.createdAt && (
+          {noteHasBeenUpdated(note) && (
             <div className="text-sm text-light-fg/60 dark:text-dark-fg/60">
-              Updated: {formatDate(note.updatedAt)}
+              Updated: {formatNoteUpdatedDate(note)}
             </div>
           )}
         </div>

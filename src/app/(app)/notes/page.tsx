@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { listNotes as appwriteListNotes, getAllNotes, updateNote, deleteNote } from '@/lib/appwrite';
+import { getAllNotes, updateNote, deleteNote } from '@/lib/appwrite';
 import { useLoading } from '@/components/ui/LoadingContext';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useAI } from '@/components/ui/AIContext';
@@ -35,7 +35,7 @@ export default function NotesPage() {
   const searchParams = useSearchParams();
 
   // Fetch notes action for the search hook
-  const fetchNotesAction = async (queries: string[]) => {
+  const fetchNotesAction = async () => {
     // For now, we'll fetch all notes and let the search hook handle filtering
     // In a production app with many notes, you'd want server-side search
     const result = await getAllNotes();
@@ -172,15 +172,22 @@ export default function NotesPage() {
     }
   };
 
-  const handleNoteCreated = (newNote: Notes) => {
-    setAllNotes((prevNotes) => {
-      // Check if note already exists to prevent duplicates
-      const exists = prevNotes.some(note => note.$id === newNote.$id);
-      if (exists) {
-        return prevNotes;
-      }
-      return [newNote, ...prevNotes];
-    });
+  const handleNoteCreated = async (newNote: Notes) => {
+    // Refresh the entire notes list from the database to ensure sync
+    try {
+      const { documents: refreshedNotes } = await getAllNotes();
+      setAllNotes(refreshedNotes);
+    } catch (error) {
+      console.error('Failed to refresh notes after creation:', error);
+      // Fallback to adding the note locally if refresh fails
+      setAllNotes((prevNotes) => {
+        const exists = prevNotes.some(note => note.$id === newNote.$id);
+        if (exists) {
+          return prevNotes;
+        }
+        return [newNote, ...prevNotes];
+      });
+    }
   };
 
   const handleNoteUpdated = async (updatedNote: Notes) => {

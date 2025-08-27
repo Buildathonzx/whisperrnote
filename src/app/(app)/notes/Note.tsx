@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import { Delete, Share, Lock, LockOpen, MoreVert, Analytics } from '@mui/icons-material';
 import type { Notes } from "@/types/appwrite-types";
+import { formatNoteUpdatedDate } from '@/lib/date-utils';
 import { motion } from "framer-motion";
 const MotionCard = motion(Card);
 
@@ -25,27 +26,9 @@ export default function NoteComponent({
   onTogglePublic
 }: NoteComponentProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
-
-  // Reading time calculation (basic: 200 words per minute)
-  const readingTimeMinutes = note.content
-    ? Math.max(1, Math.ceil(note.content.replace(/<[^>]*>/g, '').split(/\s+/).length / 200))
-    : 1;
-
-  const formatDate = (dateString?: string | null) => {
-    if (!dateString) return '';
-    const d = new Date(dateString);
-    // fallback for invalid date
-    if (isNaN(d.getTime())) return '';
-    return d.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  const isEncrypted = note.parentNoteId || false;
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -169,7 +152,7 @@ export default function NoteComponent({
         <CardActions sx={{ justifyContent: 'space-between', px: 2, py: 1 }}>
           <Typography variant="caption" color="text.secondary">
             {/* Use correct property name from Notes type */}
-            {formatDate(note.updatedAt)}
+            {formatNoteUpdatedDate(note)}
           </Typography>
           
           <Stack direction="row" spacing={0.5}>

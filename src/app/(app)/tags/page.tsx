@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Tags } from '@/types/appwrite-types';
 import { listTags, createTag, updateTag, deleteTag } from '@/lib/appwrite';
 import { useAuth } from '@/components/ui/AuthContext';
+import { formatDateWithFallback } from '@/lib/date-utils';
 import { ID } from 'appwrite';
 
 export default function TagsPage() {
@@ -325,7 +326,7 @@ export default function TagsPage() {
 
                   {/* Created Date */}
                   <div className="text-xs text-foreground/50 mb-4">
-                    Created {new Date(tag.createdAt || '').toLocaleDateString()}
+                    Created {formatDateWithFallback(tag.createdAt, { year: 'numeric', month: 'short', day: 'numeric' })}
                   </div>
 
                   {/* Actions */}
