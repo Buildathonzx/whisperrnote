@@ -72,16 +72,20 @@ export function noteHasBeenUpdated(note: Notes): boolean {
   const createdDate = note.createdAt || note.$createdAt;
   const updatedDate = note.updatedAt || note.$updatedAt;
   
+  // If we don't have both dates, don't show updated
   if (!createdDate || !updatedDate) {
     return false;
   }
   
-  // Consider updated if dates are different (accounting for small time differences)
+  // For legacy notes, if they only have $createdAt and $updatedAt, 
+  // show updated if they're different by more than 1 second
   const created = new Date(createdDate).getTime();
   const updated = new Date(updatedDate).getTime();
   
-  // Allow for small differences (1 second) due to potential timing differences
-  return Math.abs(updated - created) > 1000;
+  // Show updated field if:
+  // 1. Dates are significantly different (more than 1 second)
+  // 2. OR we have custom updatedAt field (indicating manual update)
+  return Math.abs(updated - created) > 1000 || !!note.updatedAt;
 }
 
 /**

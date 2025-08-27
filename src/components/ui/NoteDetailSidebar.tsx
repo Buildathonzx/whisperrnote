@@ -5,7 +5,7 @@ import { Notes } from '@/types/appwrite-types';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
 import { Modal } from './modal';
-import { formatNoteCreatedDate, formatNoteUpdatedDate, noteHasBeenUpdated } from '@/lib/date-utils';
+import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
 
 interface NoteDetailSidebarProps {
   note: Notes;
@@ -139,11 +139,9 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
           <div className="text-sm text-light-fg/60 dark:text-dark-fg/60">
             Created: {formatNoteCreatedDate(note)}
           </div>
-          {noteHasBeenUpdated(note) && (
-            <div className="text-sm text-light-fg/60 dark:text-dark-fg/60">
-              Updated: {formatNoteUpdatedDate(note)}
-            </div>
-          )}
+          <div className="text-sm text-light-fg/60 dark:text-dark-fg/60">
+            Updated: {formatNoteUpdatedDate(note)}
+          </div>
         </div>
       </div>
 
