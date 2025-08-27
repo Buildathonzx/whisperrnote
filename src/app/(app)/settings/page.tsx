@@ -238,6 +238,11 @@ export default function SettingsPage() {
                 router={router}
                 authMethods={authMethods}
                 onRemoveAuthMethod={handleRemoveAuthMethod}
+                showPasswordReset={showPasswordReset}
+                setShowPasswordReset={setShowPasswordReset}
+                resetEmailSent={resetEmailSent}
+                handlePasswordReset={handlePasswordReset}
+                handleCancelPasswordReset={handleCancelPasswordReset}
               />
             )}
             {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} currentAIMode={currentAIMode} userTier={userTier} onAIModeChange={handleAIModeChange} />}
@@ -294,7 +299,23 @@ const ProfileTab = ({ user, profilePicUrl, notes, onEditProfile }: any) => (
   </div>
 );
 
-const SettingsTab = ({ user, settings, isVerified, error, success, onUpdate, onSettingChange, router, authMethods, onRemoveAuthMethod }: any) => (
+const SettingsTab = ({ 
+  user, 
+  settings, 
+  isVerified, 
+  error, 
+  success, 
+  onUpdate, 
+  onSettingChange, 
+  router, 
+  authMethods, 
+  onRemoveAuthMethod,
+  showPasswordReset,
+  setShowPasswordReset,
+  resetEmailSent,
+  handlePasswordReset,
+  handleCancelPasswordReset
+}: any) => (
   <div className="space-y-8">
     <h1 className="text-foreground text-3xl font-bold">Settings</h1>
     
