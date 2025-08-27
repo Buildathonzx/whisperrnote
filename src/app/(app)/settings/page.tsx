@@ -9,7 +9,7 @@ import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
-import { isWalletAvailable, getWalletAvailability } from "@/lib/appwrite/auth/wallet";
+import { getWalletAvailability } from "@/lib/appwrite/auth/wallet";
 import { isICPEnabled } from "@/integrations/icp";
 
 type TabType = 'profile' | 'settings' | 'preferences' | 'integrations';
@@ -22,6 +22,10 @@ interface AuthMethods {
   } | null;
   passkeySupported: boolean;
   walletAvailable: boolean;
+}
+
+interface EnabledIntegrations {
+  icp: boolean;
 }
 
 export default function SettingsPage() {
@@ -39,6 +43,9 @@ export default function SettingsPage() {
     mfaFactors: null,
     passkeySupported: false,
     walletAvailable: false
+  });
+  const [enabledIntegrations, setEnabledIntegrations] = useState<EnabledIntegrations>({
+    icp: false
   });
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
@@ -93,6 +100,16 @@ export default function SettingsPage() {
           });
         } catch {
           console.error('Failed to load auth methods');
+        }
+
+        // Load enabled integrations
+        try {
+          const icpEnabled = isICPEnabled();
+          setEnabledIntegrations({
+            icp: icpEnabled
+          });
+        } catch {
+          console.error('Failed to load integrations');
         }
       } catch {
         showAuthModal();
@@ -200,7 +217,8 @@ export default function SettingsPage() {
   const tabs = [
     { id: 'profile' as TabType, label: 'Profile' },
     { id: 'settings' as TabType, label: 'Settings' },
-    { id: 'preferences' as TabType, label: 'Preferences' }
+    { id: 'preferences' as TabType, label: 'Preferences' },
+    ...(Object.values(enabledIntegrations).some(enabled => enabled) ? [{ id: 'integrations' as TabType, label: 'Integrations' }] : [])
   ];
 
   return (
@@ -247,6 +265,7 @@ export default function SettingsPage() {
               />
             )}
             {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} currentAIMode={currentAIMode} userTier={userTier} onAIModeChange={handleAIModeChange} />}
+            {activeTab === 'integrations' && <IntegrationsTab enabledIntegrations={enabledIntegrations} />}
           </div>
         </div>
       </main>
@@ -684,6 +703,61 @@ const PreferencesTab = ({ settings, onSettingChange, onUpdate, error, success, c
         </div>
       </form>
     )}
+  </div>
+);
+
+const IntegrationsTab = ({ enabledIntegrations }: { enabledIntegrations: EnabledIntegrations }) => (
+  <div className="space-y-8">
+    <h1 className="text-foreground text-3xl font-bold">Integrations</h1>
+    
+    <div className="space-y-6">
+      {enabledIntegrations.icp && (
+        <div className="p-6 bg-background border border-border rounded-xl">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">ICP</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-medium text-foreground">Internet Computer Protocol</h3>
+                <p className="text-sm text-foreground/70">Blockchain integration for decentralized note storage</p>
+              </div>
+            </div>
+            <span className="text-xs px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full">
+              Enabled
+            </span>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="p-3 bg-card rounded-lg border border-border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Smart Contract Sync</p>
+                  <p className="text-xs text-foreground/60">Notes are automatically synced to ICP blockchain</p>
+                </div>
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              </div>
+            </div>
+            
+            <div className="p-3 bg-card rounded-lg border border-border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Decentralized Storage</p>
+                  <p className="text-xs text-foreground/60">Your notes are stored on a decentralized network</p>
+                </div>
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {!Object.values(enabledIntegrations).some(enabled => enabled) && (
+        <div className="text-center py-12">
+          <p className="text-foreground/60">No integrations are currently enabled.</p>
+        </div>
+      )}
+    </div>
   </div>
 );
 
