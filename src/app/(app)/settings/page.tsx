@@ -9,7 +9,7 @@ import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
-import { isWalletAvailable } from "@/lib/appwrite/auth/wallet";
+import { isWalletAvailable, getWalletAvailability } from "@/lib/appwrite/auth/wallet";
 
 type TabType = 'profile' | 'settings' | 'preferences';
 
@@ -78,7 +78,7 @@ export default function SettingsPage() {
         // Load authentication methods from backend
         try {
           const passkeySupported = await isPlatformAuthenticatorAvailable();
-          const walletAvailable = isWalletAvailable();
+          const walletAvailability = getWalletAvailability();
           
           // Get MFA factors from backend instead of client storage
           const mfaFactors = await account.listMfaFactors();
@@ -86,7 +86,7 @@ export default function SettingsPage() {
           setAuthMethods({
             mfaFactors,
             passkeySupported,
-            walletAvailable
+            walletAvailable: walletAvailability.available
           });
         } catch {
           console.error('Failed to load auth methods');

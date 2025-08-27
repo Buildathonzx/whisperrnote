@@ -99,46 +99,72 @@ function generateSignatureMessage(address: string, timestamp: number): string {
 }
 
 /**
- * Connect to a wallet and get the user's address
+ * Connect to a wallet with device-specific logic
  */
 export async function connectWallet(): Promise<{ address: string; provider: string; chainId?: number }> {
   try {
+    const device = getDeviceInfo();
     const provider = getEthereumProvider();
+    
+    // If no provider detected, handle based on device type
     if (!provider) {
+      if (device.isMobile) {
+        // On mobile, try to open wallet app
+        const availability = getWalletAvailability();
+        if (availability.deepLink) {
+          // Open wallet app
+          window.open(availability.deepLink, '_blank');
+          // Wait a bit and check again for provider
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const newProvider = getEthereumProvider();
+          if (!newProvider) {
+            throw new Error('Please open this page in your mobile wallet app (MetaMask, Coinbase Wallet, etc.)');
+          }
+          return await connectWithProvider(newProvider);
+        }
+      }
+      
       throw new Error('No Ethereum wallet provider found. Please install MetaMask, Coinbase Wallet, or another compatible wallet.');
     }
 
-    // Request account access
-    const accounts = await provider.request({
-      method: 'eth_requestAccounts'
-    });
-
-    if (!accounts || accounts.length === 0) {
-      throw new Error('No accounts found. Please unlock your wallet.');
-    }
-
-    const address = accounts[0];
-    const providerName = detectWalletProvider(provider);
-
-    // Get chain ID
-    let chainId: number | undefined;
-    try {
-      const chainIdHex = await provider.request({ method: 'eth_chainId' });
-      chainId = parseInt(chainIdHex, 16);
-    } catch (error) {
-      console.warn('Failed to get chain ID:', error);
-    }
-
-    return {
-      address: address.toLowerCase(),
-      provider: providerName,
-      chainId
-    };
+    return await connectWithProvider(provider);
 
   } catch (error: any) {
     console.error('Wallet connection failed:', error);
     throw new Error(`Wallet connection failed: ${error.message}`);
   }
+}
+
+/**
+ * Connect with a specific provider (extracted for reuse)
+ */
+async function connectWithProvider(provider: EthereumProvider): Promise<{ address: string; provider: string; chainId?: number }> {
+  // Request account access
+  const accounts = await provider.request({
+    method: 'eth_requestAccounts'
+  });
+
+  if (!accounts || accounts.length === 0) {
+    throw new Error('No accounts found. Please unlock your wallet.');
+  }
+
+  const address = accounts[0];
+  const providerName = detectWalletProvider(provider);
+
+  // Get chain ID
+  let chainId: number | undefined;
+  try {
+    const chainIdHex = await provider.request({ method: 'eth_chainId' });
+    chainId = parseInt(chainIdHex, 16);
+  } catch (error) {
+    console.warn('Failed to get chain ID:', error);
+  }
+
+  return {
+    address: address.toLowerCase(),
+    provider: providerName,
+    chainId
+  };
 }
 
 /**
@@ -363,10 +389,126 @@ export function removeWallet(address: string): void {
 }
 
 /**
- * Check if wallet is available in browser
+ * Device and platform detection utilities
+ */
+interface DeviceInfo {
+  isMobile: boolean;
+  isDesktop: boolean;
+  isIOS: boolean;
+  isAndroid: boolean;
+  browserName: string;
+}
+
+function getDeviceInfo(): DeviceInfo {
+  if (typeof window === 'undefined') {
+    return {
+      isMobile: false,
+      isDesktop: true,
+      isIOS: false,
+      isAndroid: false,
+      browserName: 'unknown'
+    };
+  }
+
+  const userAgent = navigator.userAgent.toLowerCase();
+  const isMobile = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+  const isIOS = /iphone|ipad|ipod/i.test(userAgent);
+  const isAndroid = /android/i.test(userAgent);
+  
+  let browserName = 'unknown';
+  if (userAgent.includes('chrome')) browserName = 'chrome';
+  else if (userAgent.includes('firefox')) browserName = 'firefox';
+  else if (userAgent.includes('safari')) browserName = 'safari';
+  else if (userAgent.includes('edge')) browserName = 'edge';
+  
+  return {
+    isMobile,
+    isDesktop: !isMobile,
+    isIOS,
+    isAndroid,
+    browserName
+  };
+}
+
+/**
+ * Wallet availability status with detailed info
+ */
+export interface WalletAvailability {
+  available: boolean;
+  browserExtension: boolean;
+  mobileApp: boolean;
+  hardwareSupported: boolean;
+  recommendedAction: 'connect' | 'install' | 'openApp' | 'connectHardware';
+  message: string;
+  deepLink?: string;
+}
+
+/**
+ * Check comprehensive wallet availability
+ */
+export function getWalletAvailability(): WalletAvailability {
+  const device = getDeviceInfo();
+  const hasEthereumProvider = getEthereumProvider() !== null;
+  
+  // Desktop with browser extension
+  if (device.isDesktop && hasEthereumProvider) {
+    return {
+      available: true,
+      browserExtension: true,
+      mobileApp: false,
+      hardwareSupported: true,
+      recommendedAction: 'connect',
+      message: 'Wallet extension detected'
+    };
+  }
+  
+  // Desktop without browser extension
+  if (device.isDesktop && !hasEthereumProvider) {
+    return {
+      available: true, // Still available - can install or use hardware
+      browserExtension: false,
+      mobileApp: false,
+      hardwareSupported: true,
+      recommendedAction: 'install',
+      message: 'Install MetaMask, Coinbase Wallet, or connect hardware wallet'
+    };
+  }
+  
+  // Mobile - always potentially available via apps
+  if (device.isMobile) {
+    const deepLink = device.isIOS 
+      ? 'https://metamask.app.link/dapp/' + window.location.host
+      : 'https://metamask.app.link/dapp/' + window.location.host;
+      
+    return {
+      available: true,
+      browserExtension: hasEthereumProvider,
+      mobileApp: true,
+      hardwareSupported: false,
+      recommendedAction: hasEthereumProvider ? 'connect' : 'openApp',
+      message: hasEthereumProvider 
+        ? 'Mobile wallet detected' 
+        : 'Open in wallet app or install wallet',
+      deepLink
+    };
+  }
+  
+  // Fallback
+  return {
+    available: true, // Don't disable - let user try
+    browserExtension: false,
+    mobileApp: false,
+    hardwareSupported: false,
+    recommendedAction: 'install',
+    message: 'Install a compatible wallet'
+  };
+}
+
+/**
+ * Check if wallet is available (simplified for backward compatibility)
  */
 export function isWalletAvailable(): boolean {
-  return getEthereumProvider() !== null;
+  return getWalletAvailability().available;
 }
 
 /**

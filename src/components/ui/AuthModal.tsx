@@ -11,8 +11,9 @@ import {
 import { 
   registerWallet, 
   authenticateWithWallet, 
-  isWalletAvailable,
-  getWalletStatus 
+  getWalletAvailability,
+  getWalletStatus,
+  type WalletAvailability 
 } from '@/lib/appwrite/auth/wallet';
 import { useAuth } from './AuthContext';
 import { useLoading } from './LoadingContext';
@@ -37,7 +38,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [tooltip, setTooltip] = useState('');
   const [showPasswordField, setShowPasswordField] = useState(false);
   const [passkeySupported, setPasskeySupported] = useState(false);
-  const [walletAvailable, setWalletAvailable] = useState(false);
+  const [walletAvailability, setWalletAvailability] = useState<WalletAvailability>({
+    available: false,
+    browserExtension: false,
+    mobileApp: false,
+    hardwareSupported: false,
+    recommendedAction: 'install',
+    message: 'Checking wallet availability...'
+  });
   const { login: authLogin, refreshUser } = useAuth();
   const { showLoading, hideLoading } = useLoading();
 
@@ -45,7 +53,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   useEffect(() => {
     const checkSupport = async () => {
       setPasskeySupported(await isPlatformAuthenticatorAvailable());
-      setWalletAvailable(isWalletAvailable());
+      setWalletAvailability(getWalletAvailability());
     };
     checkSupport();
   }, []);
@@ -108,11 +116,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleWalletAuth = async () => {
-    if (!walletAvailable) {
-      setError('No wallet detected. Please install MetaMask or another Web3 wallet.');
-      return;
-    }
-
+    // Always allow wallet attempts - provide helpful messages instead of blocking
     if (!email || !email.includes('@')) {
       setTooltip('Enter your email first to register or authenticate with wallet');
       setError('');
@@ -121,7 +125,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
     setError('');
     setTooltip('');
-    showLoading('Connecting to wallet...');
+    
+    // Show different loading messages based on availability
+    const loadingMessage = walletAvailability.recommendedAction === 'openApp' 
+      ? 'Opening wallet app...' 
+      : 'Connecting to wallet...';
+    showLoading(loadingMessage);
     
     try {
       // Check if wallet is already connected and registered
@@ -157,7 +166,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       
     } catch (err: any) {
       console.error('Wallet authentication error:', err);
-      setError(err.message || 'Wallet authentication failed');
+      
+      // Provide helpful error messages based on the situation
+      let errorMessage = err.message || 'Wallet authentication failed';
+      
+      if (errorMessage.includes('No Ethereum wallet provider found')) {
+        if (walletAvailability.deepLink) {
+          errorMessage = 'Please open this page in your mobile wallet app or install a wallet.';
+        } else {
+          errorMessage = 'Please install MetaMask, Coinbase Wallet, or connect a hardware wallet.';
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       hideLoading();
     }
@@ -416,26 +437,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   </motion.button>
 
                   <motion.button
-                    whileHover={{ scale: walletAvailable ? 1.02 : 1 }}
-                    whileTap={{ scale: walletAvailable ? 0.98 : 1 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleWalletAuth}
-                    disabled={!walletAvailable}
-                    className={`flex-1 p-3 border rounded-xl transition-all text-center ${
-                      walletAvailable 
-                        ? 'bg-light-card dark:bg-dark-card border-light-border dark:border-dark-border hover:shadow-3d-light dark:hover:shadow-3d-dark cursor-pointer' 
-                        : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-60'
-                    }`}
+                    className="flex-1 p-3 border rounded-xl transition-all text-center bg-light-card dark:bg-dark-card border-light-border dark:border-dark-border hover:shadow-3d-light dark:hover:shadow-3d-dark cursor-pointer"
                   >
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto mb-1.5 ${
-                      walletAvailable ? 'bg-accent/10' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}>
-                      <svg className={`w-3.5 h-3.5 ${walletAvailable ? 'text-accent' : 'text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center mx-auto mb-1.5 bg-accent/10">
+                      <svg className="w-3.5 h-3.5 text-accent" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <div className={`font-medium text-sm ${walletAvailable ? 'text-foreground' : 'text-gray-500'}`}>
-                      Wallet {!walletAvailable && '(Not Available)'}
+                    <div className="font-medium text-sm text-foreground">
+                      Wallet
                     </div>
+                    {!walletAvailability.browserExtension && (
+                      <div className="text-xs text-foreground/60 mt-1">
+                        {walletAvailability.message}
+                      </div>
+                    )}
                   </motion.button>
                 </div>
 
