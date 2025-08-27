@@ -1,24 +1,27 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, getSettings, createSettings, updateSettings, updateUser, uploadProfilePicture, getProfilePicture, listNotes, updateAIMode, getAIMode } from "@/lib/appwrite";
+import { account, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, listNotes, updateAIMode, getAIMode } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useAuth } from "@/components/ui/AuthContext";
 import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
-import { AIMode, SubscriptionTier, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
-import { 
-  removePasskey, 
-  isPlatformAuthenticatorAvailable 
-} from "@/lib/appwrite/auth/passkey";
-import { 
-  removeWallet, 
-  isWalletAvailable,
-  getWalletStatus 
-} from "@/lib/appwrite/auth/wallet";
+import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
+import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
+import { isWalletAvailable } from "@/lib/appwrite/auth/wallet";
 
 type TabType = 'profile' | 'settings' | 'preferences';
+
+interface AuthMethods {
+  mfaFactors: {
+    totp?: boolean;
+    email?: boolean;
+    phone?: boolean;
+  } | null;
+  passkeySupported: boolean;
+  walletAvailable: boolean;
+}
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('settings');
@@ -31,11 +34,7 @@ export default function SettingsPage() {
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState<any[]>([]);
   const [currentAIMode, setCurrentAIMode] = useState<AIMode>(AIMode.STANDARD);
-  const [authMethods, setAuthMethods] = useState<{
-    mfaFactors: any;
-    passkeySupported: boolean;
-    walletAvailable: boolean;
-  }>({
+  const [authMethods, setAuthMethods] = useState<AuthMethods>({
     mfaFactors: null,
     passkeySupported: false,
     walletAvailable: false
@@ -89,8 +88,8 @@ export default function SettingsPage() {
             passkeySupported,
             walletAvailable
           });
-        } catch (e) {
-          console.error('Failed to load auth methods:', e);
+        } catch {
+          console.error('Failed to load auth methods');
         }
       } catch {
         showAuthModal();
@@ -130,7 +129,7 @@ export default function SettingsPage() {
     }
   };
 
-  const handleRemoveAuthMethod = async (type: string, identifier?: string) => {
+  const handleRemoveAuthMethod = async (type: string) => {
     try {
       if (type === 'totp') {
         // Handle TOTP authenticator removal via MFA API
@@ -139,7 +138,7 @@ export default function SettingsPage() {
       } else {
         setError("Authentication method removal not supported yet");
       }
-    } catch (error) {
+    } catch {
       setError("Failed to remove authentication method");
     }
   };
@@ -300,6 +299,30 @@ const SettingsTab = ({ user, settings, isVerified, error, success, onUpdate, onS
             Wallet: {user.prefs.walletAddress.slice(0, 6)}...{user.prefs.walletAddress.slice(-4)}
           </p>
         )}
+      </div>
+
+      {/* Password Section */}
+      <div className="p-6 bg-background border border-border rounded-xl">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-medium text-foreground">Password</h3>
+            <p className="text-sm text-foreground/70">Manage your account password</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+          <div>
+            <p className="text-sm font-medium text-foreground">Account Password</p>
+            <p className="text-xs text-foreground/60">Reset or set your account password</p>
+          </div>
+          <Button 
+            variant="secondary" 
+            size="sm"
+            onClick={() => router.push('/reset')}
+          >
+            Reset
+          </Button>
+        </div>
       </div>
 
       {/* MFA Factors from Backend */}
