@@ -50,15 +50,12 @@
         {
             "$id": "67ff05c900247b5673d3",
             "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
+                "create(\"users\")"
             ],
             "databaseId": "67ff05a9000296822396",
             "name": "users",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
                     "key": "id",
@@ -118,15 +115,12 @@
         {
             "$id": "67ff05f3002502ef239e",
             "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
+                "create(\"users\")"
             ],
             "databaseId": "67ff05a9000296822396",
             "name": "notes",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
                     "key": "id",
@@ -269,15 +263,12 @@
         {
             "$id": "67ff06280034908cf08a",
             "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
+                "create(\"users\")"
             ],
             "databaseId": "67ff05a9000296822396",
             "name": "tags",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
                     "key": "id",
@@ -645,15 +636,12 @@
         {
             "$id": "extensions",
             "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
+                "create(\"users\")"
             ],
             "databaseId": "67ff05a9000296822396",
             "name": "Extensions",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
                     "key": "name",
@@ -722,6 +710,13 @@
                     "array": false,
                     "format": "",
                     "default": null
+                },
+                {
+                    "key": "isPublic",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
                 }
             ],
             "indexes": []
@@ -729,15 +724,12 @@
         {
             "$id": "reactions",
             "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
+                "create(\"users\")"
             ],
             "databaseId": "67ff05a9000296822396",
             "name": "Reactions",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
                     "key": "targetType",
@@ -923,15 +915,12 @@
         {
             "$id": "settings",
             "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
+                "create(\"users\")"
             ],
             "databaseId": "67ff05a9000296822396",
             "name": "Settings",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
                     "key": "userId",

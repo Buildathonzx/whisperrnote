@@ -109,6 +109,7 @@ export type Extensions = Models.Document & {
     settings: string | null;
     createdAt: string | null;
     updatedAt: string | null;
+    isPublic: boolean | null;
 }
 
 export type Reactions = Models.Document & {
