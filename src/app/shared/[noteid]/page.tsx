@@ -9,6 +9,7 @@ import type { Notes } from '@/types/appwrite-types';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import Image from 'next/image';
 import {
   ShareIcon,
   EyeIcon,
@@ -104,9 +105,13 @@ export default function SharedNotePage() {
           <div className="max-w-4xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-                  <DocumentTextIcon className="h-5 w-5 text-white" />
-                </div>
+                <Image
+                  src="/logo/whisperrnote.png"
+                  alt="WhisperRNote"
+                  width={32}
+                  height={32}
+                  className="rounded-lg"
+                />
                 <h1 className="text-xl font-bold text-light-fg dark:text-dark-fg">WhisperRNote</h1>
               </div>
               
@@ -119,7 +124,7 @@ export default function SharedNotePage() {
                 ) : (
                   <>
                     <ThemeToggle size="sm" />
-                    <Button onClick={handleJoinWhisperRNote} className="gap-2">
+                    <Button onClick={handleJoinWhisperRNote} className="gap-2 hidden sm:flex">
                       Join WhisperRNote
                       <ArrowRightIcon className="h-4 w-4" />
                     </Button>
@@ -186,9 +191,13 @@ export default function SharedNotePage() {
             <div className="flex items-center justify-between">
               {/* Left: Logo */}
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-                  <DocumentTextIcon className="h-5 w-5 text-white" />
-                </div>
+                <Image
+                  src="/logo/whisperrnote.png"
+                  alt="WhisperRNote"
+                  width={32}
+                  height={32}
+                  className="rounded-lg"
+                />
                 <h1 className="text-xl font-bold text-light-fg dark:text-dark-fg">WhisperRNote</h1>
                 <Badge variant="secondary" className="gap-1">
                   <ShareIcon className="h-3 w-3" />
@@ -267,20 +276,32 @@ export default function SharedNotePage() {
                   </>
                 ) : (
                   <>
-                    {/* Unauthenticated User Actions */}
-                    <div className="flex items-center gap-3">
-                      <ThemeToggle size="sm" />
-                      <Button onClick={handleJoinWhisperRNote} className="gap-2">
-                        Join WhisperRNote
-                        <ArrowRightIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
+                     {/* Unauthenticated User Actions */}
+                     <div className="flex items-center gap-3">
+                       <ThemeToggle size="sm" />
+                       <Button onClick={handleJoinWhisperRNote} className="gap-2 hidden sm:flex">
+                         Join WhisperRNote
+                         <ArrowRightIcon className="h-4 w-4" />
+                       </Button>
+                     </div>
                   </>
                 )}
               </div>
             </div>
           </div>
         </header>
+
+        {/* Mobile Join WhisperRNote Button - Only show for unauthenticated users */}
+        {!isAuthenticated && (
+          <div className="sm:hidden bg-accent/5 border-b border-light-border dark:border-dark-border">
+            <div className="max-w-4xl mx-auto px-6 py-3">
+              <Button onClick={handleJoinWhisperRNote} className="w-full gap-2">
+                Join WhisperRNote
+                <ArrowRightIcon className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
 
       {/* Note Content */}
       <main className="max-w-4xl mx-auto px-6 py-8">
