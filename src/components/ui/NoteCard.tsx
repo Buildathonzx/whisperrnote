@@ -3,8 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from './Card';
 import { ContextMenu } from './ContextMenu';
 import { useDynamicSidebar } from './DynamicSidebar';
 import { NoteDetailSidebar } from './NoteDetailSidebar';
+import { toggleNoteVisibility, getShareableUrl, isNotePublic } from '@/lib/appwrite/permissions';
 import type { Notes } from '@/types/appwrite-types';
-import { PencilIcon, TrashIcon, EyeIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
+import { 
+  PencilIcon, 
+  TrashIcon, 
+  EyeIcon, 
+  DocumentDuplicateIcon,
+  GlobeAltIcon,
+  LockClosedIcon,
+  ClipboardDocumentIcon
+} from '@heroicons/react/24/outline';
 
 interface NoteCardProps {
   note: Notes;
@@ -63,6 +72,29 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
     }
   };
 
+  const handleToggleVisibility = async () => {
+    if (!note.$id) return;
+    
+    try {
+      const updatedNote = await toggleNoteVisibility(note.$id);
+      if (updatedNote && onUpdate) {
+        onUpdate(updatedNote);
+      }
+    } catch (error) {
+      console.error('Error toggling note visibility:', error);
+    }
+  };
+
+  const handleCopyShareLink = () => {
+    if (!note.$id) return;
+    
+    const shareUrl = getShareableUrl(note.$id);
+    navigator.clipboard.writeText(shareUrl);
+    // You could add a toast notification here
+  };
+
+  const noteIsPublic = isNotePublic(note);
+
   const contextMenuItems = [
     {
       label: 'View Details',
@@ -79,6 +111,18 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
       icon: <DocumentDuplicateIcon className="w-4 h-4" />,
       onClick: handleDuplicate
     },
+    // Sharing options
+    {
+      label: noteIsPublic ? 'Make Private' : 'Make Public',
+      icon: noteIsPublic ? <LockClosedIcon className="w-4 h-4" /> : <GlobeAltIcon className="w-4 h-4" />,
+      onClick: handleToggleVisibility
+    },
+    // Show copy link option only if note is public
+    ...(noteIsPublic ? [{
+      label: 'Copy Share Link',
+      icon: <ClipboardDocumentIcon className="w-4 h-4" />,
+      onClick: handleCopyShareLink
+    }] : []),
     {
       label: 'Delete',
       icon: <TrashIcon className="w-4 h-4" />,

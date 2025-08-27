@@ -640,6 +640,22 @@ export async function listPublicNotes() {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, [Query.equal('isPublic', true)]);
 }
 
+// --- PUBLIC SHARING ---
+
+export async function getPublicNote(noteId: string): Promise<Notes | null> {
+  try {
+    const note = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as unknown as Notes;
+    
+    // Only return note if it's public
+    if (note.isPublic) {
+      return note;
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
 // --- PROFILE PICTURE HELPERS ---
 
 export async function uploadProfilePicture(file: File) {
