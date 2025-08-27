@@ -107,6 +107,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
 
   const navItems = [
     { icon: HomeIcon, label: 'My Notes', path: '/notes' },
+    { icon: ShareIcon, label: 'Shared', path: '/shared' },
     { icon: TagIcon, label: 'Tags', path: '/tags' },
     { icon: PuzzlePieceIcon, label: 'Extensions', path: '/extensions' },
     { icon: Cog6ToothIcon, label: 'Settings', path: '/settings' },
