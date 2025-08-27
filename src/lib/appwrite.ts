@@ -173,8 +173,9 @@ export async function getNote(noteId: string): Promise<Notes> {
 }
 
 export async function updateNote(noteId: string, data: Partial<Notes>) {
-  // Do not allow updating id or userId directly
-  const { id, userId, ...rest } = data;
+  // Use cleanDocumentData to remove Appwrite system fields and id/userId
+  const cleanData = cleanDocumentData(data);
+  const { id, userId, ...rest } = cleanData;
   
   // Add updatedAt timestamp
   const updatedData = {
