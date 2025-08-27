@@ -5,14 +5,15 @@ export async function POST(request: NextRequest) {
   try {
     const { 
       email, 
-      displayName, 
       credentialId, 
       publicKey 
     } = await request.json();
 
+    console.log('Passkey registration request:', { email, credentialId: !!credentialId, publicKey: !!publicKey });
+
     if (!email || !credentialId) {
       return NextResponse.json(
-        { error: 'Missing required fields: email, credentialId' },
+        { message: 'Missing required fields: email, credentialId' },
         { status: 400 }
       );
     }
@@ -32,6 +33,8 @@ export async function POST(request: NextRequest) {
 
     const users = new Users(client);
 
+    console.log('Creating Appwrite user:', { userId, email, name: cleanName || 'User' });
+
     // Create user account
     const user = await users.create(
       userId,
@@ -41,6 +44,8 @@ export async function POST(request: NextRequest) {
       cleanName || 'User' // Use sanitized email username as display name
     );
 
+    console.log('User created successfully:', user.$id);
+
     // Store passkey credential info in user preferences
     await users.updatePrefs(userId, {
       authMethod: 'passkey',
@@ -49,8 +54,12 @@ export async function POST(request: NextRequest) {
       registeredAt: new Date().toISOString()
     });
 
+    console.log('User preferences updated');
+
     // Create custom token for immediate login
-    const token = await users.createToken(userId, 6, 900); // 15 minutes
+    const token = await users.createToken(userId);
+
+    console.log('Token created successfully');
 
     return NextResponse.json({
       success: true,
@@ -61,17 +70,23 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Passkey registration error:', error);
+    console.error('Error details:', {
+      code: error.code,
+      type: error.type,
+      message: error.message,
+      response: error.response
+    });
     
     // Handle user already exists error
     if (error.code === 409) {
       return NextResponse.json(
-        { error: 'User with this email already exists' },
+        { message: 'User with this email already exists' },
         { status: 409 }
       );
     }
 
     return NextResponse.json(
-      { error: error.message || 'Registration failed' },
+      { message: error.message || 'Registration failed' },
       { status: 500 }
     );
   }
