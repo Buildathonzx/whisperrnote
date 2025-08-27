@@ -134,10 +134,34 @@ export async function toggleNoteVisibility(noteId: string): Promise<Notes | null
       throw new Error('Permission denied: You can only modify your own notes');
     }
 
+    // Ensure we have a valid userId
+    if (!note.userId) {
+      throw new Error('Note does not have a valid user ID');
+    }
+
     // Toggle visibility
     const newIsPublic = !isNotePublic(note);
     
-    // Update the note
+    // Prepare permissions based on visibility
+    let permissions;
+    if (newIsPublic) {
+      // Public note: allow read access for anyone, owner can update/delete
+      permissions = [
+        Permission.read(Role.any()),
+        Permission.read(Role.user(note.userId)),
+        Permission.update(Role.user(note.userId)),
+        Permission.delete(Role.user(note.userId))
+      ];
+    } else {
+      // Private note: only owner can read/update/delete
+      permissions = [
+        Permission.read(Role.user(note.userId)),
+        Permission.update(Role.user(note.userId)),
+        Permission.delete(Role.user(note.userId))
+      ];
+    }
+    
+    // Update the note with new visibility and permissions
     const updatedNote = await databases.updateDocument(
       APPWRITE_DATABASE_ID,
       APPWRITE_COLLECTION_ID_NOTES,
@@ -145,7 +169,8 @@ export async function toggleNoteVisibility(noteId: string): Promise<Notes | null
       {
         isPublic: newIsPublic,
         updatedAt: new Date().toISOString()
-      }
+      },
+      permissions
     ) as unknown as Notes;
 
     return updatedNote;
@@ -170,6 +195,19 @@ export async function makeNotePublic(noteId: string): Promise<Notes | null> {
       throw new Error('Permission denied: You can only modify your own notes');
     }
 
+    // Ensure we have a valid userId
+    if (!note.userId) {
+      throw new Error('Note does not have a valid user ID');
+    }
+
+    // Set permissions for public access
+    const permissions = [
+      Permission.read(Role.any()),
+      Permission.read(Role.user(note.userId)),
+      Permission.update(Role.user(note.userId)),
+      Permission.delete(Role.user(note.userId))
+    ];
+
     const updatedNote = await databases.updateDocument(
       APPWRITE_DATABASE_ID,
       APPWRITE_COLLECTION_ID_NOTES,
@@ -177,7 +215,8 @@ export async function makeNotePublic(noteId: string): Promise<Notes | null> {
       {
         isPublic: true,
         updatedAt: new Date().toISOString()
-      }
+      },
+      permissions
     ) as unknown as Notes;
 
     return updatedNote;
@@ -202,6 +241,18 @@ export async function makeNotePrivate(noteId: string): Promise<Notes | null> {
       throw new Error('Permission denied: You can only modify your own notes');
     }
 
+    // Ensure we have a valid userId
+    if (!note.userId) {
+      throw new Error('Note does not have a valid user ID');
+    }
+
+    // Set permissions for private access (only owner)
+    const permissions = [
+      Permission.read(Role.user(note.userId)),
+      Permission.update(Role.user(note.userId)),
+      Permission.delete(Role.user(note.userId))
+    ];
+
     const updatedNote = await databases.updateDocument(
       APPWRITE_DATABASE_ID,
       APPWRITE_COLLECTION_ID_NOTES,
@@ -209,7 +260,8 @@ export async function makeNotePrivate(noteId: string): Promise<Notes | null> {
       {
         isPublic: false,
         updatedAt: new Date().toISOString()
-      }
+      },
+      permissions
     ) as unknown as Notes;
 
     return updatedNote;
