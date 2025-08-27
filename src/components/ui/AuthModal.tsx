@@ -193,20 +193,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         }
       }
       
-      // If authentication failed, try to register new passkey
-      showLoading('Registering new passkey...');
-      const credential = await registerPasskey({
-        email,
-        displayName: email.split('@')[0]
-      });
-      
-      if (credential) {
-        const user = await getCurrentUser();
-        if (user) {
-          authLogin(user);
-          await refreshUser();
-          handleClose();
+      // Only register new passkey if no credentials found for this email
+      if (authResult.error === 'No passkey credentials found') {
+        showLoading('Registering new passkey...');
+        const credential = await registerPasskey({
+          email,
+          displayName: email.split('@')[0]
+        });
+        
+        if (credential) {
+          const user = await getCurrentUser();
+          if (user) {
+            authLogin(user);
+            await refreshUser();
+            handleClose();
+          }
         }
+      } else {
+        // Passkey exists but authentication failed - show the actual error
+        setError(authResult.error || 'Passkey authentication failed');
       }
       
     } catch (err: any) {
