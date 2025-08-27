@@ -197,7 +197,7 @@ Secondary content and tools slide in from edges:
 ### Sidebar Sections (Desktop)
 1. **Recent Notes** - Quick access to recent work
 2. **My Notes** - Personal note organization
-3. **Shared with Me** - Collaborative content
+3. **Shared** - Collaborative content
 4. **Tags** - Topic-based organization
 5. **Extensions** - Plugin management
 6. **Settings** - Configuration and preferences

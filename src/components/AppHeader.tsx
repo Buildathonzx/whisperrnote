@@ -97,7 +97,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                   className="flex items-center gap-3 px-4 py-3 text-foreground hover:bg-background transition-colors duration-200"
                 >
                   <ShareIcon className="h-4 w-4" />
-                  <span className="text-sm font-medium">Shared with Me</span>
+                  <span className="text-sm font-medium">Shared</span>
                 </a>
                 
                 <a
