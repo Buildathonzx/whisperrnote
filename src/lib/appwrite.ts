@@ -438,7 +438,46 @@ export async function listComments(noteId: string) {
 // --- EXTENSIONS CRUD ---
 
 export async function createExtension(data: Partial<Extensions>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS, ID.unique(), cleanDocumentData(data));
+  // Get current user for authorId
+  const user = await getCurrentUser();
+  if (!user || !user.$id) throw new Error("User not authenticated");
+  
+  // Create extension with proper timestamps
+  const now = new Date().toISOString();
+  const cleanData = cleanDocumentData(data);
+  
+  // Set initial permissions - private by default (only owner can access)
+  const initialPermissions = [
+    Permission.read(Role.user(user.$id)),
+    Permission.update(Role.user(user.$id)),
+    Permission.delete(Role.user(user.$id))
+  ];
+  
+  const doc = await databases.createDocument(
+    APPWRITE_DATABASE_ID,
+    APPWRITE_COLLECTION_ID_EXTENSIONS,
+    ID.unique(),
+    {
+      ...cleanData,
+      authorId: user.$id,
+      id: null, // id will be set after creation
+      createdAt: now,
+      updatedAt: now,
+      isPublic: false // Default to private
+    },
+    initialPermissions
+  );
+  
+  // Patch the extension to set id = $id (Appwrite does not set this automatically)
+  await databases.updateDocument(
+    APPWRITE_DATABASE_ID,
+    APPWRITE_COLLECTION_ID_EXTENSIONS,
+    doc.$id,
+    { id: doc.$id }
+  );
+  
+  // Return the updated document as Extensions type
+  return await getExtension(doc.$id);
 }
 
 export async function getExtension(extensionId: string): Promise<Extensions> {
@@ -446,7 +485,17 @@ export async function getExtension(extensionId: string): Promise<Extensions> {
 }
 
 export async function updateExtension(extensionId: string, data: Partial<Extensions>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS, extensionId, cleanDocumentData(data));
+  // Use cleanDocumentData to remove Appwrite system fields and id/authorId
+  const cleanData = cleanDocumentData(data);
+  const { id, authorId, ...rest } = cleanData;
+  
+  // Add updatedAt timestamp
+  const updatedData = {
+    ...rest,
+    updatedAt: new Date().toISOString()
+  };
+  
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS, extensionId, updatedData) as Promise<Extensions>;
 }
 
 export async function deleteExtension(extensionId: string) {

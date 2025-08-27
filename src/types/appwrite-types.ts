@@ -83,6 +83,7 @@ export type Extensions = Models.Document & {
     version: string | null;
     authorId: string | null;
     enabled: boolean | null;
+    isPublic: boolean | null;
     settings: string | null;
     createdAt: string | null;
     updatedAt: string | null;

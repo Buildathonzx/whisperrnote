@@ -1,10 +1,20 @@
 /**
- * Legacy permissions file - now re-exports from the organized permissions directory
- * This file is maintained for backward compatibility
+ * Permissions utilities for managing note access control
+ * Handles public/private notes and sharing functionality
  */
 
-// Re-export everything from the new permissions structure
-export * from './permissions';
+import { Permission, Role } from 'appwrite';
+import { getCurrentUser, databases, APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES } from '../../appwrite';
+import type { Notes } from '@/types/appwrite-types';
+
+/**
+ * Permission levels for notes
+ */
+export enum NotePermission {
+  PRIVATE = 'private',
+  PUBLIC = 'public',
+  SHARED = 'shared'
+}
 
 /**
  * Check if a note is publicly accessible
@@ -85,7 +95,6 @@ export function getShareableUrl(noteId: string): string {
 /**
  * Validate note access for public sharing
  * Returns the note if accessible, null if not found or not accessible
- * Uses a guest client to ensure unauthenticated access works
  */
 export async function validatePublicNoteAccess(noteId: string): Promise<Notes | null> {
   try {
