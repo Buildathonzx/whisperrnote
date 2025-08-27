@@ -205,7 +205,7 @@
                     "type": "string",
                     "required": false,
                     "array": false,
-                    "size": 5000,
+                    "size": 65535,
                     "default": null,
                     "encrypt": true
                 },
@@ -340,6 +340,15 @@
                     "min": -9223372036854775808,
                     "max": 9223372036854775807,
                     "default": null
+                },
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 200,
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": []
