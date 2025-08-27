@@ -139,9 +139,19 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
         onContextMenu={handleRightClick}
       >
         <CardHeader className="flex-shrink-0 pb-2">
-          <CardTitle className="text-base sm:text-lg font-bold text-foreground line-clamp-2">
-            {note.title}
-          </CardTitle>
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="text-base sm:text-lg font-bold text-foreground line-clamp-2 flex-1">
+              {note.title}
+            </CardTitle>
+            {noteIsPublic && (
+              <div className="flex-shrink-0">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400 rounded-full text-xs font-medium">
+                  <GlobeAltIcon className="h-3 w-3" />
+                  Public
+                </span>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col justify-between min-h-0">
           <p className="text-xs sm:text-sm text-foreground/70 line-clamp-4 sm:line-clamp-5 md:line-clamp-6 overflow-hidden">
