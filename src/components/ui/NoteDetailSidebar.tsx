@@ -7,6 +7,9 @@ import { Button } from './Button';
 import { Modal } from './modal';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
 import { getNoteWithSharing } from '@/lib/appwrite';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeSanitize from 'rehype-sanitize';
 
 interface NoteDetailSidebarProps {
   note: Notes;
@@ -133,8 +136,17 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
               className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-light-bg dark:bg-dark-bg text-light-fg dark:text-dark-fg resize-none"
             />
           ) : (
-            <div className="text-light-fg/80 dark:text-dark-fg/80 whitespace-pre-wrap">
-              {note.content}
+            <div className="text-light-fg/80 dark:text-dark-fg/80 prose prose-sm max-w-none dark:prose-invert">
+              {note.content ? (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeSanitize]}
+                >
+                  {note.content}
+                </ReactMarkdown>
+              ) : (
+                <span className="italic text-light-fg/60 dark:text-dark-fg/60">No content</span>
+              )}
             </div>
           )}
         </div>
