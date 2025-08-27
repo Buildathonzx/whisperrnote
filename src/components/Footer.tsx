@@ -18,7 +18,6 @@ const footerLinks = {
     { name: 'Documentation', href: '/docs' },
     { name: 'API Reference', href: '/api' },
     { name: 'Status', href: '/status' },
-    { name: 'Blog', href: '/blog' },
   ],
   company: [
     { name: 'About Us', href: '/about' },

@@ -69,22 +69,6 @@ export type ApiKeys = Models.Document & {
     lastUsedIp: string | null;
 }
 
-export type BlogPosts = Models.Document & {
-    id: string | null;
-    title: string | null;
-    content: string | null;
-    createdAt: string | null;
-    updatedAt: string | null;
-    authorId: string | null;
-    tags: string[] | null;
-    coverImage: string | null;
-    excerpt: string | null;
-    status: Status | null;
-    comments: string[] | null;
-    extensions: string[] | null;
-    metadata: string | null;
-}
-
 export type Comments = Models.Document & {
     noteId: string;
     userId: string;

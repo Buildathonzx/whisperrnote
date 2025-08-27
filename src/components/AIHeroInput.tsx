@@ -10,7 +10,7 @@ interface AIHeroInputProps {
 
 const PROMPT_SUGGESTIONS = [
   "Brainstorm creative marketing ideas for a web3 startup",
-  "Write me a blog about the future of AI powered note taking"
+  "Summarize key insights from my research notes"
 ];
 
 export function AIHeroInput({ onPromptSelectAction, className = '' }: AIHeroInputProps) {

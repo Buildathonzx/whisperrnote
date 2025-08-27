@@ -4,7 +4,6 @@ import type {
   Notes,
   Tags,
   ApiKeys,
-  BlogPosts,
   Comments,
   Extensions,
   Reactions,
@@ -31,7 +30,6 @@ export const APPWRITE_COLLECTION_ID_USERS = process.env.NEXT_PUBLIC_APPWRITE_COL
 export const APPWRITE_COLLECTION_ID_NOTES = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTES!;
 export const APPWRITE_COLLECTION_ID_TAGS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_TAGS!;
 export const APPWRITE_COLLECTION_ID_APIKEYS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_APIKEYS!;
-export const APPWRITE_COLLECTION_ID_BLOGPOSTS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_BLOGPOSTS!;
 export const APPWRITE_COLLECTION_ID_COMMENTS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_COMMENTS!;
 export const APPWRITE_COLLECTION_ID_EXTENSIONS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_EXTENSIONS!;
 export const APPWRITE_COLLECTION_ID_REACTIONS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_REACTIONS!;
@@ -41,7 +39,6 @@ export const APPWRITE_COLLECTION_ID_SETTINGS = process.env.NEXT_PUBLIC_APPWRITE_
 
 export const APPWRITE_BUCKET_PROFILE_PICTURES = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_PROFILE_PICTURES!;
 export const APPWRITE_BUCKET_NOTES_ATTACHMENTS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_NOTES_ATTACHMENTS!;
-export const APPWRITE_BUCKET_BLOG_MEDIA = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_BLOG_MEDIA!;
 export const APPWRITE_BUCKET_EXTENSION_ASSETS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_EXTENSION_ASSETS!;
 export const APPWRITE_BUCKET_BACKUPS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_BACKUPS!;
 export const APPWRITE_BUCKET_TEMP_UPLOADS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_TEMP_UPLOADS!;
@@ -406,28 +403,6 @@ export async function deleteApiKey(apiKeyId: string) {
 
 export async function listApiKeys(queries: any[] = []) {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_APIKEYS, queries);
-}
-
-// --- BLOGPOSTS CRUD ---
-
-export async function createBlogPost(data: Partial<BlogPosts>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_BLOGPOSTS, ID.unique(), cleanDocumentData(data));
-}
-
-export async function getBlogPost(blogPostId: string): Promise<BlogPosts> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_BLOGPOSTS, blogPostId) as Promise<BlogPosts>;
-}
-
-export async function updateBlogPost(blogPostId: string, data: Partial<BlogPosts>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_BLOGPOSTS, blogPostId, cleanDocumentData(data));
-}
-
-export async function deleteBlogPost(blogPostId: string) {
-  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_BLOGPOSTS, blogPostId);
-}
-
-export async function listBlogPosts(queries: any[] = []) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_BLOGPOSTS, queries);
 }
 
 // --- COMMENTS CRUD ---
@@ -943,7 +918,6 @@ export default {
   APPWRITE_COLLECTION_ID_NOTES,
   APPWRITE_COLLECTION_ID_TAGS,
   APPWRITE_COLLECTION_ID_APIKEYS,
-  APPWRITE_COLLECTION_ID_BLOGPOSTS,
   APPWRITE_COLLECTION_ID_COMMENTS,
   APPWRITE_COLLECTION_ID_EXTENSIONS,
   APPWRITE_COLLECTION_ID_REACTIONS,
@@ -952,7 +926,6 @@ export default {
   APPWRITE_COLLECTION_ID_SETTINGS,
   APPWRITE_BUCKET_PROFILE_PICTURES,
   APPWRITE_BUCKET_NOTES_ATTACHMENTS,
-  APPWRITE_BUCKET_BLOG_MEDIA,
   APPWRITE_BUCKET_EXTENSION_ASSETS,
   APPWRITE_BUCKET_BACKUPS,
   APPWRITE_BUCKET_TEMP_UPLOADS,
@@ -989,11 +962,6 @@ export default {
   updateApiKey,
   deleteApiKey,
   listApiKeys,
-  createBlogPost,
-  getBlogPost,
-  updateBlogPost,
-  deleteBlogPost,
-  listBlogPosts,
   createComment,
   getComment,
   updateComment,

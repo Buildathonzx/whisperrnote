@@ -12,7 +12,6 @@ WhisperNote is a collaborative note-taking platform with blockchain integration,
 - **Comments**: Threaded discussions on notes with reactions
 - **Collaborators**: Permission-based sharing (read/write/admin) with invitation system
 - **Extensions**: Plugin architecture for customizable functionality
-- **Blog Posts**: Public content publishing with media support
 - **API Keys**: Developer access management with scoped permissions
 - **Activity Log**: User action tracking and audit trail
 - **Settings**: User preferences and configuration
@@ -20,7 +19,6 @@ WhisperNote is a collaborative note-taking platform with blockchain integration,
 ### Storage Buckets
 - Profile pictures
 - Note attachments (encrypted)
-- Blog media assets
 - Extension assets
 - Backup storage
 - Temporary uploads
@@ -57,11 +55,6 @@ WhisperNote is a collaborative note-taking platform with blockchain integration,
 - **Tag Organization**: Hierarchical tag structure with usage statistics
 - **Note Hierarchy**: Parent-child note relationships, folder-like organization
 - **Archive View**: Manage archived notes and restore functionality
-
-### Blog & Public Content
-- **Blog Listing**: Public blog posts with cover images, excerpts, tags
-- **Blog Post View**: Full post display with comments, social sharing
-- **Blog Editor**: Rich content creation with media upload, SEO metadata
 
 ### Extension System
 - **Extensions Marketplace**: Browse, install, configure plugins
@@ -162,10 +155,8 @@ Secondary content and tools slide in from edges:
 1. **Landing Page** (`/`) - Marketing/welcome page for unauthenticated users
 2. **Notes Dashboard** (`/notes`) - Main workspace with note grid/list
 3. **Note Editor** (`/notes/[id]`) - Full-screen note editing interface
-4. **Blog Listing** (`/blog`) - Public blog posts discovery
-5. **Blog Post View** (`/blog/[id]`) - Individual blog post reading
-6. **Shared Notes** (`/shared`) - Notes shared with user
-7. **Settings Page** (`/settings`) - Unified settings with Profile, Settings, and Preferences tabs
+4. **Shared Notes** (`/shared`) - Notes shared with user
+5. **Settings Page** (`/settings`) - Unified settings with Profile, Settings, and Preferences tabs
 
 ### Overlays (Modal-style, Context Preserving)
 - **Authentication Suite**: Login, signup, verification, password reset
@@ -232,8 +223,8 @@ This architecture minimizes full-page navigations by using overlays for forms an
 ### Content States (CS)
 - **CS1**: Empty state (no content, onboarding prompts)
 - **CS2**: Loading state (skeleton screens, spinners)
-- **CS3**: Grid view (card layout for notes/blog)
-- **CS4**: List view (compact rows for notes/blog)
+- **CS3**: Grid view (card layout for notes)
+- **CS4**: List view (compact rows for notes)
 - **CS5**: Detail view (single item focus)
 - **CS6**: Error state (network/permission errors)
 
@@ -273,25 +264,13 @@ This architecture minimizes full-page navigations by using overlays for forms an
    - `NE-GT3-CO`: Collaborator overlay active
    - `NE-GT3-SE`: Settings overlay active
 
-4. **Blog Listing**
-   - `BL-GT1-CS3`: Public view, grid layout
-   - `BL-GT2-CS3`: Authenticated view, grid layout
-   - `BL-GT1-CS1`: Empty blog state
-   - `BL-GT1-CS2`: Loading blog posts
-
-5. **Blog Post View**
-   - `BPV-GT1-CS5`: Public reading view
-   - `BPV-GT2-CS5`: Authenticated reading view
-   - `BPV-GT2-CS5-RD`: Comments drawer open
-   - `BPV-GT3-SH`: Share overlay active
-
-6. **Shared Notes**
+4. **Shared Notes**
    - `SN-GT2-NS1-CS3`: Mobile, shared notes grid
    - `SN-GT2-NS3-CS3`: Desktop, shared notes grid
    - `SN-GT2-NS1-CS1`: No shared notes yet
    - `SN-GT2-NS5`: Mobile, collaboration drawer open
 
-7. **Profile Page**
+5. **Profile Page**
    - `PP-GT1-CS5`: Public profile view
    - `PP-GT2-CS5`: Own profile view
    - `PP-GT3-ED`: Edit profile overlay

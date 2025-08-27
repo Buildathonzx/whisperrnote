@@ -12,16 +12,14 @@ const PUBLIC_ROUTES = [
   '/',
   '/landing',
   '/signup',
-  '/blog',
   '/reset',
   '/verify'
 ];
 
-const BLOG_POST_PATTERN = /^\/blog\/[^\/]+$/;
 const SHARED_NOTE_PATTERN = /^\/shared\/[^\/]+$/;
 
 function isPublicRoute(path: string): boolean {
-  return PUBLIC_ROUTES.includes(path) || BLOG_POST_PATTERN.test(path) || SHARED_NOTE_PATTERN.test(path);
+  return PUBLIC_ROUTES.includes(path) || SHARED_NOTE_PATTERN.test(path);
 }
 
 export const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {

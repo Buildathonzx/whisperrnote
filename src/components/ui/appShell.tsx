@@ -8,22 +8,18 @@ import QuickCreateFab from "./QuickCreateFab";
 import { Box, CircularProgress, Typography } from "@mui/material";
 
 const PUBLIC_ROUTES = [
-  "/blog", /^\/blog\/[^\/]+$/, "/reset", "/verify", "/landing"
+  "/reset", "/verify", "/landing"
 ];
 
 function isPublicRoute(path: string) {
-  return PUBLIC_ROUTES.some(route =>
-    typeof route === "string" ? route === path : route instanceof RegExp && route.test(path)
-  );
+  return PUBLIC_ROUTES.includes(path);
 }
 
 interface AppShellProps {
   children: React.ReactNode;
-  toggleTheme: () => void;
-  isDarkMode: boolean;
 }
 
-export default function AppShell({ children, toggleTheme, isDarkMode }: AppShellProps) {
+export default function AppShell({ children }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { showAuthModal } = useAuth();
@@ -83,7 +79,7 @@ export default function AppShell({ children, toggleTheme, isDarkMode }: AppShell
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      <Navigation toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
+      <Navigation />
       
       <Box
         component="main"

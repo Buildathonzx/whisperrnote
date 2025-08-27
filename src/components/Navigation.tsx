@@ -10,7 +10,6 @@ import {
   TagIcon,
   Cog6ToothIcon,
   PuzzlePieceIcon,
-  DocumentTextIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   PowerIcon,
@@ -56,16 +55,7 @@ export const MobileBottomNav: React.FC<NavigationProps> = ({ className = '' }) =
             <TagIcon className="h-6 w-6" />
           </a>
           
-          <Link 
-            href="/blog" 
-            className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 ${
-              isActive('/blog') 
-                ? 'text-white bg-accent shadow-lg transform -translate-y-0.5' 
-                : 'text-light-fg dark:text-dark-fg hover:bg-light-bg dark:hover:bg-dark-bg hover:transform hover:-translate-y-0.5'
-            }`}
-          >
-            <DocumentTextIcon className="h-6 w-6" />
-          </Link>
+
           
           <a 
             href="/extensions" 
@@ -108,7 +98,6 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
     { icon: HomeIcon, label: 'My Notes', path: '/notes' },
     { icon: ShareIcon, label: 'Shared with Me', path: '/shared' },
     { icon: TagIcon, label: 'Tags', path: '/tags' },
-    { icon: DocumentTextIcon, label: 'Blog', path: '/blog' },
     { icon: PuzzlePieceIcon, label: 'Extensions', path: '/extensions' },
     { icon: Cog6ToothIcon, label: 'Settings', path: '/settings' },
   ];
