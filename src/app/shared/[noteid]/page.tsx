@@ -10,6 +10,9 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeSanitize from 'rehype-sanitize';
 import {
   ShareIcon,
   EyeIcon,
@@ -341,10 +344,19 @@ export default function SharedNotePage() {
 
           {/* Note Content */}
           <div className="p-8">
-            <div className="prose prose-lg max-w-none dark:prose-invert">
-              <div className="whitespace-pre-wrap text-light-fg dark:text-dark-fg leading-relaxed">
-                {note.content || 'This note is empty.'}
-              </div>
+            <div className="prose prose-lg max-w-none dark:prose-invert text-light-fg dark:text-dark-fg leading-relaxed">
+              {note.content ? (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeSanitize]}
+                >
+                  {note.content}
+                </ReactMarkdown>
+              ) : (
+                <div className="text-light-fg/60 dark:text-dark-fg/60 italic">
+                  This note is empty.
+                </div>
+              )}
             </div>
           </div>
 

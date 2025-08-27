@@ -15,6 +15,9 @@ import { useState } from 'react';
 import Comments from './Comments';
 import Collaborators from './Collaborators';
 import AttachmentViewer from './AttachmentViewer';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeSanitize from 'rehype-sanitize';
 
 interface NoteViewerProps {
   note: Notes | null;
@@ -67,7 +70,20 @@ export default function NoteViewer({ note, onClose }: NoteViewerProps) {
       </AppBar>
       <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
         <TabPanel value={tabIndex} index={0}>
-          <Typography variant="body1" dangerouslySetInnerHTML={{ __html: note.content || '' }} />
+          <Box sx={{ '& .prose': { maxWidth: 'none' } }}>
+            {note.content ? (
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeSanitize]}
+              >
+                {note.content}
+              </ReactMarkdown>
+            ) : (
+              <Typography variant="body1" color="text.secondary" fontStyle="italic">
+                This note is empty.
+              </Typography>
+            )}
+          </Box>
         </TabPanel>
         <TabPanel value={tabIndex} index={1}>
           <Comments noteId={note.$id} />
