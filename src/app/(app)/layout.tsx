@@ -4,9 +4,11 @@ import React from 'react';
 import { DesktopSidebar, MobileBottomNav } from '@/components/Navigation';
 import AppHeader from '@/components/AppHeader';
 import { SidebarProvider, useSidebar } from '@/components/ui/SidebarContext';
+import { DynamicSidebarProvider, useDynamicSidebar, DynamicSidebar } from '@/components/ui/DynamicSidebar';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
+  const { isOpen: isDynamicSidebarOpen } = useDynamicSidebar();
   
   return (
     <div className="min-h-screen bg-light-bg dark:bg-dark-bg overflow-x-hidden">
@@ -18,14 +20,23 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Sidebar - now fixed positioned */}
         <DesktopSidebar />
         
-        {/* Main content area - offset to account for fixed sidebar */}
-        <main className={`min-w-0 pb-24 md:pb-8 transition-all duration-300 ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        {/* Main content area - offset to account for fixed sidebar and dynamic sidebar */}
+        <main className={`min-w-0 pb-24 md:pb-8 transition-all duration-300 ${
+          isCollapsed ? 'md:ml-16' : 'md:ml-64'
+        } ${
+          isDynamicSidebarOpen 
+            ? 'md:mr-[28rem] lg:mr-[32rem]' 
+            : ''
+        }`}>
           {/* Content wrapper with proper padding */}
           <div className="px-4 md:px-6 lg:px-8 py-6">
             {children}
           </div>
         </main>
       </div>
+      
+      {/* Dynamic Sidebar */}
+      <DynamicSidebar />
       
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
@@ -40,7 +51,9 @@ export default function AppLayout({
 }) {
   return (
     <SidebarProvider>
-      <AppLayoutContent>{children}</AppLayoutContent>
+      <DynamicSidebarProvider>
+        <AppLayoutContent>{children}</AppLayoutContent>
+      </DynamicSidebarProvider>
     </SidebarProvider>
   );
 }
