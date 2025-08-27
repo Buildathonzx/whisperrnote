@@ -331,15 +331,15 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
   isOwner: boolean;
 }) {
   return (
-    <div className="bg-white dark:bg-dark-900 rounded-xl p-6 border border-light-200 dark:border-dark-800 hover:shadow-lg transition-shadow">
+    <div className="bg-light-50 dark:bg-dark-800 rounded-xl p-6 border border-light-200 dark:border-dark-600 hover:shadow-lg transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
             <span className="text-white text-lg">📦</span>
           </div>
           <div>
-            <h3 className="font-semibold text-light-900 dark:text-dark-50">{extension.name}</h3>
-            <p className="text-sm text-light-500 dark:text-dark-500">v{extension.version}</p>
+            <h3 className="font-semibold text-light-900 dark:text-dark-100">{extension.name}</h3>
+            <p className="text-sm text-light-500 dark:text-dark-400">v{extension.version}</p>
           </div>
         </div>
         {isOwner && (
@@ -349,12 +349,12 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
         )}
       </div>
 
-      <p className="text-light-600 dark:text-dark-400 text-sm mb-4 line-clamp-3">
+      <p className="text-light-600 dark:text-dark-300 text-sm mb-4 line-clamp-3">
         {extension.description}
       </p>
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2 text-sm text-light-500 dark:text-dark-500">
+        <div className="flex items-center space-x-2 text-sm text-light-500 dark:text-dark-400">
           <span>👤</span>
           <span>Author</span>
         </div>
@@ -375,15 +375,15 @@ function TemplateCard({ template, onUse }: {
   onUse: () => void;
 }) {
   return (
-    <div className="bg-white dark:bg-dark-900 rounded-xl p-6 border border-light-200 dark:border-dark-800 hover:shadow-lg transition-shadow">
+    <div className="bg-light-50 dark:bg-dark-800 rounded-xl p-6 border border-light-200 dark:border-dark-600 hover:shadow-lg transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
             <span className="text-white text-lg">{template.icon}</span>
           </div>
           <div>
-            <h3 className="font-semibold text-light-900 dark:text-dark-50">{template.name}</h3>
-            <p className="text-sm text-light-500 dark:text-dark-500">{template.category}</p>
+            <h3 className="font-semibold text-light-900 dark:text-dark-100">{template.name}</h3>
+            <p className="text-sm text-light-500 dark:text-dark-400">{template.category}</p>
           </div>
         </div>
         <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-full">
@@ -391,7 +391,7 @@ function TemplateCard({ template, onUse }: {
         </span>
       </div>
 
-      <p className="text-light-600 dark:text-dark-400 text-sm mb-4 line-clamp-3">
+      <p className="text-light-600 dark:text-dark-300 text-sm mb-4 line-clamp-3">
         {template.description}
       </p>
 
