@@ -7,7 +7,7 @@ import {
   Button
 } from '@mui/material';
 import { Delete, Share, Lock, LockOpen, MoreVert, Analytics } from '@mui/icons-material';
-import type { Notes } from "@/types/appwrite-types";
+import type { Notes } from "@/types/appwrite";
 import { formatNoteUpdatedDate } from '@/lib/date-utils';
 import { motion } from "framer-motion";
 const MotionCard = motion(Card);

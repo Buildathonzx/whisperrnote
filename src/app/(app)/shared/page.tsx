@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import type { Notes } from '@/types/appwrite-types';
+import type { Notes } from '@/types/appwrite';
 import NoteCard from '@/components/ui/NoteCard';
 import { Button } from '@/components/ui/Button';
 import { getSharedNotes, listPublicNotes } from '@/lib/appwrite';

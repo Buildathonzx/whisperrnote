@@ -10,7 +10,7 @@ import {
   Tab,
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
-import type { Notes } from '@/types/appwrite-types';
+import type { Notes } from '@/types/appwrite';
 import { useState } from 'react';
 import Comments from './Comments';
 import Collaborators from './Collaborators';

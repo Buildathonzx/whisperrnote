@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, List, ListItem, ListItemText, Divider, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { listCollaborators, createCollaborator, deleteCollaborator } from '@/lib/appwrite';
 import { useToast } from '@/components/ui/Toast';
-import type { Collaborators, Users } from '@/types/appwrite-types';
+import type { Collaborators, Users } from '@/types/appwrite';
 import { listUsers } from '@/lib/appwrite';
 
 interface CollaboratorsProps {

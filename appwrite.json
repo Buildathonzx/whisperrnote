@@ -347,15 +347,12 @@
         {
             "$id": "67ff064400263631ffe4",
             "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
+                "create(\"users\")"
             ],
             "databaseId": "67ff05a9000296822396",
             "name": "apiKeys",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
                     "key": "id",
@@ -576,15 +573,12 @@
         {
             "$id": "comments",
             "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
+                "create(\"users\")"
             ],
             "databaseId": "67ff05a9000296822396",
             "name": "Comments",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
                     "key": "noteId",
@@ -784,15 +778,12 @@
         {
             "$id": "collaborators",
             "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
+                "create(\"users\")"
             ],
             "databaseId": "67ff05a9000296822396",
             "name": "Collaborators",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
                     "key": "noteId",
@@ -846,15 +837,12 @@
         {
             "$id": "activityLog",
             "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "update(\"users\")",
-                "delete(\"users\")"
+                "create(\"users\")"
             ],
             "databaseId": "67ff05a9000296822396",
             "name": "ActivityLog",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
                     "key": "userId",

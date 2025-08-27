@@ -6,7 +6,7 @@ import { useLoading } from '@/components/ui/LoadingContext';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useAI } from '@/components/ui/AIContext';
 import { useSearchParams } from 'next/navigation';
-import type { Notes } from '@/types/appwrite-types';
+import type { Notes } from '@/types/appwrite';
 import NoteCard from '@/components/ui/NoteCard';
 import { NoteGridSkeleton } from '@/components/ui/NoteCardSkeleton';
 import { Button } from '@/components/ui/Button';

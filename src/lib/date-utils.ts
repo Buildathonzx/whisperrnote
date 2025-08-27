@@ -2,7 +2,7 @@
  * Utility functions for date formatting with fallback logic for legacy notes
  */
 
-import type { Notes } from '@/types/appwrite-types';
+import type { Notes } from '@/types/appwrite';
 
 /**
  * Formats a date with fallback logic for notes

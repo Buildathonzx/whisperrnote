@@ -5,7 +5,7 @@ import { useDynamicSidebar } from './DynamicSidebar';
 import { NoteDetailSidebar } from './NoteDetailSidebar';
 import { ShareNoteModal } from '../ShareNoteModal';
 import { toggleNoteVisibility, getShareableUrl, isNotePublic } from '@/lib/appwrite/permissions';
-import type { Notes } from '@/types/appwrite-types';
+import type { Notes } from '@/types/appwrite';
 import { 
   PencilIcon, 
   TrashIcon, 

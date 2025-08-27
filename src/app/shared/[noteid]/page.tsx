@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { validatePublicNoteAccess } from '@/lib/appwrite/permissions';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
 import { useAuth } from '@/components/ui/AuthContext';
-import type { Notes } from '@/types/appwrite-types';
+import type { Notes } from '@/types/appwrite';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ThemeToggle } from '@/components/ThemeToggle';

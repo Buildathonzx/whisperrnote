@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { account, sendEmailVerification, completeEmailVerification } from "@/lib/appwrite";
 import { useAuth } from "@/components/ui/AuthContext";
-import type { Users } from "@/types/appwrite-types";
+import type { Users } from "@/types/appwrite";
 import { motion } from "framer-motion";
 
 function EmailVerifyInner() {

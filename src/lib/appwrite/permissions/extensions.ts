@@ -5,7 +5,7 @@
 
 import { Permission, Role } from 'appwrite';
 import { getCurrentUser, databases, APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS } from '../../appwrite';
-import type { Extensions } from '@/types/appwrite-types';
+import type { Extensions } from '@/types/appwrite';
 
 /**
  * Permission levels for extensions

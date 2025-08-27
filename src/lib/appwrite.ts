@@ -10,7 +10,7 @@ import type {
   Collaborators,
   ActivityLog,
   Settings,
-} from '../types/appwrite-types';
+} from '../types/appwrite';
 
 const client = new Client()
   .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)

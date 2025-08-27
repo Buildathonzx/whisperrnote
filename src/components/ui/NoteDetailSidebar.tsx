@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Notes } from '@/types/appwrite-types';
+import { Notes } from '@/types/appwrite';
 import { PencilIcon, TrashIcon, UserIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
 import { Modal } from './modal';
