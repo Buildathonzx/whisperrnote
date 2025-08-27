@@ -10,8 +10,9 @@ import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
 import { isWalletAvailable, getWalletAvailability } from "@/lib/appwrite/auth/wallet";
+import { isICPEnabled } from "@/integrations/icp";
 
-type TabType = 'profile' | 'settings' | 'preferences';
+type TabType = 'profile' | 'settings' | 'preferences' | 'integrations';
 
 interface AuthMethods {
   mfaFactors: {
