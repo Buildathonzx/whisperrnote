@@ -147,7 +147,7 @@ export default function SharedNotePage() {
               </div>
               <h1 className="text-3xl font-bold text-light-fg dark:text-dark-fg">Note Not Found</h1>
               <p className="text-lg text-light-fg/70 dark:text-dark-fg/70 max-w-md mx-auto">
-                This note doesn't exist or is no longer publicly available.
+                 This note doesn&apos;t exist or is no longer publicly available.
               </p>
             </div>
 
