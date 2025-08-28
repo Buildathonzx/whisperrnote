@@ -1,75 +1,121 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Client, Users, ID } from 'node-appwrite';
-import { getNonce, markNonceUsed } from '../_nonceStore';
-import { verifyMessage, getAddress, recoverAddress } from 'viem';
+import { verifyNonce } from '../_nonceStore';
+import { getAddress } from 'viem';
+import { recoverAddress, hashMessage } from 'viem/utils';
 
-function siweMessage(domain: string, address: string, uri: string, nonce: string): string {
-  // Minimal SIWE-like message
-  // You can extend with chainId, statement, and timestamp if desired
-  return `${domain} wants you to sign in with your Ethereum account:\n${address}\n\nURI: ${uri}\nNonce: ${nonce}`;
+function buildSiweMessage(params: {
+  domain: string;
+  address: string;
+  statement: string;
+  uri: string;
+  version: string;
+  chainId: number;
+  nonce: string;
+  issuedAt: string;
+  expirationTime: string;
+}) {
+  const { domain, address, statement, uri, version, chainId, nonce, issuedAt, expirationTime } = params;
+  return `${domain} wants you to sign in with your Ethereum account:\n${address}\n\n${statement}\n\nURI: ${uri}\nVersion: ${version}\nChain ID: ${chainId}\nNonce: ${nonce}\nIssued At: ${issuedAt}\nExpiration Time: ${expirationTime}`;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, address, signature } = await request.json();
-    if (!email || !address || !signature) {
-      return NextResponse.json({ error: 'Missing required fields: email, address, signature' }, { status: 400 });
+    const { email, address, signature, nonceToken } = await request.json();
+    if (!address || !signature || !nonceToken) {
+      return NextResponse.json({ error: 'Missing required fields: address, signature, nonceToken' }, { status: 400 });
     }
 
-    const normalized = address.toLowerCase();
-    const nonceRec = getNonce(normalized);
-    if (!nonceRec) {
-      return NextResponse.json({ error: 'Nonce missing or expired' }, { status: 400 });
+    const payload = verifyNonce(nonceToken);
+
+    // Enforce domain/uri/version/chainId from server config
+    const expectedDomain = String(process.env.AUTH_DOMAIN || 'localhost');
+    const expectedUri = String(process.env.AUTH_URI || 'http://localhost:3000');
+    const expectedVersion = String(process.env.AUTH_SIWE_VERSION || '1');
+    const expectedChainId = Number(process.env.AUTH_CHAIN_ID || 1);
+
+    if (payload.domain !== expectedDomain || payload.uri !== expectedUri || payload.version !== expectedVersion || payload.chainId !== expectedChainId) {
+      return NextResponse.json({ error: 'Nonce token context mismatch' }, { status: 400 });
     }
 
-    // Build expected SIWE-like message
-    const host = request.headers.get('host') || 'localhost';
-    const proto = request.headers.get('x-forwarded-proto') || 'http';
-    const domain = host.split(':')[0];
-    const uri = `${proto}://${host}`;
-    const message = siweMessage(domain, getAddress(normalized), uri, nonceRec.nonce);
+    const normalized = payload.addr;
+    if (normalized !== address.toLowerCase()) {
+      return NextResponse.json({ error: 'Address does not match nonce token' }, { status: 400 });
+    }
 
-    // Verify signature -> recover address must match
-    const recovered = await recoverAddress({ message, signature });
+    const statement = process.env.AUTH_STATEMENT || 'Sign in to WhisperRNote';
+    const message = buildSiweMessage({
+      domain: payload.domain,
+      address: getAddress(address),
+      statement,
+      uri: payload.uri,
+      version: payload.version,
+      chainId: payload.chainId,
+      nonce: payload.nonce,
+      issuedAt: new Date(payload.iat).toISOString(),
+      expirationTime: new Date(payload.exp).toISOString(),
+    });
+
+    // Recover and compare address
+    const recovered = await (async () => {
+      // viem expects either a hashed message or use recoverMessageAddress helper
+      const { recoverMessageAddress } = await import('viem/utils');
+      return await recoverMessageAddress({ message, signature });
+    })();
     if (recovered.toLowerCase() !== normalized) {
       return NextResponse.json({ error: 'Signature does not match address' }, { status: 401 });
     }
 
-    markNonceUsed(normalized);
-
-    // Initialize Appwrite admin client
+    // Init Appwrite admin
     const client = new Client()
       .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
       .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!)
       .setKey(process.env.APPWRITE_API_KEY!);
     const users = new Users(client);
 
-    // Find existing user by email, or create one
+    // Identity binding rules (minimal, without DB):
+    // 1) If wallet already attached to some user -> prefer that user
     let userId: string | null = null;
     try {
+      // CAUTION: users.list() is a stopgap. In production, replace with proper index/search.
       const list = await users.list();
-      const match = list.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
-      if (match) userId = match.$id;
+      const found = list.users.find(u => (u.prefs as any)?.walletAddress?.toLowerCase?.() === normalized);
+      if (found) userId = found.$id;
     } catch {}
 
+    // 2) Else if email provided
+    if (!userId && email) {
+      try {
+        const list = await users.list();
+        const byEmail = list.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+        if (byEmail) {
+          // Do not auto-attach if caller is not authenticated as that email.
+          // For now, require explicit attach flow (client-side) or email verification step.
+          return NextResponse.json({
+            status: 'email_verification_required',
+            message: 'Email exists. Verify email to link this wallet.',
+          }, { status: 409 });
+        }
+      } catch {}
+    }
+
+    // 3) If still not resolved, create a new user (use email if provided and not taken)
     if (!userId) {
       const newId = ID.unique();
-      const emailUsername = email.split('@')[0];
-      const cleanName = emailUsername.replace(/[^a-zA-Z]/g, '') || 'User';
-      const user = await users.create(newId, email, undefined, undefined, cleanName);
+      const name = `eth_${normalized.slice(2, 8)}`;
+      const user = email
+        ? await users.create(newId, email, undefined, undefined, name)
+        : await users.create(newId, undefined as any, undefined, undefined, name);
       userId = user.$id;
     }
 
-    // Store wallet info
+    // Attach wallet prefs
     await users.updatePrefs(userId!, {
-      authMethod: 'wallet',
       walletAddress: normalized,
       walletProvider: 'ethereum',
-      registeredAt: new Date().toISOString(),
       lastWalletSignInAt: new Date().toISOString(),
     } as any);
 
-    // Issue custom token and return
     const token = await users.createToken(userId!);
     return NextResponse.json({ success: true, userId, secret: token.secret, expire: token.expire });
   } catch (error: any) {

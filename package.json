@@ -41,7 +41,8 @@
     "react-markdown": "^10.1.0",
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.1",
-    "three": "^0.179.1"
+    "three": "^0.179.1",
+    "viem": "^2.36.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
