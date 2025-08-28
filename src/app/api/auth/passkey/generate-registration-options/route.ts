@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: e.message || 'User provisioning failed' }, { status: 500 });
     }
 
-    const options = await generateRegistrationOptions({
+    const options: any = await generateRegistrationOptions({
       rpName,
       rpID,
       userName: email,
