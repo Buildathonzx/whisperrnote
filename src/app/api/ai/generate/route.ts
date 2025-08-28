@@ -93,7 +93,7 @@ export async function POST(request: Request) {
 
     // Extract tags from the prompt
     const words = prompt.toLowerCase().split(/\s+/);
-    const relevantWords = words.filter(word => 
+    const relevantWords = words.filter((word: string | any[]) => 
       word.length > 3 && 
       !['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'man', 'new', 'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did', 'its', 'let', 'put', 'say', 'she', 'too', 'use'].includes(word)
     );

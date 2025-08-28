@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyRegistrationResponse, type VerifiedRegistrationResponse } from '@simplewebauthn/server';
-import type { RegistrationResponseJSON } from '@simplewebauthn/typescript-types';
+import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { Client, Users } from 'node-appwrite';
+import { getChallengeForEmail, deleteChallengeForEmail } from '../_store';
 
 function getRp(request: NextRequest) {
   const host = request.headers.get('host') || '';
@@ -13,21 +13,20 @@ function getRp(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, attResp, expectedChallenge, userId } = (await request.json()) as {
-      email: string;
-      attResp: RegistrationResponseJSON;
-      expectedChallenge: string; // temporarily passed back until DB persistence is wired
-      userId: string;
-    };
+    const { email, attResp, userId } = await request.json();
 
-    if (!email || !attResp || !expectedChallenge || !userId) {
+    if (!email || !attResp || !userId) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
+    }
+
+    const expectedChallenge = getChallengeForEmail(email);
+    if (!expectedChallenge) {
+      return NextResponse.json({ message: 'Challenge expired or not found' }, { status: 400 });
     }
 
     const { rpID, origin } = getRp(request);
 
-    // In production, fetch expected challenge from DB keyed by user/email
-    const verification: VerifiedRegistrationResponse = await verifyRegistrationResponse({
+    const verification = await verifyRegistrationResponse({
       response: attResp,
       expectedChallenge,
       expectedOrigin: origin,
@@ -35,13 +34,14 @@ export async function POST(request: NextRequest) {
       requireUserVerification: true,
     });
 
+    deleteChallengeForEmail(email);
+
     if (!verification.verified || !verification.registrationInfo) {
       return NextResponse.json({ message: 'Registration verification failed' }, { status: 400 });
     }
 
-    const { credentialPublicKey, credentialID, counter, credentialBackedUp, credentialDeviceType } = verification.registrationInfo;
+    const info = verification.registrationInfo;
 
-    // Persist credential to Appwrite user prefs for now (better: a proper DB collection)
     const client = new Client()
       .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
       .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!)
@@ -50,16 +50,15 @@ export async function POST(request: NextRequest) {
 
     await users.updatePrefs(userId, {
       authMethod: 'passkey',
-      passkeyCredentialId: Buffer.from(credentialID).toString('base64url'),
-      passkeyPublicKeyJwk: Buffer.from(credentialPublicKey).toString('base64url'),
-      passkeyCounter: counter,
-      passkeyBackedUp: credentialBackedUp,
-      passkeyDeviceType: credentialDeviceType,
+      passkeyCredentialId: Buffer.from(info.credentialID).toString('base64url'),
+      passkeyPublicKey: Buffer.from(info.credentialPublicKey).toString('base64url'),
+      passkeyCounter: info.counter,
+      passkeyBackedUp: info.credentialBackedUp,
+      passkeyDeviceType: info.credentialDeviceType,
       passkeyEmail: email,
       registeredAt: new Date().toISOString(),
     } as any);
 
-    // Issue token for immediate login
     const token = await users.createToken(userId);
 
     return NextResponse.json({
