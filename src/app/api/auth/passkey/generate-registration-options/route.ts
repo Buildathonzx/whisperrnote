@@ -30,17 +30,23 @@ export async function POST(request: NextRequest) {
 
     let appwriteUserId: string;
     try {
-      const list = await users.list({ search: email, limit: 1 });
-      const match = list.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
-      if (match) {
-        appwriteUserId = match.$id;
-      } else {
-        // Create a placeholder user (passwordless) now; name can be finalized on verify
+      // node-appwrite doesn't support direct email query here safely; attempt create-first, then fallback if exists
+      try {
         const userId = ID.unique();
         const emailUsername = email.split('@')[0];
         const cleanName = emailUsername.replace(/[^a-zA-Z]/g, '') || 'User';
         const user = await users.create(userId, email, undefined, undefined, cleanName);
         appwriteUserId = user.$id;
+      } catch (createErr: any) {
+        if (createErr?.code === 409) {
+          // Email exists; fetch list and find by email
+          const list = await users.list();
+          const match = list.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+          if (!match) throw new Error('Existing user not found after 409');
+          appwriteUserId = match.$id;
+        } else {
+          throw createErr;
+        }
       }
     } catch (e: any) {
       console.error('Appwrite user fetch/create failed:', e);
