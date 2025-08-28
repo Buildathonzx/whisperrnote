@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Registration verification failed' }, { status: 400 });
     }
 
-    const info = verification.registrationInfo;
+    const info = verification.registrationInfo; // contains credential information
 
     const client = new Client()
       .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
@@ -48,12 +48,14 @@ export async function POST(request: NextRequest) {
       .setKey(process.env.APPWRITE_API_KEY!);
     const users = new Users(client);
 
+    const credId = Buffer.from(info.credential.credentialID).toString('base64url');
+    const pubKey = Buffer.from(info.credential.publicKey).toString('base64url');
     await users.updatePrefs(userId, {
       authMethod: 'passkey',
-      passkeyCredentialId: Buffer.from(info.credentialID).toString('base64url'),
-      passkeyPublicKey: Buffer.from(info.credentialPublicKey).toString('base64url'),
-      passkeyCounter: info.counter,
-      passkeyBackedUp: info.credentialBackedUp,
+      passkeyCredentialId: credId,
+      passkeyPublicKey: pubKey,
+      passkeyCounter: info.credential.counter,
+      passkeyBackedUp: info.credentialDeviceType ? info.credentialBackedUp : undefined,
       passkeyDeviceType: info.credentialDeviceType,
       passkeyEmail: email,
       registeredAt: new Date().toISOString(),
