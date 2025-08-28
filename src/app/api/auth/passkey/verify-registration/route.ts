@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       expectedOrigin: origin,
       expectedRPID: rpID,
       requireUserVerification: true,
-    });
+    } as any);
 
     deleteChallengeForEmail(email);
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       .setKey(process.env.APPWRITE_API_KEY!);
     const users = new Users(client);
 
-    const credId = Buffer.from(info.credential.credentialID).toString('base64url');
+    const credId = info.credential.id;
     const pubKey = Buffer.from(info.credential.publicKey).toString('base64url');
     await users.updatePrefs(userId, {
       authMethod: 'passkey',
