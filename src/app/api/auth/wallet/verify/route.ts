@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Client, Users, ID } from 'node-appwrite';
 import { verifyNonce } from '../_nonceStore';
 import { getAddress } from 'viem';
-import { recoverAddress, hashMessage } from 'viem/utils';
+// import { recoverAddress, hashMessage } from 'viem/utils';
 
 function buildSiweMessage(params: {
   domain: string;

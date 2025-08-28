@@ -58,6 +58,8 @@ export async function verifyWalletLogin(params: { address: string; signature: st
   return data as { success: true; userId: string; secret: string; expire: number } | { status: string; message: string };
 }
 
+export function getWalletAvailability() { try { return { available: typeof window !== 'undefined' && !!(window as any).ethereum }; } catch { return { available: false }; } }
+
 export async function loginWithWallet(address: string, email?: string) {
   const nonce = await requestNonce(address);
   const message = buildSiweMessage(nonce);
