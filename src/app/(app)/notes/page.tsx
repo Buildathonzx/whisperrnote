@@ -173,20 +173,46 @@ export default function NotesPage() {
   };
 
   const handleNoteCreated = async (newNote: Notes) => {
-    // Refresh the entire notes list from the database to ensure sync
+    // Optimistic update: Add note to local state immediately for better UX
+    setAllNotes((prevNotes) => {
+      const exists = prevNotes.some(note => note.$id === newNote.$id);
+      if (exists) {
+        return prevNotes;
+      }
+      return [newNote, ...prevNotes];
+    });
+
+    // Then sync with database in background
     try {
       const { documents: refreshedNotes } = await getAllNotes();
-      setAllNotes(refreshedNotes);
-    } catch (error) {
-      console.error('Failed to refresh notes after creation:', error);
-      // Fallback to adding the note locally if refresh fails
-      setAllNotes((prevNotes) => {
-        const exists = prevNotes.some(note => note.$id === newNote.$id);
-        if (exists) {
-          return prevNotes;
-        }
-        return [newNote, ...prevNotes];
+      // Use a more sophisticated merge to handle concurrent updates
+      setAllNotes((currentNotes) => {
+        const refreshedMap = new Map(refreshedNotes.map(note => [note.$id, note]));
+        const currentMap = new Map(currentNotes.map(note => [note.$id, note]));
+
+        // Merge: prefer database version for existing notes, keep local additions
+        const merged = refreshedNotes.slice();
+
+        // Add any local notes that aren't in the refreshed list (our optimistic update)
+        currentNotes.forEach(note => {
+          if (!refreshedMap.has(note.$id)) {
+            merged.unshift(note); // Add to beginning
+          }
+        });
+
+        // Remove duplicates and sort by creation date (newest first)
+        const unique = merged.filter((note, index, arr) =>
+          arr.findIndex(n => n.$id === note.$id) === index
+        );
+
+        return unique.sort((a, b) =>
+          new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime()
+        );
       });
+    } catch (error) {
+      console.error('Failed to sync notes after creation:', error);
+      // Note: We keep the optimistic update even if sync fails
+      // This provides better UX - user sees their note immediately
     }
   };
 

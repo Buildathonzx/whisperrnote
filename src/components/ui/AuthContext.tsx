@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getCurrentUser, logout as authLogout } from '@/lib/auth';
 import { InitialLoadingScreen } from './InitialLoadingScreen';
+import { EmailVerificationReminder } from './EmailVerificationReminder';
 
 interface User {
   $id: string;
@@ -20,6 +21,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   recoverSession: () => Promise<boolean>;
+  shouldShowEmailVerificationReminder: () => boolean;
+  dismissEmailVerificationReminder: () => void;
   showAuthModal: () => void;
   hideAuthModal: () => void;
   hideAuthModalAndRedirect: () => void;
@@ -37,6 +40,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showInitialLoading, setShowInitialLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [emailVerificationReminderDismissed, setEmailVerificationReminderDismissed] = useState(false);
 
   const refreshUser = async (isRetry = false) => {
     try {
@@ -66,6 +70,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Periodic session validation to detect expired sessions
   useEffect(() => {
+    // Restore email verification reminder dismissal state
+    if (typeof window !== 'undefined') {
+      const dismissed = localStorage.getItem('emailVerificationReminderDismissed');
+      if (dismissed === 'true') {
+        setEmailVerificationReminderDismissed(true);
+      }
+    }
+
     refreshUser();
 
     // Set up periodic session validation (every 5 minutes)
@@ -164,6 +176,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Email verification reminder logic
+  const shouldShowEmailVerificationReminder = (): boolean => {
+    if (!user || user.emailVerification || emailVerificationReminderDismissed) {
+      return false;
+    }
+
+    // Check if account is older than 24 hours
+    const accountAge = Date.now() - new Date(user.$createdAt).getTime();
+    const oneDay = 24 * 60 * 60 * 1000;
+
+    return accountAge > oneDay;
+  };
+
+  const dismissEmailVerificationReminder = (): void => {
+    setEmailVerificationReminderDismissed(true);
+    // Store dismissal in localStorage to persist across sessions
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('emailVerificationReminderDismissed', 'true');
+    }
+  };
+
   const showAuthModal = () => {
     setAuthModalOpen(true);
   };
@@ -188,6 +221,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     refreshUser,
     recoverSession,
+    shouldShowEmailVerificationReminder,
+    dismissEmailVerificationReminder,
     showAuthModal,
     hideAuthModal,
     hideAuthModalAndRedirect,
@@ -198,6 +233,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     <AuthContext.Provider value={value}>
       {children}
       {showInitialLoading && <InitialLoadingScreen show={true} />}
+      <EmailVerificationReminder />
     </AuthContext.Provider>
   );
 };
