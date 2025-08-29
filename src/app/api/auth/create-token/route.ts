@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Client, Users, ID } from 'node-appwrite';
+import { Client, Users } from 'node-appwrite';
 
 export async function POST(request: NextRequest) {
   try {

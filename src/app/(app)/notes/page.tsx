@@ -130,7 +130,7 @@ export default function NotesPage() {
           // Check if there are any differences
           const hasChanges = latestNotes.length !== currentNotes.length ||
             latestNotes.some(note => {
-              const current = currentNotes.find(n => n.$id === note.$id);
+              const current = refreshedMap.get(note.$id);
               return !current ||
                 current.$updatedAt !== note.$updatedAt ||
                 current.title !== note.title ||
@@ -234,10 +234,7 @@ export default function NotesPage() {
     // Then sync with database in background
     try {
       const { documents: refreshedNotes } = await getAllNotes();
-      // Use a more sophisticated merge to handle concurrent updates
-      setAllNotes((currentNotes) => {
-        const refreshedMap = new Map(refreshedNotes.map(note => [note.$id, note]));
-        const currentMap = new Map(currentNotes.map(note => [note.$id, note]));
+        // Use a more sophisticated merge to handle concurrent updates
 
         // Merge: prefer database version for existing notes, keep local additions
         const merged = refreshedNotes.slice();

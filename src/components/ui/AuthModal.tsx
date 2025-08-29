@@ -282,7 +282,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           handleClose();
           return;
         }
-      } catch (loginError: any) {
+      } catch {
         // If login fails, try to signup (only if password is strong enough)
         if (passwordStrength && passwordStrength.isValid) {
           const username = generateUsername(email);
