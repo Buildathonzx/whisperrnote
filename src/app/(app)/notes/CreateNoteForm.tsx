@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { createNote as appwriteCreateNote } from '@/lib/appwrite';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import type { Notes } from '@/types/appwrite';
-import { Status } from '@/types/appwrite';
+import type { Status } from '@/types/appwrite';
 import { 
   XMarkIcon, 
   DocumentTextIcon, 
