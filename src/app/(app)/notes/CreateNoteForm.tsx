@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { createNote as appwriteCreateNote } from '@/lib/appwrite';
 import { useOverlay } from '@/components/ui/OverlayContext';
-import type { Notes } from '@/types/appwrite';
-import * as AppwriteTypes from '@/types/appwrite';
+import type { Notes } from '@/types/appwrite.d';
+import * as AppwriteTypes from '@/types/appwrite.d';
 import { 
   XMarkIcon, 
   DocumentTextIcon, 
