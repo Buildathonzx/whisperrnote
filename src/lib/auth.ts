@@ -46,8 +46,10 @@ export const logout = async () => {
   }
 };
 
-// Get the currently authenticated user
-export const getCurrentUser = async () => {
+// Get the currently authenticated user with enhanced error handling
+export const getCurrentUser = async (retryCount = 0): Promise<any> => {
+  const maxRetries = 2;
+
   try {
     const user = await account.get();
     if (user) {
@@ -61,7 +63,34 @@ export const getCurrentUser = async () => {
       };
     }
     return user;
-  } catch {
+  } catch (error: any) {
+    // Handle specific error types
+    if (error.code === 401 || error.message?.includes('unauthorized')) {
+      // Session is invalid/expired
+      console.warn('Authentication session expired or invalid');
+      return null;
+    }
+
+    if (error.code === 429) {
+      // Rate limited, don't retry
+      console.warn('Rate limited while checking authentication');
+      return null;
+    }
+
+    // For network errors or other issues, retry with exponential backoff
+    if (retryCount < maxRetries && (
+      error.message?.includes('network') ||
+      error.message?.includes('timeout') ||
+      error.code === 500
+    )) {
+      const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 1s, 2s
+      console.warn(`Authentication check failed, retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return getCurrentUser(retryCount + 1);
+    }
+
+    // For other errors, don't retry
+    console.error('Authentication check failed:', error.message);
     return null;
   }
 };

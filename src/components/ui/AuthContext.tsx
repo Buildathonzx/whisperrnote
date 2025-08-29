@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  recoverSession: () => Promise<boolean>;
   showAuthModal: () => void;
   hideAuthModal: () => void;
   hideAuthModalAndRedirect: () => void;
@@ -37,13 +38,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [showInitialLoading, setShowInitialLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
-  const refreshUser = async () => {
+  const refreshUser = async (isRetry = false) => {
     try {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
+      // Reset retry count on success
+      if (isRetry) {
+        console.log('Authentication state recovered successfully');
+      }
     } catch (error) {
       console.error('Failed to get current user:', error);
       setUser(null);
+
+      // If this is the initial load and we failed, don't retry immediately
+      // to avoid infinite loops, but log for debugging
+      if (!isRetry && !isLoading) {
+        console.warn('Initial authentication check failed, user may need to re-authenticate');
+      }
     } finally {
       setIsLoading(false);
       // Reduced loading time to prevent excessive flashing
@@ -53,9 +64,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Periodic session validation to detect expired sessions
   useEffect(() => {
     refreshUser();
-  }, []);
+
+    // Set up periodic session validation (every 5 minutes)
+    const sessionCheckInterval = setInterval(async () => {
+      if (user && !isLoading) {
+        try {
+          const currentUser = await getCurrentUser();
+          // If user exists but session is invalid, clear state
+          if (!currentUser && user) {
+            console.warn('Session expired, clearing authentication state');
+            setUser(null);
+            // Optionally show auth modal
+            setAuthModalOpen(true);
+          } else if (currentUser && currentUser.$id !== user.$id) {
+            // User changed (edge case), update state
+            setUser(currentUser);
+          }
+        } catch (error) {
+          console.error('Session validation failed:', error);
+          // Don't clear user state on network errors, just log
+        }
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    // Listen for visibility change to re-validate session when user returns to tab
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user && !isLoading) {
+        refreshUser(true); // Pass true to indicate this is a retry
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Listen for online/offline events
+    const handleOnline = () => {
+      if (user && !isLoading) {
+        console.log('Network connection restored, validating session');
+        refreshUser(true);
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      clearInterval(sessionCheckInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [user, isLoading]);
 
   const login = (userData: User) => {
     setUser(userData);
@@ -76,6 +135,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       // Clear any temporary auth state
       setAuthModalOpen(false);
+    }
+  };
+
+  // Session recovery function for when authentication state becomes inconsistent
+  const recoverSession = async () => {
+    console.log('Attempting session recovery...');
+    setIsLoading(true);
+
+    try {
+      // Try to refresh the user data
+      await refreshUser(true);
+
+      if (user) {
+        console.log('Session recovery successful');
+        return true;
+      } else {
+        console.log('Session recovery failed, user needs to re-authenticate');
+        setAuthModalOpen(true);
+        return false;
+      }
+    } catch (error) {
+      console.error('Session recovery failed:', error);
+      setAuthModalOpen(true);
+      return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -102,6 +187,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     refreshUser,
+    recoverSession,
     showAuthModal,
     hideAuthModal,
     hideAuthModalAndRedirect,
