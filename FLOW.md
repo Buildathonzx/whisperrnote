@@ -1,8 +1,8 @@
 # Wallet Auth Hardening – Execution Plan
 
-- [ ] Establish env guardrails
-  - [ ] Ensure required env vars: NEXT_PUBLIC_APPWRITE_ENDPOINT, NEXT_PUBLIC_APPWRITE_PROJECT_ID, APPWRITE_API_KEY, SERVER_NONCE_SECRET, AUTH_DOMAIN, AUTH_URI, AUTH_CHAIN_ID
-  - [ ] Add placeholders to env.sample and .sample.env if missing
+- [x] Establish env guardrails
+  - [x] Ensure required env vars: NEXT_PUBLIC_APPWRITE_ENDPOINT, NEXT_PUBLIC_APPWRITE_PROJECT_ID, APPWRITE_API_KEY, SERVER_NONCE_SECRET, AUTH_DOMAIN, AUTH_URI, AUTH_CHAIN_ID
+  - [x] Add placeholders to env.sample and .sample.env if missing
 
 - [ ] Implement stateless signed nonce (HMAC) utilities
   - [ ] Create wallet nonce signer/verifier to replace in-memory store
@@ -38,9 +38,9 @@
   - [ ] verifySignature({ signature, address, nonceToken, email? })
   - [ ] authenticateWithCustomToken(userId, secret) (reuse existing)
 
-- [ ] UI wiring (minimal)
-  - [ ] Settings: "Connect wallet" uses session attach path
-  - [ ] Sign-in: wallet-first path with optional email capture for recovery
+ - [x] UI wiring (minimal)
+   - [x] Settings: "Connect wallet" uses session attach path
+   - [x] Sign-in: wallet-first path with optional email capture for recovery
 
 - [ ] Security & DX
   - [ ] Rate-limit endpoints (note: leave stubs or middleware hooks)

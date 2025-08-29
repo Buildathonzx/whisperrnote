@@ -26,6 +26,27 @@ function checkRateLimit(identifier: string): boolean {
   return true;
 }
 
+// Structured logging utility
+function logWalletEvent(level: 'info' | 'warn' | 'error', event: string, data: Record<string, any>) {
+  const timestamp = new Date().toISOString();
+  const logEntry = {
+    timestamp,
+    service: 'wallet-auth',
+    endpoint: 'verify',
+    level,
+    event,
+    ...data
+  };
+
+  if (level === 'error') {
+    console.error(JSON.stringify(logEntry));
+  } else if (level === 'warn') {
+    console.warn(JSON.stringify(logEntry));
+  } else {
+    console.log(JSON.stringify(logEntry));
+  }
+}
+
 function buildSiweMessage(params: {
   domain: string;
   address: string;
@@ -42,38 +63,115 @@ function buildSiweMessage(params: {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  let clientIP = 'unknown';
+  let addressPreview = 'unknown';
+  let hasEmail = false;
+
   try {
     const { email, address, signature, nonceToken } = await request.json();
 
+    // Get client IP for logging
+    clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+               request.headers.get('x-real-ip') ||
+               request.headers.get('x-client-ip') ||
+               'unknown';
+
+    hasEmail = !!email;
+
+    // Create address preview for logging
+    addressPreview = address && address.length >= 10 ?
+      `${address.slice(0, 6)}...${address.slice(-4)}` :
+      'invalid_format';
+
     // Validate required fields
     if (!address || !signature || !nonceToken) {
-      return NextResponse.json({ error: 'Missing required fields: address, signature, nonceToken' }, { status: 400 });
+      logWalletEvent('warn', 'verify_request_invalid', {
+        clientIP,
+        addressPreview,
+        hasEmail,
+        missingFields: {
+          address: !address,
+          signature: !signature,
+          nonceToken: !nonceToken
+        }
+      });
+      return NextResponse.json({
+        error: 'Missing required information. Please ensure your wallet is connected and try again.',
+        code: 'MISSING_REQUIRED_FIELDS'
+      }, { status: 400 });
     }
 
     // Basic rate limiting by IP
-    const clientIP = request.headers.get('x-forwarded-for') ||
-                    request.headers.get('x-real-ip') ||
-                    'unknown';
     if (!checkRateLimit(clientIP)) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+      logWalletEvent('warn', 'verify_request_rate_limited', {
+        clientIP,
+        addressPreview,
+        hasEmail
+      });
+      return NextResponse.json({
+        error: 'Too many verification attempts. Please wait before trying again.',
+        code: 'RATE_LIMIT_EXCEEDED'
+      }, { status: 429 });
     }
 
     // Validate Ethereum address format
     if (!address.startsWith('0x') || address.length !== 42) {
-      return NextResponse.json({ error: 'Invalid Ethereum address format' }, { status: 400 });
+      logWalletEvent('warn', 'verify_request_invalid_address', {
+        clientIP,
+        addressPreview,
+        hasEmail,
+        reason: 'invalid_format'
+      });
+      return NextResponse.json({
+        error: 'Invalid wallet address format. Please ensure you are using a valid Ethereum address.',
+        code: 'INVALID_ADDRESS_FORMAT'
+      }, { status: 400 });
     }
 
     // Validate signature format (basic check)
     if (!signature.startsWith('0x') || signature.length !== 132) {
-      return NextResponse.json({ error: 'Invalid signature format' }, { status: 400 });
+      logWalletEvent('warn', 'verify_request_invalid_signature', {
+        clientIP,
+        addressPreview,
+        hasEmail,
+        signatureLength: signature.length
+      });
+      return NextResponse.json({
+        error: 'Invalid signature format. Please try signing the message again.',
+        code: 'INVALID_SIGNATURE_FORMAT'
+      }, { status: 400 });
     }
 
     // Validate email format if provided
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+      logWalletEvent('warn', 'verify_request_invalid_email', {
+        clientIP,
+        addressPreview,
+        email: email.substring(0, 3) + '***' // Partial email for logging
+      });
+      return NextResponse.json({
+        error: 'Invalid email format. Please enter a valid email address.',
+        code: 'INVALID_EMAIL_FORMAT'
+      }, { status: 400 });
     }
 
-    const payload = verifyNonce(nonceToken);
+    // Verify nonce token
+    let payload;
+    try {
+      payload = verifyNonce(nonceToken);
+    } catch (nonceError: any) {
+      logWalletEvent('warn', 'verify_request_invalid_nonce', {
+        clientIP,
+        addressPreview,
+        hasEmail,
+        nonceError: nonceError.message
+      });
+      return NextResponse.json({
+        error: 'Authentication session expired. Please try connecting your wallet again.',
+        code: 'INVALID_NONCE_TOKEN'
+      }, { status: 400 });
+    }
 
     // Enforce domain/uri/version/chainId from server config
     const expectedDomain = String(process.env.AUTH_DOMAIN || 'localhost');
@@ -82,12 +180,32 @@ export async function POST(request: NextRequest) {
     const expectedChainId = Number(process.env.AUTH_CHAIN_ID || 1);
 
     if (payload.domain !== expectedDomain || payload.uri !== expectedUri || payload.version !== expectedVersion || payload.chainId !== expectedChainId) {
-      return NextResponse.json({ error: 'Nonce token context mismatch' }, { status: 400 });
+      logWalletEvent('warn', 'verify_request_context_mismatch', {
+        clientIP,
+        addressPreview,
+        hasEmail,
+        expected: { domain: expectedDomain, uri: expectedUri, version: expectedVersion, chainId: expectedChainId },
+        received: { domain: payload.domain, uri: payload.uri, version: payload.version, chainId: payload.chainId }
+      });
+      return NextResponse.json({
+        error: 'Authentication context mismatch. Please refresh the page and try again.',
+        code: 'CONTEXT_MISMATCH'
+      }, { status: 400 });
     }
 
     const normalized = payload.addr;
     if (normalized !== address.toLowerCase()) {
-      return NextResponse.json({ error: 'Address does not match nonce token' }, { status: 400 });
+      logWalletEvent('warn', 'verify_request_address_mismatch', {
+        clientIP,
+        addressPreview,
+        hasEmail,
+        nonceAddress: `${normalized.slice(0, 6)}...${normalized.slice(-4)}`,
+        providedAddress: addressPreview
+      });
+      return NextResponse.json({
+        error: 'Wallet address mismatch. Please ensure you are using the same wallet that requested authentication.',
+        code: 'ADDRESS_MISMATCH'
+      }, { status: 400 });
     }
 
     const statement = process.env.AUTH_STATEMENT || 'Sign in to WhisperRNote';
@@ -104,13 +222,38 @@ export async function POST(request: NextRequest) {
     });
 
     // Recover and compare address
-    const recovered = await (async () => {
-      // viem expects either a hashed message or use recoverMessageAddress helper
-      const { recoverMessageAddress } = await import('viem/utils');
-      return await recoverMessageAddress({ message, signature });
-    })();
+    let recovered: string;
+    try {
+      recovered = await (async () => {
+        // viem expects either a hashed message or use recoverMessageAddress helper
+        const { recoverMessageAddress } = await import('viem/utils');
+        return await recoverMessageAddress({ message, signature });
+      })();
+    } catch (signatureError: any) {
+      logWalletEvent('warn', 'verify_request_signature_recovery_failed', {
+        clientIP,
+        addressPreview,
+        hasEmail,
+        error: signatureError.message
+      });
+      return NextResponse.json({
+        error: 'Unable to verify signature. Please try signing the message again.',
+        code: 'SIGNATURE_RECOVERY_FAILED'
+      }, { status: 400 });
+    }
+
     if (recovered.toLowerCase() !== normalized) {
-      return NextResponse.json({ error: 'Signature does not match address' }, { status: 401 });
+      logWalletEvent('warn', 'verify_request_signature_mismatch', {
+        clientIP,
+        addressPreview,
+        hasEmail,
+        recoveredAddress: `${recovered.slice(0, 6)}...${recovered.slice(-4)}`,
+        expectedAddress: addressPreview
+      });
+      return NextResponse.json({
+        error: 'Signature verification failed. Please ensure you signed the correct message with the correct wallet.',
+        code: 'SIGNATURE_MISMATCH'
+      }, { status: 401 });
     }
 
     // Init Appwrite admin
@@ -123,12 +266,25 @@ export async function POST(request: NextRequest) {
     // Identity binding rules (minimal, without DB):
     // 1) If wallet already attached to some user -> prefer that user
     let userId: string | null = null;
+    let userAction = 'unknown';
+
     try {
       // CAUTION: users.list() is a stopgap. In production, replace with proper index/search.
       const list = await users.list();
       const found = list.users.find(u => (u.prefs as any)?.walletAddress?.toLowerCase?.() === normalized);
-      if (found) userId = found.$id;
-    } catch {}
+      if (found) {
+        userId = found.$id;
+        userAction = 'existing_wallet_user';
+      }
+    } catch (listError: any) {
+      logWalletEvent('warn', 'verify_user_lookup_failed', {
+        clientIP,
+        addressPreview,
+        hasEmail,
+        error: listError.message
+      });
+      // Continue with user creation if lookup fails
+    }
 
     // 2) Else if email provided
     if (!userId && email) {
@@ -136,35 +292,105 @@ export async function POST(request: NextRequest) {
         const list = await users.list();
         const byEmail = list.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
         if (byEmail) {
+          logWalletEvent('info', 'verify_email_exists_requires_verification', {
+            clientIP,
+            addressPreview,
+            email: email.substring(0, 3) + '***'
+          });
           // Do not auto-attach if caller is not authenticated as that email.
           // For now, require explicit attach flow (client-side) or email verification step.
           return NextResponse.json({
             status: 'email_verification_required',
-            message: 'Email exists. Verify email to link this wallet.',
+            message: 'An account with this email already exists. Please sign in with your email first, then connect your wallet in settings.',
+            code: 'EMAIL_VERIFICATION_REQUIRED'
           }, { status: 409 });
         }
-      } catch {}
+      } catch (emailLookupError: any) {
+        logWalletEvent('warn', 'verify_email_lookup_failed', {
+          clientIP,
+          addressPreview,
+          email: email.substring(0, 3) + '***',
+          error: emailLookupError.message
+        });
+      }
     }
 
     // 3) If still not resolved, create a new user (use email if provided and not taken)
     if (!userId) {
-      const newId = ID.unique();
-      const name = `eth_${normalized.slice(2, 8)}`;
-      const user = email
-        ? await users.create(newId, email, undefined, undefined, name)
-        : await users.create(newId, undefined as any, undefined, undefined, name);
-      userId = user.$id;
+      try {
+        const newId = ID.unique();
+        const name = `eth_${normalized.slice(2, 8)}`;
+        const user = email
+          ? await users.create(newId, email, undefined, undefined, name)
+          : await users.create(newId, undefined as any, undefined, undefined, name);
+        userId = user.$id;
+        userAction = email ? 'new_user_with_email' : 'new_user_anonymous';
+      } catch (createError: any) {
+        logWalletEvent('error', 'verify_user_creation_failed', {
+          clientIP,
+          addressPreview,
+          hasEmail,
+          error: createError.message
+        });
+        return NextResponse.json({
+          error: 'Unable to create user account. Please try again or contact support.',
+          code: 'USER_CREATION_FAILED'
+        }, { status: 500 });
+      }
     }
 
     // Attach wallet prefs
-    await users.updatePrefs(userId!, {
-      walletAddress: normalized,
-      walletProvider: 'ethereum',
-      lastWalletSignInAt: new Date().toISOString(),
-    } as any);
+    try {
+      await users.updatePrefs(userId!, {
+        walletAddress: normalized,
+        walletProvider: 'ethereum',
+        lastWalletSignInAt: new Date().toISOString(),
+      } as any);
+    } catch (prefsError: any) {
+      logWalletEvent('error', 'verify_prefs_update_failed', {
+        clientIP,
+        addressPreview,
+        hasEmail,
+        userId,
+        error: prefsError.message
+      });
+      // Don't fail the request if prefs update fails, but log it
+    }
 
-    const token = await users.createToken(userId!);
-    return NextResponse.json({ success: true, userId, secret: token.secret, expire: token.expire });
+    // Create authentication token
+    let token;
+    try {
+      token = await users.createToken(userId!);
+    } catch (tokenError: any) {
+      logWalletEvent('error', 'verify_token_creation_failed', {
+        clientIP,
+        addressPreview,
+        hasEmail,
+        userId,
+        error: tokenError.message
+      });
+      return NextResponse.json({
+        error: 'Authentication token creation failed. Please try again.',
+        code: 'TOKEN_CREATION_FAILED'
+      }, { status: 500 });
+    }
+
+    const responseTime = Date.now() - startTime;
+    logWalletEvent('info', 'verify_request_success', {
+      clientIP,
+      addressPreview,
+      hasEmail,
+      userId,
+      userAction,
+      responseTime: `${responseTime}ms`
+    });
+
+    return NextResponse.json({
+      success: true,
+      userId,
+      secret: token.secret,
+      expire: token.expire
+    });
   } catch (error: any) {
     console.error('wallet/verify error:', error);
     return NextResponse.json({ error: error.message || 'Verification failed' }, { status: 500 });

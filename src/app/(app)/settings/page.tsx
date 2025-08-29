@@ -9,7 +9,7 @@ import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
-import { getWalletAvailability } from "@/lib/appwrite/auth/wallet";
+import { getWalletAvailability, authenticateWithWallet } from "@/lib/appwrite/auth/wallet";
 import { isICPEnabled } from "@/integrations/icp";
 
 type TabType = 'profile' | 'settings' | 'preferences' | 'integrations';
@@ -190,6 +190,36 @@ export default function SettingsPage() {
     setSuccess("");
   };
 
+  const handleConnectWallet = async () => {
+    if (!authMethods.walletAvailable) {
+      setError("No wallet provider detected. Please install MetaMask or another Web3 wallet.");
+      return;
+    }
+
+    try {
+      setError("");
+      setSuccess("");
+
+      const result = await authenticateWithWallet();
+
+      if (result.success) {
+        setSuccess("Wallet connected successfully! You can now use wallet authentication.");
+        // Refresh user data to show updated auth method
+        const updatedUser = await account.get();
+        setUser(updatedUser);
+        // Update auth methods to reflect wallet connection
+        setAuthMethods(prev => ({
+          ...prev,
+          walletAvailable: true
+        }));
+      } else {
+        setError(result.error || "Failed to connect wallet");
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to connect wallet");
+    }
+  };
+
   const handleEditProfile = () => {
     openOverlay(
       <EditProfileForm
@@ -245,25 +275,26 @@ export default function SettingsPage() {
 
           <div className="p-8">
             {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} notes={notes} onEditProfile={handleEditProfile} />}
-            {activeTab === 'settings' && (
-              <SettingsTab 
-                user={user} 
-                settings={settings} 
-                isVerified={isVerified} 
-                error={error} 
-                success={success} 
-                onUpdate={handleUpdate} 
-                onSettingChange={handleSettingChange} 
-                router={router}
-                authMethods={authMethods}
-                onRemoveAuthMethod={handleRemoveAuthMethod}
-                showPasswordReset={showPasswordReset}
-                setShowPasswordReset={setShowPasswordReset}
-                resetEmailSent={resetEmailSent}
-                handlePasswordReset={handlePasswordReset}
-                handleCancelPasswordReset={handleCancelPasswordReset}
-              />
-            )}
+             {activeTab === 'settings' && (
+               <SettingsTab
+                 user={user}
+                 settings={settings}
+                 isVerified={isVerified}
+                 error={error}
+                 success={success}
+                 onUpdate={handleUpdate}
+                 onSettingChange={handleSettingChange}
+                 router={router}
+                 authMethods={authMethods}
+                 onRemoveAuthMethod={handleRemoveAuthMethod}
+                 showPasswordReset={showPasswordReset}
+                 setShowPasswordReset={setShowPasswordReset}
+                 resetEmailSent={resetEmailSent}
+                 handlePasswordReset={handlePasswordReset}
+                 handleCancelPasswordReset={handleCancelPasswordReset}
+                 onConnectWallet={handleConnectWallet}
+               />
+             )}
             {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} currentAIMode={currentAIMode} userTier={userTier} onAIModeChange={handleAIModeChange} />}
             {activeTab === 'integrations' && <IntegrationsTab enabledIntegrations={enabledIntegrations} />}
           </div>
@@ -319,22 +350,23 @@ const ProfileTab = ({ user, profilePicUrl, notes, onEditProfile }: any) => (
   </div>
 );
 
-const SettingsTab = ({ 
-  user, 
-  settings, 
-  isVerified, 
-  error, 
-  success, 
-  onUpdate, 
-  onSettingChange, 
-  router, 
-  authMethods, 
+const SettingsTab = ({
+  user,
+  settings,
+  isVerified,
+  error,
+  success,
+  onUpdate,
+  onSettingChange,
+  router,
+  authMethods,
   onRemoveAuthMethod,
   showPasswordReset,
   setShowPasswordReset,
   resetEmailSent,
   handlePasswordReset,
-  handleCancelPasswordReset
+  handleCancelPasswordReset,
+  onConnectWallet
 }: any) => (
   <div className="space-y-8">
     <h1 className="text-foreground text-3xl font-bold">Settings</h1>
@@ -359,17 +391,30 @@ const SettingsTab = ({
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-foreground">Authentication Methods</h2>
       
-      {/* Show current authentication method */}
-      <div className="p-4 bg-background rounded-xl border border-border">
-        <p className="text-foreground text-sm mb-2">
-          Current method: <span className="font-medium">{user?.prefs?.authMethod || 'Email'}</span>
-        </p>
-        {user?.prefs?.authMethod === 'wallet' && user?.prefs?.walletAddress && (
-          <p className="text-foreground/70 text-xs">
-            Wallet: {user.prefs.walletAddress.slice(0, 6)}...{user.prefs.walletAddress.slice(-4)}
-          </p>
-        )}
-      </div>
+       {/* Show current authentication method */}
+       <div className="p-4 bg-background rounded-xl border border-border">
+         <div className="flex items-center justify-between mb-2">
+           <div>
+             <p className="text-foreground text-sm">
+               Current method: <span className="font-medium">{user?.prefs?.authMethod || 'Email'}</span>
+             </p>
+             {user?.prefs?.authMethod === 'wallet' && user?.prefs?.walletAddress && (
+               <p className="text-foreground/70 text-xs">
+                 Wallet: {user.prefs.walletAddress.slice(0, 6)}...{user.prefs.walletAddress.slice(-4)}
+               </p>
+             )}
+           </div>
+           {user?.prefs?.authMethod !== 'wallet' && authMethods.walletAvailable && (
+             <Button
+               variant="secondary"
+               size="sm"
+               onClick={onConnectWallet}
+             >
+               Connect Wallet
+             </Button>
+           )}
+         </div>
+       </div>
 
       {/* Password Section */}
       <div className="p-6 bg-background border border-border rounded-xl">
