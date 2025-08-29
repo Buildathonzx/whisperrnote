@@ -392,7 +392,19 @@ export async function POST(request: NextRequest) {
       expire: token.expire
     });
   } catch (error: any) {
-    console.error('wallet/verify error:', error);
-    return NextResponse.json({ error: error.message || 'Verification failed' }, { status: 500 });
+    const responseTime = Date.now() - startTime;
+    logWalletEvent('error', 'verify_request_unexpected_error', {
+      clientIP,
+      addressPreview,
+      hasEmail,
+      responseTime: `${responseTime}ms`,
+      error: error.message,
+      stack: error.stack?.split('\n')[0] // Only log first line of stack
+    });
+
+    return NextResponse.json({
+      error: 'An unexpected error occurred during wallet verification. Please try again or contact support if the issue persists.',
+      code: 'VERIFICATION_FAILED'
+    }, { status: 500 });
   }
 }

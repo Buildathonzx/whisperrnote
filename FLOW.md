@@ -42,10 +42,10 @@
    - [x] Settings: "Connect wallet" uses session attach path
    - [x] Sign-in: wallet-first path with optional email capture for recovery
 
-- [ ] Security & DX
-  - [ ] Rate-limit endpoints (note: leave stubs or middleware hooks)
-  - [ ] Structured logging without secrets
-  - [ ] Clear error messages and actionable responses
+ - [x] Security & DX
+   - [x] Rate-limit endpoints (note: leave stubs or middleware hooks)
+   - [x] Structured logging without secrets
+   - [x] Clear error messages and actionable responses
 
 - [ ] Backward compatibility and cleanup
   - [ ] Keep endpoint paths and prefs keys stable
