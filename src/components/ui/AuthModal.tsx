@@ -3,18 +3,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { loginEmailPassword, signupEmailPassword, getCurrentUser } from '@/lib/appwrite';
-import { 
-  registerPasskey, 
-  authenticateWithPasskey, 
-  isPlatformAuthenticatorAvailable 
+import {
+  registerPasskey,
+  authenticateWithPasskey,
+  isPlatformAuthenticatorAvailable
 } from '@/lib/appwrite/auth/passkey';
-import { 
-  registerWallet, 
-  authenticateWithWallet, 
+import {
+  registerWallet,
+  authenticateWithWallet,
   getWalletAvailability,
   getWalletStatus,
-  type WalletAvailability 
+  type WalletAvailability
 } from '@/lib/appwrite/auth/wallet';
+import { validatePasswordStrength } from '@/lib/passwordUtils';
+import { PasswordInputWithStrength } from './PasswordStrengthIndicator';
 import { useAuth } from './AuthContext';
 import { useLoading } from './LoadingContext';
 
@@ -36,6 +38,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState('');
   const [tooltip, setTooltip] = useState('');
   const [showPasswordField, setShowPasswordField] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<any>(null);
   const [passkeySupported, setPasskeySupported] = useState(false);
   const [walletAvailability, setWalletAvailability] = useState<WalletAvailability>({
     available: false,
@@ -260,9 +263,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     e.preventDefault();
     if (!email || !password || !isValidEmail(email)) return;
 
+    // Validate password strength for signup attempts
+    if (passwordStrength && !passwordStrength.isValid) {
+      setError('Please choose a stronger password that meets the requirements.');
+      return;
+    }
+
     setError('');
     showLoading('Authenticating...');
-    
+
     try {
       // First try to login
       try {
@@ -275,16 +284,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           return;
         }
       } catch (loginError: any) {
-        // If login fails, try to signup
-        const username = generateUsername(email);
-        await signupEmailPassword(email, password, username);
-        await loginEmailPassword(email, password);
-        const user = await getCurrentUser();
-        if (user) {
-          authLogin(user);
-          await refreshUser();
-          handleClose();
-          return;
+        // If login fails, try to signup (only if password is strong enough)
+        if (passwordStrength && passwordStrength.isValid) {
+          const username = generateUsername(email);
+          await signupEmailPassword(email, password, username);
+          await loginEmailPassword(email, password);
+          const user = await getCurrentUser();
+          if (user) {
+            authLogin(user);
+            await refreshUser();
+            handleClose();
+            return;
+          }
+        } else {
+          // For weak passwords, show login error instead of attempting signup
+          throw new Error('Invalid email or password. Please check your credentials.');
         }
       }
     } catch (err: any) {
@@ -370,19 +384,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     />
                     
                     {showPasswordField && (
-                      <motion.input
+                      <motion.div
                         initial={{ opacity: 0, height: 0, marginTop: 0 }}
                         animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
                         exit={{ opacity: 0, height: 0, marginTop: 0 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password"
-                        className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
-                        autoComplete="current-password"
-                        autoFocus
-                      />
+                      >
+                        <PasswordInputWithStrength
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          onStrengthChange={setPasswordStrength}
+                          placeholder="Enter your password"
+                          autoComplete="current-password"
+                          autoFocus
+                        />
+                      </motion.div>
                     )}
                     
                     {showPasswordField && (

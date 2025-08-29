@@ -5,8 +5,8 @@
 ### Authentication & Security
 - [ ] Fix Appwrite passkey authentication implementation
 - [ ] Implement account deletion functionality
-- [ ] Add password strength requirements
-- [ ] Implement secure password reset flow
+- [x] Add password strength requirements
+- [x] Implement secure password reset flow
 
 ### Data & Performance
 - [ ] Optimize large note collection loading performance

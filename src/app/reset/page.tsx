@@ -3,6 +3,8 @@ import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { completePasswordReset } from "@/lib/appwrite";
 import { motion } from "framer-motion";
+import { PasswordInputWithStrength } from "@/components/ui/PasswordStrengthIndicator";
+import { validatePasswordStrength } from "@/lib/passwordUtils";
 
 // Extract the inner component that uses useSearchParams
 function PasswordResetInner() {
@@ -11,6 +13,7 @@ function PasswordResetInner() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<any>(null);
 
   const searchParams = useSearchParams();
   const userId = searchParams?.get("userId") || "";
@@ -23,6 +26,10 @@ function PasswordResetInner() {
     }
     if (password !== confirm) {
       setError("Passwords do not match");
+      return;
+    }
+    if (!passwordStrength?.isValid) {
+      setError("Please choose a stronger password that meets the requirements.");
       return;
     }
     setLoading(true);
@@ -85,12 +92,11 @@ function PasswordResetInner() {
             
             {/* Form */}
             <form onSubmit={e => e.preventDefault()} className="space-y-4">
-              <input
-                type="password"
-                placeholder="New Password"
+              <PasswordInputWithStrength
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all shadow-inner-light dark:shadow-inner-dark"
+                onStrengthChange={setPasswordStrength}
+                placeholder="New Password"
                 autoComplete="new-password"
               />
               <input
