@@ -142,29 +142,9 @@ export const NotesErrorBoundary: React.FC<{ children: ReactNode }> = ({ children
   </ErrorBoundary>
 );
 
-// Specialized error boundary for authentication
+// Deprecated: Do not render auth-specific fallback UI in generic flows
 export const AuthErrorBoundary: React.FC<{ children: ReactNode }> = ({ children }) => (
-  <ErrorBoundary
-    onError={(error, errorInfo) => {
-      console.error('Authentication error:', error, errorInfo);
-      // Could clear auth state or redirect to login
-    }}
-    fallback={
-      <div className="p-6 text-center">
-        <div className="mb-4">
-          <svg className="mx-auto h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-        </div>
-        <h3 className="text-lg font-medium text-foreground mb-2">Authentication Error</h3>
-        <p className="text-sm text-foreground/70 mb-4">
-          There was a problem with authentication. Please try logging in again.
-        </p>
-      </div>
-    }
-  >
-    {children}
-  </ErrorBoundary>
+  <>{children}</>
 );
 
 // Hook for using error boundary in functional components
