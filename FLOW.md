@@ -1,9 +1,5 @@
 # Wallet Auth Hardening – Execution Plan
 
-- [x] Establish env guardrails
-  - [x] Ensure required env vars: NEXT_PUBLIC_APPWRITE_ENDPOINT, NEXT_PUBLIC_APPWRITE_PROJECT_ID, APPWRITE_API_KEY, SERVER_NONCE_SECRET, AUTH_DOMAIN, AUTH_URI, AUTH_CHAIN_ID
-  - [x] Add placeholders to env.sample and .sample.env if missing
-
 - [ ] Implement stateless signed nonce (HMAC) utilities
   - [ ] Create wallet nonce signer/verifier to replace in-memory store
   - [ ] Payload: { addr, iat, exp, nonce, version, chainId, domain, uri }
