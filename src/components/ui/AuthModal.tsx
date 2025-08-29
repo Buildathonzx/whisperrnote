@@ -21,7 +21,6 @@ import { useLoading } from './LoadingContext';
 // Type declarations for wallet functionality
 declare global {
   interface Window {
-    ethereum?: any;
     PublicKeyCredential?: any;
   }
 }
