@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { validatePublicNoteAccess } from '@/lib/appwrite/permissions';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
 import { useAuth } from '@/components/ui/AuthContext';
-import type { Notes } from '@/types/appwrite';
+import type { Notes } from '@/types/appwrite.d';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -332,7 +332,7 @@ export default function SharedNotePage() {
               {note.tags && note.tags.length > 0 && (
                 <div className="flex items-center gap-2 flex-wrap">
                   <TagIcon className="h-4 w-4 text-light-fg/60 dark:text-dark-fg/60" />
-                  {note.tags.map((tag, index) => (
+                  {note.tags.map((tag: string, index: number) => (
                     <Badge key={index} variant="secondary" className="text-xs">
                       {tag}
                     </Badge>

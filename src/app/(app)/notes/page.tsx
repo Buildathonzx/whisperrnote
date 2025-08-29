@@ -6,7 +6,7 @@ import { useLoading } from '@/components/ui/LoadingContext';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useAI } from '@/components/ui/AIContext';
 import { useSearchParams } from 'next/navigation';
-import type { Notes } from '@/types/appwrite';
+import type { Notes } from '@/types/appwrite.d';
 import NoteCard from '@/components/ui/NoteCard';
 import { NoteGridSkeleton } from '@/components/ui/NoteCardSkeleton';
 import { Button } from '@/components/ui/Button';
@@ -234,9 +234,12 @@ export default function NotesPage() {
     // Then sync with database in background
     try {
       const { documents: refreshedNotes } = await getAllNotes();
-        // Use a more sophisticated merge to handle concurrent updates
 
-        // Merge: prefer database version for existing notes, keep local additions
+      // After fetching, reconcile with local state
+      setAllNotes((currentNotes) => {
+        const refreshedMap = new Map(refreshedNotes.map(note => [note.$id, note]));
+
+        // Merge: start with server notes
         const merged = refreshedNotes.slice();
 
         // Add any local notes that aren't in the refreshed list (our optimistic update)

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getNote } from '@/lib/appwrite';
-import type { Notes } from '@/types/appwrite';
+import type { Notes } from '@/types/appwrite.d';
 import { Button } from '@/components/ui/Button';
 import {
   ArrowLeftIcon,
