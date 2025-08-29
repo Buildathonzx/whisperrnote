@@ -248,7 +248,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
       </div>
 
       {/* Footer Actions - Always visible at bottom */}
-      <div className="flex justify-end gap-3 p-6 border-t border-light-border dark:border-dark-border bg-light-bg/50 dark:bg-dark-bg/50 sticky bottom-0">
+      <div className="flex justify-end gap-3 p-6 border-t border-light-border dark:border-dark-border bg-light-bg/50 dark:bg-dark-bg/50 sticky bottom-0 z-10">
         <Button 
           variant="secondary" 
           onClick={closeOverlay}

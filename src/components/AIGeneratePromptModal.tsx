@@ -63,30 +63,29 @@ export function AIGeneratePromptModal({ onClose, onGenerate, isGenerating = fals
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-card border border-border rounded-2xl shadow-3d-elevated max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center">
-              <SparklesIcon className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-foreground">AI Note Generation</h2>
-              <p className="text-sm text-muted">Let AI create a note for you</p>
-            </div>
+    <div className="w-full max-w-2xl mx-auto bg-card border border-border rounded-2xl shadow-3d-elevated max-h-[calc(100vh-2rem)] overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-border">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center">
+            <SparklesIcon className="h-6 w-6 text-white" />
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl hover:bg-background transition-colors"
-            disabled={isGenerating}
-          >
-            <XMarkIcon className="h-6 w-6 text-muted" />
-          </button>
+          <div>
+            <h2 className="text-xl font-bold text-foreground">AI Note Generation</h2>
+            <p className="text-sm text-muted">Let AI create a note for you</p>
+          </div>
         </div>
+        <button
+          onClick={onClose}
+          className="p-2 rounded-xl hover:bg-background transition-colors"
+          disabled={isGenerating}
+        >
+          <XMarkIcon className="h-6 w-6 text-muted" />
+        </button>
+      </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6 max-h-[calc(90vh-8rem)] overflow-y-auto">
+      {/* Content */}
+      <div className="p-6 space-y-6 max-h-[calc(100vh-12rem)] overflow-y-auto">
           {/* Type Selection */}
           <div>
             <h3 className="text-lg font-semibold text-foreground mb-4">What would you like to generate?</h3>
@@ -170,43 +169,42 @@ export function AIGeneratePromptModal({ onClose, onGenerate, isGenerating = fals
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-border bg-background/50">
-          <div className="text-sm text-muted">
+      <div className="flex items-center justify-between p-6 border-t border-border bg-background/50 sticky bottom-0 z-10">
+        <div className="text-sm text-muted">
+          {isGenerating ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-accent border-t-transparent"></div>
+              Generating your note...
+            </div>
+          ) : (
+            'Your generated content will appear in the note editor'
+          )}
+        </div>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isGenerating}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleGenerate}
+            disabled={!customPrompt.trim() || isGenerating}
+            className="gap-2"
+          >
             {isGenerating ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-accent border-t-transparent"></div>
-                Generating your note...
-              </div>
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Generating...
+              </>
             ) : (
-              'Your generated content will appear in the note editor'
+              <>
+                <SparklesIcon className="h-4 w-4" />
+                Generate Note
+              </>
             )}
-          </div>
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              disabled={isGenerating}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleGenerate}
-              disabled={!customPrompt.trim() || isGenerating}
-              className="gap-2"
-            >
-              {isGenerating ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <SparklesIcon className="h-4 w-4" />
-                  Generate Note
-                </>
-              )}
-            </Button>
-          </div>
+          </Button>
         </div>
       </div>
     </div>
