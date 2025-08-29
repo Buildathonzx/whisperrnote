@@ -65,11 +65,18 @@ export function buildSiweMessage(fields: NonceResponse): string {
   return `${fields.domain} wants you to sign in with your Ethereum account:\n${fields.address}\n\n${fields.statement}\n\nURI: ${fields.uri}\nVersion: ${fields.version}\nChain ID: ${fields.chainId}\nNonce: ${fields.nonceToken}\nIssued At: ${fields.issuedAt}\nExpiration Time: ${fields.expirationTime}`;
 }
 
-export async function signMessage(message: string): Promise<string> {
+export async function signMessage(message: string, expectedAddress?: string): Promise<string> {
   const eth = getEthereumProvider();
   if (!eth) throw new Error('No injected Ethereum provider');
+
   const accounts = await eth.request({ method: 'eth_requestAccounts' }) as string[];
   const from = accounts[0];
+
+  // Security: Validate that the connected address matches expected address
+  if (expectedAddress && from.toLowerCase() !== expectedAddress.toLowerCase()) {
+    throw new Error('Address mismatch: Connected wallet does not match the expected address');
+  }
+
   const signature = await eth.request({ method: 'personal_sign', params: [message, from] }) as string;
   return signature;
 }
@@ -166,6 +173,11 @@ export async function registerWallet(email: string) {
     const accounts = await ethereum.request({ method: 'eth_requestAccounts' }) as string[];
     const address = accounts[0];
 
+    // Validate email format if provided
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new Error('Invalid email format');
+    }
+
     // Use the existing loginWithWallet function which handles the full flow
     const result = await loginWithWallet(address, email);
 
@@ -186,6 +198,11 @@ export async function authenticateWithWallet() {
       throw new Error('No wallet connected');
     }
 
+    // Additional validation: ensure we have a valid Ethereum address
+    if (!walletStatus.address.startsWith('0x') || walletStatus.address.length !== 42) {
+      throw new Error('Invalid wallet address format');
+    }
+
     // Use the existing loginWithWallet function
     const result = await loginWithWallet(walletStatus.address);
 
@@ -200,9 +217,17 @@ export async function authenticateWithWallet() {
 }
 
 export async function loginWithWallet(address: string, email?: string) {
+  // Validate address format
+  if (!address || !address.startsWith('0x') || address.length !== 42) {
+    throw new Error('Invalid Ethereum address format');
+  }
+
   const nonce = await requestNonce(address);
   const message = buildSiweMessage(nonce);
-  const signature = await signMessage(message);
+
+  // Security: Pass expected address to signMessage for validation
+  const signature = await signMessage(message, address);
+
   const verified = await verifyWalletLogin({ address, signature, nonceToken: nonce.nonceToken, email });
   if ('success' in verified && verified.success) {
     await authenticateWithCustomToken(verified.userId);

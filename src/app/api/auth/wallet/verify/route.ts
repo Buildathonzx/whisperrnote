@@ -4,6 +4,28 @@ import { verifyNonce } from '../_nonceStore';
 import { getAddress } from 'viem';
 // import { recoverAddress, hashMessage } from 'viem/utils';
 
+// Simple in-memory rate limiter (in production, use Redis or similar)
+const rateLimit = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
+const RATE_LIMIT_MAX = 5; // 5 verification attempts per window
+
+function checkRateLimit(identifier: string): boolean {
+  const now = Date.now();
+  const record = rateLimit.get(identifier);
+
+  if (!record || now > record.resetTime) {
+    rateLimit.set(identifier, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+
+  record.count++;
+  return true;
+}
+
 function buildSiweMessage(params: {
   domain: string;
   address: string;
@@ -22,8 +44,33 @@ function buildSiweMessage(params: {
 export async function POST(request: NextRequest) {
   try {
     const { email, address, signature, nonceToken } = await request.json();
+
+    // Validate required fields
     if (!address || !signature || !nonceToken) {
       return NextResponse.json({ error: 'Missing required fields: address, signature, nonceToken' }, { status: 400 });
+    }
+
+    // Basic rate limiting by IP
+    const clientIP = request.headers.get('x-forwarded-for') ||
+                    request.headers.get('x-real-ip') ||
+                    'unknown';
+    if (!checkRateLimit(clientIP)) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    }
+
+    // Validate Ethereum address format
+    if (!address.startsWith('0x') || address.length !== 42) {
+      return NextResponse.json({ error: 'Invalid Ethereum address format' }, { status: 400 });
+    }
+
+    // Validate signature format (basic check)
+    if (!signature.startsWith('0x') || signature.length !== 132) {
+      return NextResponse.json({ error: 'Invalid signature format' }, { status: 400 });
+    }
+
+    // Validate email format if provided
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
     const payload = verifyNonce(nonceToken);

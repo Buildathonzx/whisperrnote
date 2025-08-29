@@ -64,10 +64,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       await authLogout();
+      // Additional cleanup for wallet connections
+      if (typeof window !== 'undefined' && (window as any).ethereum) {
+        // Note: We don't disconnect wallet here as that would be disruptive to user
+        // The wallet connection state is managed by the wallet provider
+      }
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {
+      // Always clear local user state regardless of logout success
       setUser(null);
+      // Clear any temporary auth state
+      setAuthModalOpen(false);
     }
   };
 

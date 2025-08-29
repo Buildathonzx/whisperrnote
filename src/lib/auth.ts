@@ -15,9 +15,35 @@ export const login = async (email: string, password: string) => {
   return account.createEmailPasswordSession(email, password);
 };
 
-// Logout current session
+// Logout current session with comprehensive cleanup
 export const logout = async () => {
-  return account.deleteSession('current');
+  try {
+    // Delete the current session
+    await account.deleteSession('current');
+
+    // Clear any local storage related to authentication
+    if (typeof window !== 'undefined') {
+      // Clear wallet connection data if it exists
+      localStorage.removeItem('walletconnect');
+      localStorage.removeItem('WALLETCONNECT_DEEPLINK_CHOICE');
+
+      // Clear any cached user data
+      localStorage.removeItem('user_cache');
+      sessionStorage.removeItem('auth_temp_data');
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Logout error:', error);
+    // Even if session deletion fails, we should clear local data
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('walletconnect');
+      localStorage.removeItem('WALLETCONNECT_DEEPLINK_CHOICE');
+      localStorage.removeItem('user_cache');
+      sessionStorage.removeItem('auth_temp_data');
+    }
+    throw error;
+  }
 };
 
 // Get the currently authenticated user
