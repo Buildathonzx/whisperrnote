@@ -15,7 +15,6 @@ import {
   getWalletStatus,
   type WalletAvailability
 } from '@/lib/appwrite/auth/wallet';
-import { validatePasswordStrength } from '@/lib/passwordUtils';
 import { PasswordInputWithStrength } from './PasswordStrengthIndicator';
 import { useAuth } from './AuthContext';
 import { useLoading } from './LoadingContext';

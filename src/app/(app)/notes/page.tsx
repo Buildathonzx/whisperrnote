@@ -125,13 +125,12 @@ export default function NotesPage() {
       try {
         const { documents: latestNotes } = await getAllNotes();
         setAllNotes((currentNotes) => {
-          const latestMap = new Map(latestNotes.map(note => [note.$id, note]));
-          const currentMap = new Map(currentNotes.map(note => [note.$id, note]));
+          const refreshedMap = new Map(latestNotes.map(note => [note.$id, note]));
 
           // Check if there are any differences
           const hasChanges = latestNotes.length !== currentNotes.length ||
             latestNotes.some(note => {
-              const current = currentMap.get(note.$id);
+              const current = currentNotes.find(n => n.$id === note.$id);
               return !current ||
                 current.$updatedAt !== note.$updatedAt ||
                 current.title !== note.title ||
@@ -165,7 +164,7 @@ export default function NotesPage() {
       clearInterval(syncInterval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isInitialLoading]);
+  }, [isInitialLoading, fetchAndSyncNotes]);
 
   // Check for AI prompt from landing page
   useEffect(() => {

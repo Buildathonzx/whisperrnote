@@ -4,7 +4,6 @@ import { useSearchParams } from "next/navigation";
 import { completePasswordReset } from "@/lib/appwrite";
 import { motion } from "framer-motion";
 import { PasswordInputWithStrength } from "@/components/ui/PasswordStrengthIndicator";
-import { validatePasswordStrength } from "@/lib/passwordUtils";
 
 // Extract the inner component that uses useSearchParams
 function PasswordResetInner() {
@@ -13,7 +12,6 @@ function PasswordResetInner() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState<any>(null);
 
   const searchParams = useSearchParams();
   const userId = searchParams?.get("userId") || "";
@@ -28,10 +26,7 @@ function PasswordResetInner() {
       setError("Passwords do not match");
       return;
     }
-    if (!passwordStrength?.isValid) {
-      setError("Please choose a stronger password that meets the requirements.");
-      return;
-    }
+    // Password strength validation is handled by the PasswordInputWithStrength component
     setLoading(true);
     setError("");
     setMessage("");
@@ -95,7 +90,6 @@ function PasswordResetInner() {
               <PasswordInputWithStrength
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                onStrengthChange={setPasswordStrength}
                 placeholder="New Password"
                 autoComplete="new-password"
               />
