@@ -23,6 +23,7 @@ import { MobileFAB } from '@/components/MobileFAB';
 import { useSidebar } from '@/components/ui/SidebarContext';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
 import { aiServiceInstance as aiService } from '@/lib/ai-service';
+import { NotesErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function NotesPage() {
   const [allNotes, setAllNotes] = useState<Notes[]>([]);
@@ -372,20 +373,21 @@ export default function NotesPage() {
   const tags = existingTags.length > 0 ? existingTags.slice(0, 8) : ['Personal', 'Work', 'Ideas', 'To-Do'];
 
   return (
-    <div className="flex-1 min-h-screen">
-      {/* Mobile Header - Hidden on Desktop */}
-      <header className="mb-8 flex items-center justify-between md:hidden">
-        <h1 className="text-3xl font-bold text-light-fg dark:text-dark-fg">
-          Notes
-        </h1>
-        <div className="flex items-center gap-3">
-          <Button size="icon" onClick={handleCreateNoteClick}>
-            <PlusCircleIcon className="h-6 w-6" />
-          </Button>
-        </div>
-      </header>
+    <NotesErrorBoundary>
+      <div className="flex-1 min-h-screen">
+        {/* Mobile Header - Hidden on Desktop */}
+        <header className="mb-8 flex items-center justify-between md:hidden">
+          <h1 className="text-3xl font-bold text-light-fg dark:text-dark-fg">
+            Notes
+          </h1>
+          <div className="flex items-center gap-3">
+            <Button size="icon" onClick={handleCreateNoteClick}>
+              <PlusCircleIcon className="h-6 w-6" />
+            </Button>
+          </div>
+        </header>
 
-      {/* Desktop Header */}
+        {/* Desktop Header */}
       <header className="hidden md:flex items-center justify-between mb-8">
         <div>
           <h1 className="text-4xl font-black text-light-fg dark:text-dark-fg mb-2">
@@ -514,11 +516,12 @@ export default function NotesPage() {
         </div>
       )}
 
-      {/* Mobile Bottom Navigation */}
-      <MobileBottomNav />
-      
-      {/* Mobile FAB */}
-      <MobileFAB />
-    </div>
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav />
+
+        {/* Mobile FAB */}
+        <MobileFAB />
+      </div>
+    </NotesErrorBoundary>
   );
 }

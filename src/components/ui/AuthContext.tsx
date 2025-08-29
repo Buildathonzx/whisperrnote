@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { getCurrentUser, logout as authLogout } from '@/lib/auth';
 import { InitialLoadingScreen } from './InitialLoadingScreen';
 import { EmailVerificationReminder } from './EmailVerificationReminder';
+import { AuthErrorBoundary } from './ErrorBoundary';
 
 interface User {
   $id: string;
@@ -230,11 +231,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {children}
-      {showInitialLoading && <InitialLoadingScreen show={true} />}
-      <EmailVerificationReminder />
-    </AuthContext.Provider>
+    <AuthErrorBoundary>
+      <AuthContext.Provider value={value}>
+        {children}
+        {showInitialLoading && <InitialLoadingScreen show={true} />}
+        <EmailVerificationReminder />
+      </AuthContext.Provider>
+    </AuthErrorBoundary>
   );
 };
 
