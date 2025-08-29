@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { createNote as appwriteCreateNote } from '@/lib/appwrite';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import type { Notes } from '@/types/appwrite';
-import type { Status } from '@/types/appwrite';
+import * as AppwriteTypes from '@/types/appwrite';
 import { 
   XMarkIcon, 
   DocumentTextIcon, 
@@ -30,7 +30,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
   const [tags, setTags] = useState<string[]>(initialContent?.tags || []);
   const [currentTag, setCurrentTag] = useState('');
   const [isPublic, setIsPublic] = useState(false);
-  const [status, setStatus] = useState<Status>(Status.DRAFT);
+  const [status, setStatus] = useState<AppwriteTypes.Status>(AppwriteTypes.Status.DRAFT);
   const [isLoading, setIsLoading] = useState(false);
   const { closeOverlay } = useOverlay();
 
@@ -222,20 +222,20 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
               <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Status</label>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setStatus(Status.DRAFT)}
+                  onClick={() => setStatus(AppwriteTypes.Status.DRAFT)}
                   className={`flex-1 p-3 rounded-xl font-medium transition-all duration-200 ${
-                    status === Status.DRAFT 
-                      ? 'bg-accent text-white shadow-lg' 
+                    status === AppwriteTypes.Status.DRAFT
+                      ? 'bg-accent text-white shadow-lg'
                       : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
                   }`}
                 >
                   Draft
                 </button>
                 <button
-                  onClick={() => setStatus(Status.PUBLISHED)}
+                  onClick={() => setStatus(AppwriteTypes.Status.PUBLISHED)}
                   className={`flex-1 p-3 rounded-xl font-medium transition-all duration-200 ${
-                    status === Status.PUBLISHED 
-                      ? 'bg-accent text-white shadow-lg' 
+                    status === AppwriteTypes.Status.PUBLISHED
+                      ? 'bg-accent text-white shadow-lg'
                       : 'bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
                   }`}
                 >
