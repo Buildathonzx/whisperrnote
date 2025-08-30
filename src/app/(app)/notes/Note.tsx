@@ -26,7 +26,7 @@ export default function NoteComponent({
   onTogglePublic
 }: NoteComponentProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false); // reserved for future use
+  // const [showDeleteDialog, setShowDeleteDialog] = useState(false); // reserved for future use
   const [showAnalytics, setShowAnalytics] = useState(false);
   const parentEncrypted = !!note.parentNoteId;
 
