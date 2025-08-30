@@ -45,8 +45,8 @@
             "name": "whisperrnote",
             "enabled": true
         }
-     ],
-     "collections": [
+    ],
+    "collections": [
         {
             "$id": "walletMap",
             "$permissions": [
@@ -88,9 +88,13 @@
                 {
                     "key": "unique_walletAddressLower",
                     "type": "key",
-                    "attributes": ["walletAddressLower"],
-                    "orders": ["ASC"],
-                    "unique": true
+                    "status": "available",
+                    "attributes": [
+                        "walletAddressLower"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
                 }
             ]
         },
