@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { issueNonce } from '../_nonceStore';
+import { createNonceToken, getSiweConfig } from '@/lib/auth/wallet-nonce';
 
 // Simple in-memory rate limiter (in production, use Redis or similar)
 const rateLimit = new Map<string, { count: number; resetTime: number }>();
@@ -104,8 +104,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const { token, payload } = issueNonce(address);
-    const statement = process.env.AUTH_STATEMENT || 'Sign in to WhisperRNote';
+    const { domain, uri, version, chainId, statement } = getSiweConfig();
+    const { token, payload } = createNonceToken({ addr: address, chainId, domain, uri });
 
     const responseTime = Date.now() - startTime;
     logWalletEvent('info', 'nonce_request_success', {
@@ -116,6 +116,7 @@ export async function POST(request: NextRequest) {
       chainId: payload.chainId
     });
 
+    const nowSec = Math.floor(Date.now() / 1000);
     return NextResponse.json({
       address: payload.addr,
       nonceToken: token,
@@ -124,11 +125,11 @@ export async function POST(request: NextRequest) {
       version: payload.version,
       chainId: payload.chainId,
       statement,
-      issuedAt: new Date(payload.iat).toISOString(),
-      expirationTime: new Date(payload.exp).toISOString(),
+      issuedAt: new Date(payload.iat * 1000).toISOString(),
+      expirationTime: new Date(payload.exp * 1000).toISOString(),
       // Legacy field for backward compatibility (not used by verify anymore)
       nonce: payload.nonce,
-      expiresIn: Math.max(0, Math.floor((payload.exp - Date.now()) / 1000)),
+      expiresIn: Math.max(0, payload.exp - nowSec),
     });
   } catch (error: any) {
     const responseTime = Date.now() - startTime;

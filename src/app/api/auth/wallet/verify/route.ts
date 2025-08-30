@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Client, Users, ID } from 'node-appwrite';
-import { verifyNonce } from '../_nonceStore';
+import { verifyNonceToken } from '@/lib/auth/wallet-nonce';
 import { getAddress } from 'viem';
-// import { recoverAddress, hashMessage } from 'viem/utils';
 
 // Simple in-memory rate limiter (in production, use Redis or similar)
 const rateLimit = new Map<string, { count: number; resetTime: number }>();
@@ -157,15 +156,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify nonce token
-    let payload;
-    try {
-      payload = verifyNonce(nonceToken);
-    } catch (nonceError: any) {
+    const payload = verifyNonceToken(nonceToken);
+    if (!payload) {
       logWalletEvent('warn', 'verify_request_invalid_nonce', {
         clientIP,
         addressPreview,
         hasEmail,
-        nonceError: nonceError.message
+        nonceError: 'invalid_or_expired'
       });
       return NextResponse.json({
         error: 'Authentication session expired. Please try connecting your wallet again.',
@@ -173,11 +170,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Enforce domain/uri/version/chainId from server config
-    const expectedDomain = String(process.env.AUTH_DOMAIN || 'localhost');
-    const expectedUri = String(process.env.AUTH_URI || 'http://localhost:3000');
-    const expectedVersion = String(process.env.AUTH_SIWE_VERSION || '1');
-    const expectedChainId = Number(process.env.AUTH_CHAIN_ID || 1);
+    // Enforce domain/uri/version/chainId from server config (SIWE_*)
+    const expectedDomain = String(process.env.SIWE_DOMAIN || 'localhost');
+    const expectedUri = String(process.env.SIWE_URI || 'http://localhost:3000');
+    const expectedVersion = String(process.env.SIWE_VERSION || '1');
+    const expectedChainId = Number(process.env.SIWE_CHAIN_ID || 1);
 
     if (payload.domain !== expectedDomain || payload.uri !== expectedUri || payload.version !== expectedVersion || payload.chainId !== expectedChainId) {
       logWalletEvent('warn', 'verify_request_context_mismatch', {
@@ -208,7 +205,9 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const statement = process.env.AUTH_STATEMENT || 'Sign in to WhisperRNote';
+    const statement = process.env.SIWE_STATEMENT || 'Sign in to WhisperRNote';
+    const issuedAt = new Date(payload.iat * 1000).toISOString();
+    const expirationTime = new Date(payload.exp * 1000).toISOString();
     const message = buildSiweMessage({
       domain: payload.domain,
       address: getAddress(address),
@@ -217,15 +216,14 @@ export async function POST(request: NextRequest) {
       version: payload.version,
       chainId: payload.chainId,
       nonce: payload.nonce,
-      issuedAt: new Date(payload.iat).toISOString(),
-      expirationTime: new Date(payload.exp).toISOString(),
+      issuedAt,
+      expirationTime,
     });
 
     // Recover and compare address
     let recovered: string;
     try {
       recovered = await (async () => {
-        // viem expects either a hashed message or use recoverMessageAddress helper
         const { recoverMessageAddress } = await import('viem/utils');
         return await recoverMessageAddress({ message, signature });
       })();
@@ -297,8 +295,6 @@ export async function POST(request: NextRequest) {
             addressPreview,
             email: email.substring(0, 3) + '***'
           });
-          // Do not auto-attach if caller is not authenticated as that email.
-          // For now, require explicit attach flow (client-side) or email verification step.
           return NextResponse.json({
             status: 'email_verification_required',
             message: 'An account with this email already exists. Please sign in with your email first, then connect your wallet in settings.',
