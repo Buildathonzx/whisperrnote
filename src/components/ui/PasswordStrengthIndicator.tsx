@@ -85,13 +85,19 @@ export const PasswordInputWithStrength: React.FC<PasswordInputWithStrengthProps>
   const [password, setPassword] = React.useState(props.value as string || '');
   const [showPassword, setShowPassword] = React.useState(false);
 
-  const strength = validatePasswordStrength(password);
+  const strength = React.useMemo(() => validatePasswordStrength(password), [password]);
 
+  // Only notify parent when the derived scalar values change to avoid loops
+  const lastNotifiedRef = React.useRef<{ score: number; isValid: boolean } | null>(null);
   React.useEffect(() => {
-    if (onStrengthChange) {
+    if (!onStrengthChange) return;
+    const payload = { score: strength.score, isValid: strength.isValid };
+    const prev = lastNotifiedRef.current;
+    if (!prev || prev.score !== payload.score || prev.isValid !== payload.isValid) {
+      lastNotifiedRef.current = payload;
       onStrengthChange(strength);
     }
-  }, [strength, onStrengthChange]);
+  }, [strength.score, strength.isValid, onStrengthChange]);
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
