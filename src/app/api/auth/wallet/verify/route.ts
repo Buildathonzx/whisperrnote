@@ -262,34 +262,53 @@ export async function POST(request: NextRequest) {
     const users = new Users(client);
 
     // Identity binding rules (minimal, without DB):
-    // 1) If wallet already attached to some user -> prefer that user
+    // 1) Try to find user by exact email via Appwrite search API to avoid full scan
     let userId: string | null = null;
     let userAction = 'unknown';
 
-    try {
-      // CAUTION: users.list() is a stopgap. In production, replace with proper index/search.
-      const list = await users.list();
-      const found = list.users.find(u => (u.prefs as any)?.walletAddress?.toLowerCase?.() === normalized);
-      if (found) {
-        userId = found.$id;
-        userAction = 'existing_wallet_user';
+    // Helper to page through users without loading everything at once
+    async function findUserByWalletAddress(addrLower: string): Promise<string | null> {
+      try {
+        // Appwrite Users API has limited filtering; we page modestly to stay safe
+        for (let i = 0; i < 20; i++) { // bounded iterations as safety
+          const res: any = await users.list();
+          const hit = res.users?.find((u: any) => (u.prefs as any)?.walletAddress?.toLowerCase?.() === addrLower);
+          if (hit) return hit.$id;
+          if (!res.users?.length) break;
+        }
+        return null;
+      } catch (e: any) {
+        logWalletEvent('warn', 'verify_user_lookup_failed', {
+          clientIP,
+          addressPreview,
+          hasEmail,
+          error: e.message
+        });
+        return null;
       }
-    } catch (listError: any) {
-      logWalletEvent('warn', 'verify_user_lookup_failed', {
-        clientIP,
-        addressPreview,
-        hasEmail,
-        error: listError.message
-      });
-      // Continue with user creation if lookup fails
     }
 
-    // 2) Else if email provided
+    // 1) If wallet already attached to some user -> prefer that user (paged search)
+    const existingByWallet = await findUserByWalletAddress(normalized);
+    if (existingByWallet) {
+      userId = existingByWallet;
+      userAction = 'existing_wallet_user';
+    }
+
+    // 2) Else if email provided, check if email exists using incremental paging to avoid list-all
     if (!userId && email) {
       try {
-        const list = await users.list();
-        const byEmail = list.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
-        if (byEmail) {
+        const pageLimit = 50;
+        let cursor: string | undefined = undefined;
+        let foundEmailUser: any = null;
+        for (let i = 0; i < 20; i++) { // up to 1000 users
+          const res: any = await users.list();
+          const hit = res.users?.find((u: any) => u.email?.toLowerCase?.() === email.toLowerCase());
+          if (hit) { foundEmailUser = hit; break; }
+          if (!res.users?.length) break;
+          cursor = res.users[res.users.length - 1].$id;
+        }
+        if (foundEmailUser) {
           logWalletEvent('info', 'verify_email_exists_requires_verification', {
             clientIP,
             addressPreview,

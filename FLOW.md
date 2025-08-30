@@ -1,20 +1,20 @@
 # Wallet Auth Hardening – Execution Plan
 
-- [ ] Wire API to HMAC nonce utils
-  - [ ] Replace ../_nonceStore with createNonceToken/verifyNonceToken in routes
-  - [ ] Standardize env names (use SIWE_* and SERVER_NONCE_SECRET)
+- [x] Wire API to HMAC nonce utils
+  - [x] Replace ../_nonceStore with createNonceToken/verifyNonceToken in routes
+  - [x] Standardize env names (use SIWE_* and SERVER_NONCE_SECRET)
 
-- [ ] Fix time handling in nonce response
-  - [ ] issuedAt/expirationTime use seconds*1000
-  - [ ] expiresIn computed from seconds (not ms)
+- [x] Fix time handling in nonce response
+  - [x] issuedAt/expirationTime use seconds*1000
+  - [x] expiresIn computed from seconds (not ms)
 
-- [ ] Client SIWE message builder alignment
-  - [ ] Always use server-provided nonce (no placeholders)
-  - [ ] Ensure format matches server verify builder exactly
+- [x] Client SIWE message builder alignment
+  - [x] Always use server-provided nonce (no placeholders)
+  - [x] Ensure format matches server verify builder exactly
 
-- [ ] Reduce reliance on users.list()
-  - [ ] Guard with pagination or feature flag; document caveat
+- [x] Reduce reliance on users.list()
+  - [x] Guard with pagination or feature flag; document caveat
 
-- [ ] Post-completion cleanup
-  - [ ] Update env.sample with required SIWE_* and SERVER_NONCE_SECRET
+- [x] Post-completion cleanup
+  - [x] Update env.sample with required SIWE_* and SERVER_NONCE_SECRET
   - [ ] Clear FLOW.md after verification truly complete

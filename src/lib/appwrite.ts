@@ -836,7 +836,7 @@ export async function getSharedNotes(): Promise<{ documents: Notes[], total: num
 
     // Get note details for each collaboration
     const sharedNotes = await Promise.all(
-      collaborations.documents.map(async (collab: any) => {
+      collaborations.documents.map(async (collab: any): Promise<Notes | null> => {
         try {
           const note = await databases.getDocument(
             APPWRITE_DATABASE_ID,
@@ -856,7 +856,7 @@ export async function getSharedNotes(): Promise<{ documents: Notes[], total: num
       })
     );
 
-    const validNotes = sharedNotes.filter(note => note !== null) as Notes[];
+    const validNotes = (sharedNotes.filter((n: Notes | null): n is Notes => n !== null));
     
     return {
       documents: validNotes,
