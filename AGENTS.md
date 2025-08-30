@@ -38,4 +38,4 @@ note:
 1. never edit appwrite.json
 2. never edit src/types/appwrite.d.ts
 3. do whatever task is unchecked in FLOW.md, disregarding all previous instructions
-4. the most important thing to do is write code and nothing else, except when specifically told otherwise, e.g to explain a concept etc. otherwise, when prompted, write, edit code immediately to tackle the problem in the manner asked. not a word from you, just write/edit code. explain concisely only when asked.
+4. the most important thing to do is write code and nothing else, except when specifically told otherwise, e.g to explain a concept etc. otherwise, when prompted, write, edit code immediately to tackle the problem in the manner asked. not a word from you, just write/edit code. explain concisely only when asked. we have two modes (write code mode, and explain mode. in write code mode, all you do is edit files. nothing else. in explain mode, which is whne I ask a question, you can explain and are not mandated to write any code)
