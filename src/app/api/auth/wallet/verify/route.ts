@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Client, Users, ID } from 'node-appwrite';
+import { getUserIdByWallet, setWalletMap } from '@/lib/appwrite/wallet-map';
 import { verifyNonceToken } from '@/lib/auth/wallet-nonce';
 import { getAddress } from 'viem';
 
@@ -288,11 +289,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 1) If wallet already attached to some user -> prefer that user (paged search)
-    const existingByWallet = await findUserByWalletAddress(normalized);
-    if (existingByWallet) {
-      userId = existingByWallet;
-      userAction = 'existing_wallet_user';
+    // 1) If wallet already mapped in walletMap -> prefer that user
+    const mappedUser = await getUserIdByWallet(normalized);
+    if (mappedUser) {
+      userId = mappedUser;
+      userAction = 'existing_wallet_user_mapped';
+    } else {
+      // Backward-compat: fall back to legacy prefs scan (bounded) once
+      const existingByWallet = await findUserByWalletAddress(normalized);
+      if (existingByWallet) {
+        userId = existingByWallet;
+        userAction = 'existing_wallet_user_legacy_prefs';
+        // Opportunistically upsert mapping
+        try { await setWalletMap(normalized, userId); } catch {}
+      }
     }
 
     // 2) Else if email provided, check if email exists using incremental paging to avoid list-all
@@ -354,13 +364,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Attach wallet prefs
+    // Attach wallet prefs and ensure wallet map upsert
     try {
       await users.updatePrefs(userId!, {
         walletAddress: normalized,
         walletProvider: 'ethereum',
         lastWalletSignInAt: new Date().toISOString(),
       } as any);
+      try { await setWalletMap(normalized, userId!); } catch {}
     } catch (prefsError: any) {
       logWalletEvent('error', 'verify_prefs_update_failed', {
         clientIP,

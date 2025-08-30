@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Client, Users, ID } from 'node-appwrite';
+import { setWalletMap } from '@/lib/appwrite/wallet-map';
 
 export async function POST(request: NextRequest) {
   try {
@@ -95,6 +96,11 @@ export async function POST(request: NextRequest) {
       signature,
       registeredAt: new Date().toISOString()
     });
+
+    // Upsert wallet map
+    try {
+      await setWalletMap(address.toLowerCase(), userId);
+    } catch (_) {}
 
     // Create custom token for immediate login
     const token = await users.createToken(userId, 6, 900); // 15 minutes
