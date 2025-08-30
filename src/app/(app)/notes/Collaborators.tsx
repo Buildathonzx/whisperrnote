@@ -54,7 +54,7 @@ export default function CollaboratorsSection({ noteId }: CollaboratorsProps) {
         userId: user.$id,
         permission: permission as 'read' | 'write' | 'admin',
       });
-      setCollaborators(prev => [collaborator as any, ...prev]);
+       setCollaborators(prev => [collaborator as Collaborators, ...prev]);
       setNewCollaboratorEmail('');
       showSuccess('Collaborator Added', `${user.email} has been added as a collaborator.`);
     } catch (error) {

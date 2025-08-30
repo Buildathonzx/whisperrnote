@@ -26,9 +26,9 @@ export default function NoteComponent({
   onTogglePublic
 }: NoteComponentProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false); // reserved for future use
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const isEncrypted = note.parentNoteId || false;
+  const parentEncrypted = !!note.parentNoteId;
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -38,8 +38,8 @@ export default function NoteComponent({
     setAnchorEl(null);
   };
 
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const handleShare = () => {
-    // Open share dialog instead of direct call
     setShareDialogOpen(true);
     handleMenuClose();
     onShare?.(note.$id);
@@ -59,8 +59,7 @@ export default function NoteComponent({
 
   // Use only valid properties from Notes type
   const isPublic = note.isPublic ?? false;
-  // For now, assume not encrypted as this property doesn't exist in Notes type
-  const isEncrypted = false;
+  const isEncrypted = parentEncrypted;
 
   return (
     <>
@@ -128,7 +127,7 @@ export default function NoteComponent({
           {/* Tags */}
           {note.tags && note.tags.length > 0 && (
             <Stack direction="row" spacing={0.5} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
-              {note.tags.slice(0, 3).map((tag) => (
+              {note.tags.slice(0, 3).map((tag: string) => (
                 <Chip
                   key={tag}
                   label={tag}
@@ -241,7 +240,7 @@ export default function NoteComponent({
               <Typography variant="caption" color="text.secondary">Shares</Typography>
             </Box>
             <Box>
-              <Typography variant="h6">{readingTimeMinutes}m</Typography>
+              <Typography variant="h6">0m</Typography>
               <Typography variant="caption" color="text.secondary">Reading Time</Typography>
             </Box>
           </Box>

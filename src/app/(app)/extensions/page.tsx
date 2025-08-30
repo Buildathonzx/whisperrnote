@@ -14,7 +14,7 @@ interface ExtensionTemplate {
   icon: string;
   category: string;
   hooks: string[];
-  settings: any;
+   settings: Record<string, unknown>;
   code: string;
 }
 
@@ -130,7 +130,7 @@ export default function ExtensionsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'marketplace' | 'installed' | 'templates'>('marketplace');
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+   const [user, setUser] = useState<{ $id?: string } | null>(null);
 
   useEffect(() => {
     loadExtensions();
@@ -224,7 +224,7 @@ export default function ExtensionsPage() {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+               onClick={() => setActiveTab(tab.id as 'marketplace' | 'installed' | 'templates')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300'
