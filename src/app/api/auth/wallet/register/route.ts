@@ -112,13 +112,14 @@ export async function POST(request: NextRequest) {
       expire: token.expire
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { message?: string; code?: unknown; type?: unknown; response?: unknown; stack?: unknown };
     console.error('Wallet registration error - Full details:', {
-      message: error.message,
+      message: err.message,
       code: error.code,
-      type: error.type,
-      response: error.response,
-      stack: error.stack,
+      type: err.type as any,
+      response: err.response as any,
+      stack: err.stack as any,
       fullError: error
     });
     
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
       { 
         error: error.message || 'Registration failed',
         details: {
-          code: error.code,
+      code: err.code as any,
           type: error.type
         }
       },

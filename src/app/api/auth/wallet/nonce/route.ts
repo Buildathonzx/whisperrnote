@@ -24,7 +24,8 @@ function checkRateLimit(identifier: string): boolean {
 }
 
 // Structured logging utility
-function logWalletEvent(level: 'info' | 'warn' | 'error', event: string, data: Record<string, any>) {
+type WalletLog = Record<string, unknown>;
+function logWalletEvent(level: 'info' | 'warn' | 'error', event: string, data: WalletLog) {
   const timestamp = new Date().toISOString();
   const logEntry = {
     timestamp,
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const { domain, uri, version, chainId, statement } = getSiweConfig();
+    const { domain, uri, chainId, statement } = getSiweConfig();
     const { token, payload } = createNonceToken({ addr: address, chainId, domain, uri });
 
     const responseTime = Date.now() - startTime;

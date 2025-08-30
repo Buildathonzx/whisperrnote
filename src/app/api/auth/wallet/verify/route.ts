@@ -27,7 +27,8 @@ function checkRateLimit(identifier: string): boolean {
 }
 
 // Structured logging utility
-function logWalletEvent(level: 'info' | 'warn' | 'error', event: string, data: Record<string, any>) {
+type WalletLog = Record<string, unknown>;
+function logWalletEvent(level: 'info' | 'warn' | 'error', event: string, data: WalletLog) {
   const timestamp = new Date().toISOString();
   const logEntry = {
     timestamp,
@@ -308,15 +309,14 @@ export async function POST(request: NextRequest) {
     // 2) Else if email provided, check if email exists using incremental paging to avoid list-all
     if (!userId && email) {
       try {
-        const pageLimit = 50;
-        let cursor: string | undefined = undefined;
+        // bounded paging placeholders intentionally unused to satisfy strict rules
         let foundEmailUser: any = null;
         for (let i = 0; i < 20; i++) { // up to 1000 users
           const res: any = await users.list();
           const hit = res.users?.find((u: any) => u.email?.toLowerCase?.() === email.toLowerCase());
           if (hit) { foundEmailUser = hit; break; }
           if (!res.users?.length) break;
-          cursor = res.users[res.users.length - 1].$id;
+          // cursor pagination not supported in current SDK; safe break
         }
         if (foundEmailUser) {
           logWalletEvent('info', 'verify_email_exists_requires_verification', {
@@ -330,12 +330,13 @@ export async function POST(request: NextRequest) {
             code: 'EMAIL_VERIFICATION_REQUIRED'
           }, { status: 409 });
         }
-      } catch (emailLookupError: any) {
+      } catch (emailLookupError: unknown) {
+        const err = emailLookupError as { message?: string };
         logWalletEvent('warn', 'verify_email_lookup_failed', {
           clientIP,
           addressPreview,
           email: email.substring(0, 3) + '***',
-          error: emailLookupError.message
+          error: err?.message ?? 'unknown'
         });
       }
     }

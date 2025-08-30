@@ -27,7 +27,7 @@ export async function getUserIdByWallet(addrLower: string): Promise<string | nul
     ]);
     const doc = res.documents?.[0] as WalletMapDoc | undefined;
     return doc?.userId ?? null;
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 }
