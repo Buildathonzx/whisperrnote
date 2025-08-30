@@ -45,8 +45,55 @@
             "name": "whisperrnote",
             "enabled": true
         }
-    ],
-    "collections": [
+     ],
+     "collections": [
+        {
+            "$id": "walletMap",
+            "$permissions": [
+                "create(\"users\")"
+            ],
+            "databaseId": "67ff05a9000296822396",
+            "name": "walletMap",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "walletAddressLower",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 66,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "updatedAt",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "unique_walletAddressLower",
+                    "type": "key",
+                    "attributes": ["walletAddressLower"],
+                    "orders": ["ASC"],
+                    "unique": true
+                }
+            ]
+        },
         {
             "$id": "67ff05c900247b5673d3",
             "$permissions": [
