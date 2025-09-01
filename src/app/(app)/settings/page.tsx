@@ -81,8 +81,8 @@ export default function SettingsPage() {
         try {
           const mode = await getAIMode(u.$id);
           setCurrentAIMode((mode as AIMode) || AIMode.STANDARD);
-         } catch {
-          console.error('Failed to load AI mode:', e);
+         } catch (error) {
+          console.error('Failed to load AI mode:', error);
         }
 
         // Load authentication methods from backend
@@ -120,7 +120,7 @@ export default function SettingsPage() {
     fetchUserAndSettings();
    }, [router, showAuthModal]);
 
-  const handleUpdate = async (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -128,12 +128,12 @@ export default function SettingsPage() {
       await updateSettings(user.$id, { settings: JSON.stringify(settings.settings) });
       setSuccess("Settings updated successfully.");
     } catch (err: any) {
-      setError(err?.message || "Failed to update settings");
+      setError((err as Error)?.message || "Failed to update settings");
     }
   };
 
-  const handleSettingChange = (key: string, value: any) => {
-    setSettings((prev: any) => ({ ...prev, settings: { ...prev.settings, [key]: value } }));
+  const handleSettingChange = (key: string, value: boolean | string | number) => {
+    setSettings((prev: import('@/types/appwrite').Settings | null) => prev ? { ...prev, settings: { ...prev.settings, [key]: value } } : prev);
   };
 
   const handleAIModeChange = async (mode: AIMode) => {
@@ -149,7 +149,7 @@ export default function SettingsPage() {
     }
   };
 
-  const handleRemoveAuthMethod = async (type: string) => {
+  const handleRemoveAuthMethod = async (type: 'totp' | 'email' | 'phone') => {
     try {
       if (type === 'totp') {
         // Handle TOTP authenticator removal via MFA API
@@ -179,7 +179,7 @@ export default function SettingsPage() {
       setResetEmailSent(true);
       setSuccess(`Password reset email sent to ${user.email}`);
     } catch (err: any) {
-      setError(err?.message || "Failed to send password reset email");
+      setError((err as Error)?.message || "Failed to send password reset email");
     }
   };
 
@@ -216,7 +216,7 @@ export default function SettingsPage() {
         setError(result.error || "Failed to connect wallet");
       }
     } catch (err: any) {
-      setError(err.message || "Failed to connect wallet");
+      setError((err as Error).message || "Failed to connect wallet");
     }
   };
 
