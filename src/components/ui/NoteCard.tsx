@@ -193,12 +193,14 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
       </Card>
 
       {contextMenu && (
-        <ContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          onCloseAction={() => setContextMenu(null)}
-          items={contextMenuItems}
-        />
+        <div className="relative -mt-0 -mb-0">
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            onCloseAction={() => setContextMenu(null)}
+            items={contextMenuItems}
+          />
+        </div>
       )}
 
       {showShareModal && note.$id && (

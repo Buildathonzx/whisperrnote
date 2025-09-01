@@ -40,8 +40,8 @@ export function ContextMenu({ x, y, onCloseAction, items }: ContextMenuProps) {
   return (
     <div
       ref={menuRef}
-      className="absolute z-50 min-w-48 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-lg shadow-lg py-1"
-      style={{ left: x, top: y }}
+      className="pointer-events-auto absolute z-50 min-w-48 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-lg shadow-lg py-1"
+      style={{ left: `${x}px`, top: `${y}px` }}
       onClick={(e) => e.stopPropagation()}
     >
       {items.map((item, index) => (
