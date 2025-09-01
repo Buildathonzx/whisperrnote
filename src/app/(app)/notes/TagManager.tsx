@@ -7,10 +7,10 @@ import type { Tags } from '@/types/appwrite';
 
 interface TagManagerProps {
   selectedTags: string[];
-  onChange: (tags: string[]) => void;
+  onChangeAction: (tags: string[]) => void;
 }
 
-export default function TagManager({ selectedTags, onChange }: TagManagerProps) {
+export default function TagManager({ selectedTags, onChangeAction }: TagManagerProps) {
   const [tags, setTags] = useState<Tags[]>([]);
   const [newTagName, setNewTagName] = useState('');
 
@@ -48,7 +48,7 @@ export default function TagManager({ selectedTags, onChange }: TagManagerProps) 
         getOptionLabel={(option) => option.name || ''}
         value={tags.filter(tag => selectedTags.includes(tag.$id))}
         onChange={(event, newValue) => {
-          onChange(newValue.map(tag => tag.$id));
+          onChangeAction(newValue.map(tag => tag.$id));
         }}
         renderTags={(value, getTagProps) =>
           value.map((option, index) => {
