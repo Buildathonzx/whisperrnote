@@ -76,7 +76,10 @@ export async function POST(request: NextRequest) {
       // If user already exists, try to get the existing user
       if (createError.code === 409) {
         try {
-          user = await users.get(userId);
+          // Try to get user by email if already exists
+const list = await users.list();
+user = list.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+if (!user) throw new Error('User creation failed and could not retrieve existing user: ' + createError.message);
           console.log('User already exists, using existing user:', user.$id);
         } catch (getError: any) {
           console.error('Failed to get existing user:', getError);
@@ -88,29 +91,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Store wallet info in user preferences
-    await users.updatePrefs(userId, {
-      authMethod: 'wallet',
-      walletAddress: address.toLowerCase(),
-      walletProvider: provider,
-      chainId: chainId || null,
-      signature,
-      registeredAt: new Date().toISOString()
-    });
+    await users.updatePrefs(user.$id, {
+  authMethod: 'wallet',
+  walletAddress: address.toLowerCase(),
+  walletProvider: provider,
+  chainId: chainId || null,
+  signature,
+  registeredAt: new Date().toISOString()
+});
 
     // Upsert wallet map
     try {
-      await setWalletMap(address.toLowerCase(), userId);
+      await setWalletMap(address.toLowerCase(), user.$id);
     } catch (_) {}
 
     // Create custom token for immediate login
-    const token = await users.createToken(userId, 6, 900); // 15 minutes
+    const token = await users.createToken(user.$id, 6, 900); // 15 minutes
 
     return NextResponse.json({
-      success: true,
-      userId: user.$id,
-      secret: token.secret,
-      expire: token.expire
-    });
+  success: true,
+  userId: user.$id,
+  secret: token.secret,
+  expire: token.expire
+});
 
   } catch (error: unknown) {
     const err = error as { message?: string; code?: unknown; type?: unknown; response?: unknown; stack?: unknown };

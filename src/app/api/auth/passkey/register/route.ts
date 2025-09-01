@@ -36,53 +36,51 @@ export async function POST(request: NextRequest) {
     console.log('Creating Appwrite user:', { userId, email, name: cleanName || 'User' });
 
     // Create user account
-    const user = await users.create(
-      userId,
-      email,
-      undefined, // phone
-      undefined, // password
-      cleanName || 'User' // Use sanitized email username as display name
-    );
+    let user;
+try {
+  user = await users.create(
+    userId,
+    email,
+    undefined,
+    undefined,
+    cleanName || 'User'
+  );
+} catch (createError: any) {
+  if (createError.code === 409) {
+    // User already exists, get by email
+    const list = await users.list();
+    user = list.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    if (!user) throw new Error('User creation failed and could not retrieve existing user: ' + createError.message);
+  } else {
+    throw createError;
+  }
+}
 
     console.log('User created successfully:', user.$id);
 
     // Store passkey credential info in user preferences
-    await users.updatePrefs(userId, {
-      authMethod: 'passkey',
-      passkeyCredentialId: credentialId,
-      passkeyPublicKey: publicKey,
-      registeredAt: new Date().toISOString()
-    });
+    await users.updatePrefs(user.$id, {
+  authMethod: 'passkey',
+  passkeyCredentialId: credentialId,
+  passkeyPublicKey: publicKey,
+  registeredAt: new Date().toISOString()
+});
 
     console.log('User preferences updated');
 
     // Create custom token for immediate login
-    const token = await users.createToken(userId);
-
-    console.log('Token created successfully');
+const token = await users.createToken(user.$id);
 
     return NextResponse.json({
-      success: true,
-      userId: user.$id,
-      secret: token.secret,
-      expire: token.expire
-    });
-
-  } catch (error: any) {
-    console.error('Passkey registration error:', error);
-    console.error('Error details:', {
-      code: error.code,
-      type: error.type,
-      message: error.message,
-      response: error.response
-    });
-    
-    // Handle user already exists error
-    if (error.code === 409) {
-      return NextResponse.json(
-        { message: 'User with this email already exists' },
-        { status: 409 }
-      );
+      message: error.message || 'Registration failed',
+      details: {
+        code: error.code,
+        type: error.type,
+        response: error.response
+      }
+    },
+    { status: 500 }
+    );
     }
 
     return NextResponse.json(
