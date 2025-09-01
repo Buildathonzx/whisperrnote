@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface ContextMenuProps {
   x: number;
   y: number;
-  onClose: () => void;
+  onCloseAction: () => void;
   items: Array<{
     label: string;
     icon?: React.ReactNode;
@@ -14,11 +14,18 @@ interface ContextMenuProps {
   }>;
 }
 
-export function ContextMenu({ x, y, onClose, items }: ContextMenuProps) {
-  React.useEffect(() => {
-    const handleClickOutside = () => onClose();
+// Anchored context menu: positions relative to nearest relatively-positioned ancestor
+export function ContextMenu({ x, y, onCloseAction, items }: ContextMenuProps) {
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        onCloseAction();
+      }
+    };
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseAction();
     };
 
     document.addEventListener('click', handleClickOutside);
@@ -28,11 +35,12 @@ export function ContextMenu({ x, y, onClose, items }: ContextMenuProps) {
       document.removeEventListener('click', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [onClose]);
+  }, [onCloseAction]);
 
   return (
     <div
-      className="fixed z-50 min-w-48 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-lg shadow-lg py-1"
+      ref={menuRef}
+      className="absolute z-50 min-w-48 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-lg shadow-lg py-1"
       style={{ left: x, top: y }}
       onClick={(e) => e.stopPropagation()}
     >
@@ -41,7 +49,7 @@ export function ContextMenu({ x, y, onClose, items }: ContextMenuProps) {
           key={index}
           onClick={() => {
             item.onClick();
-            onClose();
+            onCloseAction();
           }}
           className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors ${
             item.variant === 'destructive'

@@ -30,9 +30,11 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
 
   const handleRightClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
     setContextMenu({
-      x: e.pageX,
-      y: e.pageY
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
     });
   };
 
@@ -147,7 +149,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
   return (
     <>
       <Card 
-        className="flex flex-col bg-card border border-border note-card h-48 sm:h-52 md:h-56 lg:h-60 cursor-pointer hover:shadow-lg transition-shadow"
+        className="relative flex flex-col bg-card border border-border note-card h-48 sm:h-52 md:h-56 lg:h-60 cursor-pointer hover:shadow-lg transition-shadow"
         onClick={handleClick}
         onContextMenu={handleRightClick}
       >
@@ -194,7 +196,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
         <ContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
-          onClose={() => setContextMenu(null)}
+          onCloseAction={() => setContextMenu(null)}
           items={contextMenuItems}
         />
       )}
