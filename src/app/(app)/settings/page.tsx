@@ -72,7 +72,7 @@ export default function SettingsPage() {
         try {
           const s = await getSettings(u.$id);
           setSettings(s);
-        } catch (e) {
+         } catch {
           const newSettings = await createSettings({ userId: u.$id, settings: JSON.stringify({ theme: 'light', notifications: true }) });
           setSettings(newSettings);
         }
@@ -81,7 +81,7 @@ export default function SettingsPage() {
         try {
           const mode = await getAIMode(u.$id);
           setCurrentAIMode((mode as AIMode) || AIMode.STANDARD);
-        } catch (e) {
+         } catch {
           console.error('Failed to load AI mode:', e);
         }
 
