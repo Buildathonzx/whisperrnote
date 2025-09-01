@@ -53,7 +53,7 @@ export default function TagManager({ selectedTags, onChangeAction }: TagManagerP
         renderTags={(value, getTagProps) =>
           value.map((option, index) => {
              const tagProps = getTagProps({ index });
-             const { key, ...restProps } = tagProps; // key handled by MUI
+             const { key: _unusedKey, ...restProps } = tagProps; // key handled by MUI
             return (
               <Chip
                 key={option.$id}
