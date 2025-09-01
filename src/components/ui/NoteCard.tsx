@@ -30,11 +30,10 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
 
   const handleRightClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    const target = e.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
+    // Use viewport coordinates for a fixed overlay that does not reflow layout
     setContextMenu({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: e.clientX,
+      y: e.clientY
     });
   };
 
@@ -193,14 +192,12 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
       </Card>
 
       {contextMenu && (
-        <div className="relative -mt-0 -mb-0">
-          <ContextMenu
-            x={contextMenu.x}
-            y={contextMenu.y}
-            onCloseAction={() => setContextMenu(null)}
-            items={contextMenuItems}
-          />
-        </div>
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onCloseAction={() => setContextMenu(null)}
+          items={contextMenuItems}
+        />
       )}
 
       {showShareModal && note.$id && (
