@@ -88,7 +88,7 @@ export default function NotesPage() {
   }, [setAIGenerateHandler]);
 
   // Function to fetch and sync notes
-  const fetchAndSyncNotes = async (showLoadingIndicator = false) => {
+  const fetchAndSyncNotes = React.useCallback(async (showLoadingIndicator = false) => {
     if (showLoadingIndicator) {
       showLoading('Loading your notes...');
     }
@@ -109,7 +109,7 @@ export default function NotesPage() {
         hideLoading();
       }
     }
-  };
+  }, [showLoading, hideLoading]);
 
   // Initial data fetch
   useEffect(() => {
