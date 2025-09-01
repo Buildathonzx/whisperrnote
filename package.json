@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack -p 3001",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "eslint --fix --ext .ts,.tsx ."
+
   },
   "dependencies": {
     "@azure-rest/ai-inference": "^1.0.0-beta.6",

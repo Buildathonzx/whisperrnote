@@ -10,6 +10,7 @@ export enum SubscriptionTier {
   PRO_PLUS = "pro+"
 }
 
+// export generation types
 export type GenerationType = 'topic' | 'brainstorm' | 'research' | 'custom';
 
 export interface GenerationResult {
