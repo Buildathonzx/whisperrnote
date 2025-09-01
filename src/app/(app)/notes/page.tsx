@@ -81,11 +81,37 @@ export default function NotesPage() {
     paginationConfig
   });
 
+  // Function to handle AI generation
+  const handleAIGenerate = async (prompt: string, type: 'topic' | 'brainstorm' | 'research' | 'custom') => {
+    setIsGenerating(true);
+    try {
+      // Use real AI generation with Gemini
+      const result = await aiService.generateContent(prompt, type);
+      // Close the prompt modal and open create note form with content
+      closeOverlay();
+      // Open the create note form with pre-filled content
+      openOverlay(
+        <CreateNoteForm 
+          initialContent={{
+            title: result.title,
+            content: result.content,
+            tags: result.tags
+          }}
+          onNoteCreated={handleNoteCreated} 
+        />
+      );
+    } catch (error) {
+      console.error('AI Generation Failed:', error instanceof Error ? error.message : 'Unable to generate content. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   // Register AI handler with context
   useEffect(() => {
     setAIGenerateHandler(handleAIGenerate);
     return () => setAIGenerateHandler(undefined);
-  }, [setAIGenerateHandler]);
+  }, [setAIGenerateHandler, handleAIGenerate]);
 
   // Function to fetch and sync notes
   const fetchAndSyncNotes = React.useCallback(async (showLoadingIndicator = false) => {
@@ -115,7 +141,7 @@ export default function NotesPage() {
   useEffect(() => {
     fetchAndSyncNotes(true);
     setIsInitialLoading(false);
-  }, []);
+  }, [fetchAndSyncNotes]);
 
   // Periodic sync to keep notes synchronized across tabs/sessions
   useEffect(() => {
@@ -166,6 +192,17 @@ export default function NotesPage() {
     };
   }, [isInitialLoading, fetchAndSyncNotes]);
 
+  const handleAIGenerateFromPrompt = (prompt: string) => {
+    openOverlay(
+      <AIGeneratePromptModal
+        onClose={closeOverlay}
+        onGenerate={handleAIGenerate}
+        isGenerating={isGenerating}
+        initialPrompt={prompt}
+      />
+    );
+  };
+
   // Check for AI prompt from landing page
   useEffect(() => {
     const aiPrompt = searchParams.get('ai-prompt');
@@ -179,47 +216,7 @@ export default function NotesPage() {
       sessionStorage.removeItem('pending-ai-prompt');
       handleAIGenerateFromPrompt(pendingPrompt);
     }
-  }, [searchParams]);
-
-  const handleAIGenerateFromPrompt = (prompt: string) => {
-    openOverlay(
-      <AIGeneratePromptModal
-        onClose={closeOverlay}
-        onGenerate={handleAIGenerate}
-        isGenerating={isGenerating}
-        initialPrompt={prompt}
-      />
-    );
-  };
-
-  const handleAIGenerate = async (prompt: string, type: 'topic' | 'brainstorm' | 'research' | 'custom') => {
-    setIsGenerating(true);
-    
-    try {
-      // Use real AI generation with Gemini
-      const result = await aiService.generateContent(prompt, type);
-      
-      // Close the prompt modal and open create note form with content
-      closeOverlay();
-      
-      // Open the create note form with pre-filled content
-      openOverlay(
-        <CreateNoteForm 
-          initialContent={{
-            title: result.title,
-            content: result.content,
-            tags: result.tags
-          }}
-          onNoteCreated={handleNoteCreated} 
-        />
-      );
-      
-    } catch (error) {
-      console.error('AI Generation Failed:', error instanceof Error ? error.message : 'Unable to generate content. Please try again.');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  }, [searchParams, handleAIGenerateFromPrompt]);
 
   const handleNoteCreated = async (newNote: Notes) => {
     // Optimistic update: Add note to local state immediately for better UX
