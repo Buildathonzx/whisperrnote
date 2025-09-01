@@ -30,14 +30,14 @@ interface EnabledIntegrations {
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('settings');
-  const [user, setUser] = useState<any>(null);
-  const [settings, setSettings] = useState<any>(null);
+  const [user, setUser] = useState<import('@/types/appwrite').Users | null>(null);
+  const [settings, setSettings] = useState<import('@/types/appwrite').Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
-  const [notes, setNotes] = useState<any[]>([]);
+  const [notes, setNotes] = useState<import('@/types/appwrite').Notes[]>([]);
   const [currentAIMode, setCurrentAIMode] = useState<AIMode>(AIMode.STANDARD);
   const [authMethods, setAuthMethods] = useState<AuthMethods>({
     mfaFactors: null,
