@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+ 
 /// <reference types="node-appwrite" />
 declare namespace AppwriteNode { type Models = import('node-appwrite').Models; }
 type Models = AppwriteNode.Models;

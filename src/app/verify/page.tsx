@@ -40,7 +40,7 @@ function EmailVerifyInner() {
       }
     };
     handleVerificationLink();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [userId, secret, router]);
 
   // Get current user and check verification status
