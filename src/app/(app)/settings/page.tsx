@@ -118,7 +118,7 @@ export default function SettingsPage() {
       }
     };
     fetchUserAndSettings();
-  }, [router]);
+   }, [router, showAuthModal]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
