@@ -44,7 +44,7 @@ export default function TagsPage() {
       return;
     }
     if (user) {
-      fetchTags();
+      (async () => { await fetchTags(); })();
     }
   }, [isAuthenticated, user, showAuthModal]);
 
@@ -58,8 +58,8 @@ export default function TagsPage() {
       setLoading(true);
       const response = await listTags(); // Uses default user filtering
       setTags(response.documents as unknown as Tags[]);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch tags');
+    } catch (err) {
+       setError(err instanceof Error ? err.message : 'Failed to fetch tags');
     } finally {
       setLoading(false);
     }
@@ -103,8 +103,8 @@ export default function TagsPage() {
       setShowCreateForm(false);
       setEditingTag(null);
       await fetchTags();
-    } catch (err: any) {
-      setError(err.message || 'Failed to save tag');
+    } catch (err) {
+       setError((err as Error)?.message || 'Failed to save tag');
     } finally {
       setIsCreating(false);
     }
@@ -128,8 +128,8 @@ export default function TagsPage() {
     try {
       await deleteTag(tag.$id);
       await fetchTags();
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete tag');
+    } catch (err) {
+       setError(err instanceof Error ? err.message : 'Failed to delete tag');
     }
   };
 
