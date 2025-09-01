@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './Card';
-import { ContextMenu } from './ContextMenu';
+import { useContextMenu } from './ContextMenuContext';
 import { useDynamicSidebar } from './DynamicSidebar';
 import { NoteDetailSidebar } from './NoteDetailSidebar';
 import { ShareNoteModal } from '../ShareNoteModal';
@@ -24,16 +24,17 @@ interface NoteCardProps {
 }
 
 const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  // context menu managed globally
   const [showShareModal, setShowShareModal] = useState(false);
+  const { openMenu, closeMenu } = useContextMenu();
   const { openSidebar } = useDynamicSidebar();
 
   const handleRightClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Use viewport coordinates for a fixed overlay that does not reflow layout
-    setContextMenu({
+    openMenu({
       x: e.clientX,
-      y: e.clientY
+      y: e.clientY,
+      items: contextMenuItems
     });
   };
 
@@ -99,7 +100,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
 
   const handleShareWith = () => {
     setShowShareModal(true);
-    setContextMenu(null);
+    closeMenu();
   };
 
   const noteIsPublic = isNotePublic(note);
@@ -191,14 +192,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
         </CardContent>
       </Card>
 
-      {contextMenu && (
-        <ContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          onCloseAction={() => setContextMenu(null)}
-          items={contextMenuItems}
-        />
-      )}
+
 
       {showShareModal && note.$id && (
         <ShareNoteModal

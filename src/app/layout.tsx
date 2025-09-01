@@ -11,6 +11,8 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AIProvider } from "@/components/ui/AIContext";
 import { ToastProvider } from "@/components/ui/Toast";
 import Overlay from "@/components/ui/Overlay";
+import { ContextMenuProvider } from "@/components/ui/ContextMenuContext";
+import { GlobalContextMenu } from "@/components/ui/GlobalContextMenu";
 
 export default function RootLayout({
   children,
@@ -26,13 +28,16 @@ export default function RootLayout({
               <AuthProvider>
                 <SubscriptionProvider>
                   <OverlayProvider>
-                    <AIProvider>
-                      <RouteGuard>
-                        {children}
-                      </RouteGuard>
-                      <AuthModalContainer />
-                      <Overlay />
-                    </AIProvider>
+                     <AIProvider>
+                       <ContextMenuProvider>
+                         <RouteGuard>
+                           {children}
+                         </RouteGuard>
+                         <AuthModalContainer />
+                         <Overlay />
+                         <GlobalContextMenu />
+                       </ContextMenuProvider>
+                     </AIProvider>
                   </OverlayProvider>
                 </SubscriptionProvider>
               </AuthProvider>
