@@ -172,7 +172,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
           </p>
           {note.tags && note.tags.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1 overflow-hidden">
-              {note.tags.slice(0, 3).map((tag, index) => (
+              {note.tags.slice(0, 3).map((tag: string, index: number) => (
                 <span
                   key={index}
                   className="rounded-full bg-accent/20 px-2 py-1 text-xs text-accent whitespace-nowrap"
