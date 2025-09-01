@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { validatePublicNoteAccess } from '@/lib/appwrite/permissions';
+import { validatePublicNoteAccess } from '@/lib/appwrite/permissions/notes';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
 import { useAuth } from '@/components/ui/AuthContext';
 import type { Notes } from '@/types/appwrite.d';

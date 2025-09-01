@@ -4,7 +4,7 @@ import { ContextMenu } from './ContextMenu';
 import { useDynamicSidebar } from './DynamicSidebar';
 import { NoteDetailSidebar } from './NoteDetailSidebar';
 import { ShareNoteModal } from '../ShareNoteModal';
-import { toggleNoteVisibility, getShareableUrl, isNotePublic } from '@/lib/appwrite/permissions';
+import { toggleNoteVisibility, getShareableUrl, isNotePublic } from '@/lib/appwrite/permissions/notes';
 import type { Notes } from '@/types/appwrite';
 import { 
   PencilIcon, 
