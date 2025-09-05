@@ -96,26 +96,28 @@ export function useSearch<T extends { $id: string; [key: string]: any }>({
     return localSearch || data.length <= threshold;
   }, [localSearch, data.length, threshold]);
   
-  // Local search function with Fuse.js
-  const performLocalSearch = useCallback((query: string, items: T[]) => {
-    if (!query.trim()) return items;
-
+  // Memoize the Fuse instance to avoid re-creating it on every render
+  const fuse = useMemo(() => {
     const fuseOptions = {
       keys: searchFields,
       includeScore: true,
-      threshold: 0.4, // Adjust for more or less strict search
+      threshold: 0.4,
       minMatchCharLength: 2,
     };
+    return new Fuse(data, fuseOptions);
+  }, [data, searchFields]);
 
-    const fuse = new Fuse(items, fuseOptions);
+  // Local search function using the memoized Fuse instance
+  const performLocalSearch = useCallback((query: string) => {
+    if (!query.trim()) return data;
+
     const results = fuse.search(query);
-
-    // Deduplicate by $id to prevent duplicate keys, returning the item itself
     const uniqueResults = results.map(result => result.item);
+
     return uniqueResults.filter((item, index, arr) =>
       arr.findIndex(i => i.$id === item.$id) === index
     );
-  }, [searchFields]);
+  }, [fuse, data]);
   
   // Backend search function
   const performBackendSearch = useCallback(async (query: string, page: number) => {
@@ -152,8 +154,8 @@ export function useSearch<T extends { $id: string; [key: string]: any }>({
     
     try {
       if (useLocalSearch) {
-        // Use local search - no need for backend call if we have all data
-        const filtered = performLocalSearch(query, data);
+        // Use local search
+        const filtered = performLocalSearch(query);
         setBackendData(filtered);
         setTotalCount(filtered.length);
       } else {

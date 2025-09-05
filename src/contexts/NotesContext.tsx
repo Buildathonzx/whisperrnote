@@ -32,12 +32,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     try {
       const result = await getAllNotes();
       setNotes(result.documents as Notes[]);
-    } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'message' in err && typeof (err as { message?: unknown }).message === 'string') {
-        setError((err as { message: string }).message);
-      } else {
-        setError('Failed to fetch notes');
-      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch notes');
       setNotes([]);
     } finally {
       setIsLoading(false);
