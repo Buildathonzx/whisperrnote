@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+
 export interface PasswordStrength {
   score: number; // 0-4 (very weak to very strong)
   feedback: string[];
@@ -9,6 +11,22 @@ export interface PasswordStrength {
     number: boolean;
     special: boolean;
   };
+}
+
+// Generate a secure random integer between 0 (inclusive) and max (exclusive)
+function secureRandomInt(max: number): number {
+  // crypto.randomInt is available in Node 14+, but for compatibility, use a fallback.
+  if (typeof crypto.randomInt === 'function') {
+    return crypto.randomInt(0, max);
+  }
+  // Fallback:
+  if (max <= 0) throw new RangeError('max must be positive');
+  const byteSize = Math.ceil(Math.log2(max) / 8);
+  let rand: number;
+  do {
+    rand = parseInt(crypto.randomBytes(byteSize).toString('hex'), 16);
+  } while (rand >= max);
+  return rand;
 }
 
 export interface PasswordRequirements {
@@ -111,17 +129,26 @@ export function generateSecurePassword(): string {
   let password = '';
 
   // Ensure at least one of each required type
-  password += lowercase[Math.floor(Math.random() * lowercase.length)];
-  password += uppercase[Math.floor(Math.random() * uppercase.length)];
-  password += numbers[Math.floor(Math.random() * numbers.length)];
-  password += symbols[Math.floor(Math.random() * symbols.length)];
+  password += lowercase[secureRandomInt(lowercase.length)];
+  password += uppercase[secureRandomInt(uppercase.length)];
+  password += numbers[secureRandomInt(numbers.length)];
+  password += symbols[secureRandomInt(symbols.length)];
 
   // Fill the rest randomly
   const allChars = lowercase + uppercase + numbers + symbols;
   for (let i = password.length; i < 12; i++) {
-    password += allChars[Math.floor(Math.random() * allChars.length)];
+    password += allChars[secureRandomInt(allChars.length)];
   }
 
-  // Shuffle the password
-  return password.split('').sort(() => Math.random() - 0.5).join('');
+  // Securely shuffle the password
+  return secureShuffle(password.split('')).join('');
+}
+
+// Fisher-Yates shuffle using secure random numbers
+function secureShuffle<T>(array: T[]): T[] {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = secureRandomInt(i + 1);
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
