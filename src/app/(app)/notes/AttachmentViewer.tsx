@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Box, Typography, Card, CardMedia, CardContent, Grid, IconButton } from '@mui/material';
+import { Box, Typography, Card, CardMedia, CardContent, IconButton } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-import { getFile, deleteFile } from '@/lib/appwrite';
+import { getNoteAttachment, deleteNoteAttachment, storage, APPWRITE_BUCKET_NOTES_ATTACHMENTS } from '@/lib/appwrite';
 import type { Models } from 'appwrite';
 
 interface AttachmentViewerProps {
@@ -17,7 +17,7 @@ export default function AttachmentViewer({ attachmentIds, onAttachmentDeleted }:
   useEffect(() => {
     const fetchAttachments = async () => {
       const fetchedAttachments = await Promise.all(
-        attachmentIds.map(id => getFile(id, 'notes-attachments'))
+        attachmentIds.map(id => getNoteAttachment(id))
       );
       setAttachments(fetchedAttachments);
     };
@@ -28,7 +28,7 @@ export default function AttachmentViewer({ attachmentIds, onAttachmentDeleted }:
 
   const handleDelete = async (fileId: string) => {
     try {
-      await deleteFile(fileId, 'notes-attachments');
+      await deleteNoteAttachment(fileId);
       onAttachmentDeleted(fileId);
       setAttachments(prev => prev.filter(a => a.$id !== fileId));
     } catch (error) {
@@ -36,18 +36,23 @@ export default function AttachmentViewer({ attachmentIds, onAttachmentDeleted }:
     }
   };
 
+  const getImageUrl = (fileId: string): string => {
+    const url = storage.getFileView(APPWRITE_BUCKET_NOTES_ATTACHMENTS, fileId);
+    return typeof url === 'string' ? url : String(url);
+  };
+
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h6" sx={{ mb: 2 }}>Attachments</Typography>
-      <Grid container spacing={2}>
-        {attachments.map(attachment => (
-          <Grid item key={attachment.$id} xs={12} sm={6} md={4}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {attachments.map((attachment) => (
+          <div key={attachment.$id}>
             <Card>
               {attachment.mimeType.startsWith('image/') ? (
                 <CardMedia
                   component="img"
                   height="140"
-                  image={getFile(attachment.$id, 'notes-attachments').href}
+                  image={getImageUrl(attachment.$id)}
                   alt={attachment.name}
                 />
               ) : (
@@ -64,9 +69,9 @@ export default function AttachmentViewer({ attachmentIds, onAttachmentDeleted }:
                 </IconButton>
               </CardContent>
             </Card>
-          </Grid>
+          </div>
         ))}
-      </Grid>
+      </div>
     </Box>
   );
 }
