@@ -28,6 +28,10 @@ export function TopBarSearch({ className = '' }: TopBarSearchProps) {
     pageSize: 10,
   };
 
+  const fetchDataAction = useCallback(async () => {
+    return { documents: notes, total: notes.length };
+  }, [notes]);
+
   const {
     items: searchResults,
     isSearching,
@@ -36,7 +40,7 @@ export function TopBarSearch({ className = '' }: TopBarSearchProps) {
     clearSearch,
   } = useSearch({
     data: notes,
-    fetchDataAction: async () => ({ documents: notes, total: notes.length }),
+    fetchDataAction,
     searchConfig,
     paginationConfig,
   });
