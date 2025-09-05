@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { getAllNotes, updateNote, deleteNote } from '@/lib/appwrite';
+import { updateNote, deleteNote } from '@/lib/appwrite';
+import { useNotes } from '@/contexts/NotesContext';
 import { useLoading } from '@/components/ui/LoadingContext';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { useAI } from '@/components/ui/AIContext';
@@ -26,8 +27,7 @@ import { aiServiceInstance as aiService } from '@/lib/ai-service';
 import { NotesErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function NotesPage() {
-  const [allNotes, setAllNotes] = useState<Notes[]>([]);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const { notes: allNotes, isLoading: isInitialLoading, refetchNotes } = useNotes();
   const { showLoading, hideLoading } = useLoading();
   const { openOverlay, closeOverlay } = useOverlay();
   const { isGenerating, setIsGenerating, setAIGenerateHandler } = useAI();
@@ -37,25 +37,23 @@ export default function NotesPage() {
 
   // Fetch notes action for the search hook
   const fetchNotesAction = async () => {
-    // For now, we'll fetch all notes and let the search hook handle filtering
-    // In a production app with many notes, you'd want server-side search
-    const result = await getAllNotes();
+    // Data is now coming from context, so we just return it
     return {
-      documents: result.documents as Notes[],
-      total: result.total
+      documents: allNotes,
+      total: allNotes.length
     };
   };
 
   // Search and pagination configuration
   const searchConfig = {
     searchFields: ['title', 'content', 'tags'],
-    localSearch: true, // Use frontend search for better UX with larger datasets
-    threshold: 500, // Switch to backend search if more than 500 notes (increased from 200)
+    localSearch: true,
+    threshold: 500,
     debounceMs: 300
   };
 
   const paginationConfig = {
-    pageSize: 12 // Show 12 notes per page
+    pageSize: 12
   };
 
   // Use the search hook
@@ -113,84 +111,6 @@ export default function NotesPage() {
     return () => setAIGenerateHandler(undefined);
   }, [setAIGenerateHandler, handleAIGenerate]);
 
-  // Function to fetch and sync notes
-  const fetchAndSyncNotes = React.useCallback(async (showLoadingIndicator = false) => {
-    if (showLoadingIndicator) {
-      showLoading('Loading your notes...');
-    }
-
-    try {
-      const res = await getAllNotes();
-      const notes = Array.isArray(res.documents) ? (res.documents as Notes[]) : [];
-      // Deduplicate notes by $id to prevent duplicate keys
-      const uniqueNotes = notes.filter((note, index, arr) =>
-        arr.findIndex(n => n.$id === note.$id) === index
-      );
-      setAllNotes(uniqueNotes);
-    } catch (error) {
-      console.error('Failed to fetch notes:', error);
-      // Don't clear notes on error to avoid losing local state
-    } finally {
-      if (showLoadingIndicator) {
-        hideLoading();
-      }
-    }
-  }, [showLoading, hideLoading]);
-
-  // Initial data fetch
-  useEffect(() => {
-    fetchAndSyncNotes(true);
-    setIsInitialLoading(false);
-  }, [fetchAndSyncNotes]);
-
-  // Periodic sync to keep notes synchronized across tabs/sessions
-  useEffect(() => {
-    if (isInitialLoading) return; // Don't sync during initial load
-
-    const syncInterval = setInterval(async () => {
-      try {
-        const { documents: latestNotes } = await getAllNotes();
-        setAllNotes((currentNotes) => {
-          const refreshedMap = new Map(latestNotes.map(note => [note.$id, note]));
-
-          // Check if there are any differences
-          const hasChanges = latestNotes.length !== currentNotes.length ||
-            latestNotes.some(note => {
-              const current = refreshedMap.get(note.$id);
-              return !current ||
-                current.$updatedAt !== note.$updatedAt ||
-                current.title !== note.title ||
-                current.content !== note.content;
-            });
-
-          if (hasChanges) {
-            console.log('Notes synchronized with server');
-            return latestNotes;
-          }
-
-          return currentNotes; // No changes
-        });
-      } catch (error) {
-        console.error('Background sync failed:', error);
-        // Don't show error to user for background sync failures
-      }
-    }, 30000); // Sync every 30 seconds
-
-    // Also sync when page becomes visible (user returns to tab)
-    const handleVisibilityChange = () => {
-      if (!document.hidden && !isInitialLoading) {
-        console.log('Page visible, syncing notes');
-        fetchAndSyncNotes(false); // Don't show loading indicator for background sync
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      clearInterval(syncInterval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [isInitialLoading, fetchAndSyncNotes]);
 
   const handleAIGenerateFromPrompt = (prompt: string) => {
     openOverlay(
@@ -219,47 +139,7 @@ export default function NotesPage() {
   }, [searchParams, handleAIGenerateFromPrompt]);
 
   const handleNoteCreated = async (newNote: Notes) => {
-    // Optimistic update: Add note to local state immediately for better UX
-    setAllNotes((prevNotes) => {
-      const exists = prevNotes.some(note => note.$id === newNote.$id);
-      if (exists) {
-        return prevNotes;
-      }
-      return [newNote, ...prevNotes];
-    });
-
-    // Then sync with database in background
-    try {
-      const { documents: refreshedNotes } = await getAllNotes();
-
-      // After fetching, reconcile with local state
-      setAllNotes((currentNotes) => {
-        const refreshedMap = new Map(refreshedNotes.map(note => [note.$id, note]));
-
-        // Merge: start with server notes
-        const merged = refreshedNotes.slice();
-
-        // Add any local notes that aren't in the refreshed list (our optimistic update)
-        currentNotes.forEach(note => {
-          if (!refreshedMap.has(note.$id)) {
-            merged.unshift(note); // Add to beginning
-          }
-        });
-
-        // Remove duplicates and sort by creation date (newest first)
-        const unique = merged.filter((note, index, arr) =>
-          arr.findIndex(n => n.$id === note.$id) === index
-        );
-
-        return unique.sort((a, b) =>
-          new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime()
-        );
-      });
-    } catch (error) {
-      console.error('Failed to sync notes after creation:', error);
-      // Note: We keep the optimistic update even if sync fails
-      // This provides better UX - user sees their note immediately
-    }
+    await refetchNotes();
   };
 
   const handleNoteUpdated = async (updatedNote: Notes) => {
@@ -267,46 +147,8 @@ export default function NotesPage() {
       console.error('Cannot update note: missing ID');
       return;
     }
-
-    // Store original note for potential rollback
-    const originalNote = allNotes.find(note => note.$id === updatedNote.$id);
-
-    // Optimistic update: Update local state immediately
-    setAllNotes((prevNotes) =>
-      prevNotes.map(note =>
-        note.$id === updatedNote.$id ? { ...note, ...updatedNote } : note
-      )
-    );
-
-    try {
-      await updateNote(updatedNote.$id, updatedNote);
-
-      // On success, sync with database to ensure consistency
-      const { documents: refreshedNotes } = await getAllNotes();
-      setAllNotes((currentNotes) => {
-        const refreshedMap = new Map(refreshedNotes.map(note => [note.$id, note]));
-
-        // Update with server version if it exists, otherwise keep our optimistic update
-        return currentNotes.map(note => {
-          const serverVersion = refreshedMap.get(note.$id);
-          return serverVersion || note;
-        });
-      });
-    } catch (error) {
-      console.error('Failed to update note:', error);
-
-      // Rollback optimistic update on failure
-      if (originalNote) {
-        setAllNotes((prevNotes) =>
-          prevNotes.map(note =>
-            note.$id === updatedNote.$id ? originalNote : note
-          )
-        );
-      }
-
-      // Could show user-friendly error message here
-      // For now, just log the error
-    }
+    await updateNote(updatedNote.$id, updatedNote);
+    await refetchNotes();
   };
 
   const handleNoteDeleted = async (noteId: string) => {
@@ -314,35 +156,8 @@ export default function NotesPage() {
       console.error('Cannot delete note: missing ID');
       return;
     }
-
-    // Store note for potential rollback
-    const noteToDelete = allNotes.find(note => note.$id === noteId);
-
-    // Optimistic update: Remove from local state immediately
-    setAllNotes((prevNotes) =>
-      prevNotes.filter(note => note.$id !== noteId)
-    );
-
-    try {
-      await deleteNote(noteId);
-
-      // On success, sync with database to ensure consistency
-      const { documents: refreshedNotes } = await getAllNotes();
-      setAllNotes(refreshedNotes);
-    } catch (error) {
-      console.error('Failed to delete note:', error);
-
-      // Rollback optimistic update on failure
-      if (noteToDelete) {
-        setAllNotes((prevNotes) => {
-          // Insert back at the original position if possible
-          const newNotes = [...prevNotes];
-          // For simplicity, just add to the beginning
-          newNotes.unshift(noteToDelete);
-          return newNotes;
-        });
-      }
-    }
+    await deleteNote(noteId);
+    await refetchNotes();
   };
 
   const handleCreateNoteClick = () => {

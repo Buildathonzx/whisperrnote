@@ -5,6 +5,7 @@ import { DesktopSidebar, MobileBottomNav } from '@/components/Navigation';
 import AppHeader from '@/components/AppHeader';
 import { SidebarProvider, useSidebar } from '@/components/ui/SidebarContext';
 import { DynamicSidebarProvider, useDynamicSidebar, DynamicSidebar } from '@/components/ui/DynamicSidebar';
+import { NotesProvider } from '@/contexts/NotesContext';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
@@ -52,7 +53,9 @@ export default function AppLayout({
   return (
     <SidebarProvider>
       <DynamicSidebarProvider>
-        <AppLayoutContent>{children}</AppLayoutContent>
+        <NotesProvider>
+          <AppLayoutContent>{children}</AppLayoutContent>
+        </NotesProvider>
       </DynamicSidebarProvider>
     </SidebarProvider>
   );

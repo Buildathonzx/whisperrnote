@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Query } from 'appwrite';
+import Fuse from 'fuse.js';
 
 export interface SearchConfig {
   searchFields: string[]; // Fields to search in
@@ -95,31 +96,23 @@ export function useSearch<T extends { $id: string; [key: string]: any }>({
     return localSearch || data.length <= threshold;
   }, [localSearch, data.length, threshold]);
   
-  // Local search function
+  // Local search function with Fuse.js
   const performLocalSearch = useCallback((query: string, items: T[]) => {
     if (!query.trim()) return items;
-    
-    const searchTerms = query.toLowerCase().split(' ').filter(term => term.length > 0);
-    
-    const filtered = items.filter(item => {
-      return searchTerms.every(term => {
-        return searchFields.some(field => {
-          const fieldValue = item[field];
-          if (typeof fieldValue === 'string') {
-            return fieldValue.toLowerCase().includes(term);
-          }
-          if (Array.isArray(fieldValue)) {
-            return fieldValue.some(val => 
-              typeof val === 'string' && val.toLowerCase().includes(term)
-            );
-          }
-          return false;
-        });
-      });
-    });
 
-    // Deduplicate by $id to prevent duplicate keys
-    return filtered.filter((item, index, arr) => 
+    const fuseOptions = {
+      keys: searchFields,
+      includeScore: true,
+      threshold: 0.4, // Adjust for more or less strict search
+      minMatchCharLength: 2,
+    };
+
+    const fuse = new Fuse(items, fuseOptions);
+    const results = fuse.search(query);
+
+    // Deduplicate by $id to prevent duplicate keys, returning the item itself
+    const uniqueResults = results.map(result => result.item);
+    return uniqueResults.filter((item, index, arr) =>
       arr.findIndex(i => i.$id === item.$id) === index
     );
   }, [searchFields]);
