@@ -2,24 +2,37 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const hostname = request.headers.get('host') || 'whisperrnote.space'; // Fallback to your main domain
-  const path = request.nextUrl.pathname;
+  const hostname = request.headers.get('host') || 'whisperrnote.space';
+  const { pathname } = request.nextUrl;
 
+  // Root domain: no rewrites
   if (hostname === 'whisperrnote.space' || hostname === 'www.whisperrnote.space') {
-    return NextResponse.next(); // Let Next.js handle the root domain
+    return NextResponse.next();
   }
 
-  // Handle other subdomains as needed.  Example:
+  // App subdomain: only rewrite root to /notes to avoid loops
   if (hostname === 'app.whisperrnote.space') {
-    return NextResponse.rewrite(new URL(`/notes${path}`, request.url));
+    if (pathname === '/' || pathname === '') {
+      return NextResponse.rewrite(new URL('/notes', request.url));
+    }
+    // Do not prefix all paths with /notes to avoid recursive rewrites
+    return NextResponse.next();
   }
 
+  // Auth subdomain: only rewrite root to /login (guard against loops)
   if (hostname === 'auth.whisperrnote.space') {
-    return NextResponse.rewrite(new URL(`/login${path}`, request.url));
+    if (pathname === '/' || pathname === '') {
+      return NextResponse.rewrite(new URL('/login', request.url));
+    }
+    return NextResponse.next();
   }
 
+  // Send subdomain: only rewrite root to /send (guard against loops)
   if (hostname === 'send.whisperrnote.space') {
-    return NextResponse.rewrite(new URL(`/send${path}`, request.url));
+    if (pathname === '/' || pathname === '') {
+      return NextResponse.rewrite(new URL('/send', request.url));
+    }
+    return NextResponse.next();
   }
 
   return NextResponse.next();
@@ -27,13 +40,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
+    // Match all paths except Next internals and API
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

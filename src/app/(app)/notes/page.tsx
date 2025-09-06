@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { updateNote, deleteNote } from '@/lib/appwrite';
 import { useNotes } from '@/contexts/NotesContext';
 import { useLoading } from '@/components/ui/LoadingContext';
@@ -79,15 +79,16 @@ export default function NotesPage() {
     paginationConfig
   });
 
-  // Function to handle AI generation
-  const handleAIGenerate = async (prompt: string, type: 'topic' | 'brainstorm' | 'research' | 'custom') => {
+  const handleNoteCreated = useCallback(async (newNote: Notes) => {
+    await refetchNotes();
+  }, [refetchNotes]);
+
+  // Function to handle AI generation (memoized to avoid re-renders)
+  const handleAIGenerate = useCallback(async (prompt: string, type: 'topic' | 'brainstorm' | 'research' | 'custom') => {
     setIsGenerating(true);
     try {
-      // Use real AI generation with Gemini
       const result = await aiService.generateContent(prompt, type);
-      // Close the prompt modal and open create note form with content
       closeOverlay();
-      // Open the create note form with pre-filled content
       openOverlay(
         <CreateNoteForm 
           initialContent={{
@@ -103,16 +104,15 @@ export default function NotesPage() {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [setIsGenerating, aiService, closeOverlay, openOverlay, handleNoteCreated]);
 
-  // Register AI handler with context
+  // Register AI handler with context (only when handler identity changes)
   useEffect(() => {
     setAIGenerateHandler(handleAIGenerate);
     return () => setAIGenerateHandler(undefined);
   }, [setAIGenerateHandler, handleAIGenerate]);
 
-
-  const handleAIGenerateFromPrompt = (prompt: string) => {
+  const handleAIGenerateFromPrompt = useCallback((prompt: string) => {
     openOverlay(
       <AIGeneratePromptModal
         onClose={closeOverlay}
@@ -121,7 +121,7 @@ export default function NotesPage() {
         initialPrompt={prompt}
       />
     );
-  };
+  }, [openOverlay, closeOverlay, handleAIGenerate, isGenerating]);
 
   // Check for AI prompt from landing page
   useEffect(() => {
@@ -129,18 +129,12 @@ export default function NotesPage() {
     const pendingPrompt = typeof window !== 'undefined' ? sessionStorage.getItem('pending-ai-prompt') : null;
     
     if (aiPrompt) {
-      // Direct from landing page with prompt
       handleAIGenerateFromPrompt(aiPrompt);
     } else if (pendingPrompt) {
-      // From sessionStorage after auth
       sessionStorage.removeItem('pending-ai-prompt');
       handleAIGenerateFromPrompt(pendingPrompt);
     }
   }, [searchParams, handleAIGenerateFromPrompt]);
-
-  const handleNoteCreated = async (newNote: Notes) => {
-    await refetchNotes();
-  };
 
   const handleNoteUpdated = async (updatedNote: Notes) => {
     if (!updatedNote.$id) {
@@ -166,15 +160,11 @@ export default function NotesPage() {
 
   // Calculate available space and determine optimal card size
   const getGridClasses = () => {
-    // Determine available space based on sidebar states
     if (!isCollapsed && isDynamicSidebarOpen) {
-      // Both sidebars open - very constrained space
       return 'grid gap-3 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]';
     } else if (!isCollapsed || isDynamicSidebarOpen) {
-      // One sidebar open - moderate space
       return 'grid gap-3 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]';
     } else {
-      // Full space available - optimal distribution
       return 'grid gap-4 grid-cols-[repeat(auto-fill,minmax(240px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(320px,1fr))]';
     }
   };
