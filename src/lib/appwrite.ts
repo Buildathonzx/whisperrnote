@@ -675,6 +675,14 @@ export async function listPublicNotes() {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, [Query.equal('isPublic', true)]);
 }
 
+export async function listPublicNotesByUser(userId: string) {
+  return databases.listDocuments(
+    APPWRITE_DATABASE_ID,
+    APPWRITE_COLLECTION_ID_NOTES,
+    [Query.equal('isPublic', true), Query.equal('userId', userId)]
+  );
+}
+
 // --- PRIVATE SHARING ---
 
 export async function shareNoteWithUser(noteId: string, email: string, permission: 'read' | 'write' | 'admin' = 'read') {
@@ -1055,6 +1063,7 @@ export default {
   searchNotesByTag,
   listNotesByUser,
   listPublicNotes,
+  listPublicNotesByUser,
   getPublicNote,
   shareNoteWithUser,
   getSharedUsers,

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import type { Notes } from '@/types/appwrite';
 import NoteCard from '@/components/ui/NoteCard';
 import { Button } from '@/components/ui/Button';
-import { getSharedNotes, listPublicNotes } from '@/lib/appwrite';
+import { getSharedNotes, listPublicNotesByUser, getCurrentUser } from '@/lib/appwrite';
 import {
   MagnifyingGlassIcon,
   GlobeAltIcon,
@@ -34,9 +34,14 @@ export default function SharedNotesPage() {
         const sharedResult = await getSharedNotes();
         setSharedNotes(sharedResult.documents as SharedNote[]);
         
-        // Fetch public notes
-        const publicResult = await listPublicNotes();
-        setPublicNotes(publicResult.documents as unknown as Notes[]);
+        // Fetch current user's public notes only
+        const user = await getCurrentUser();
+        if (user && user.$id) {
+          const publicResult = await listPublicNotesByUser(user.$id);
+          setPublicNotes(publicResult.documents as unknown as Notes[]);
+        } else {
+          setPublicNotes([]);
+        }
         
       } catch (error) {
         console.error('Error fetching shared notes:', error);
