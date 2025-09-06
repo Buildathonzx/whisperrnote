@@ -76,9 +76,9 @@ export default function SharedNotesPage() {
             <h1 className="text-4xl font-black text-light-fg dark:text-dark-fg mb-2">
               Shared
             </h1>
-            <p className="text-lg text-light-fg/70 dark:text-dark-fg/70">
-              Notes shared with you and public notes
-            </p>
+              <p className="text-lg text-light-fg/70 dark:text-dark-fg/70">
+               Notes shared with you and your public notes
+             </p>
           </div>
           <div className="flex items-center gap-4">
             <Button variant="secondary" className="gap-2">
