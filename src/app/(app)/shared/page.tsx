@@ -134,7 +134,7 @@ export default function SharedNotesPage() {
             <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6 max-w-md">
               {activeTab === 'private' 
                 ? "When others share notes with you, they'll appear here. Start collaborating by sharing your own notes!"
-                : "When users make their notes public, they'll appear here. Explore and discover new content!"
+                : "When you make your notes public, they’ll appear here."
               }
             </p>
           </div>
