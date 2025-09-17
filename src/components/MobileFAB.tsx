@@ -6,6 +6,7 @@ import { useOverlay } from '@/components/ui/OverlayContext';
 import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 import { aiServiceInstance as aiService } from '@/lib/ai-service';
+import { useAI } from '@/components/ui/AIContext';
 
 interface MobileFABProps {
   className?: string;
@@ -13,6 +14,7 @@ interface MobileFABProps {
 
 export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
   const { openOverlay, closeOverlay } = useOverlay();
+  const { isProviderReady, serviceStatus } = useAI();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -86,11 +88,13 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
         <div className="flex flex-col gap-3 mb-4">
           {/* AI Generate Button */}
           <button
-            onClick={handleAIGenerateClick}
-            className="flex items-center gap-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-3 rounded-2xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:-translate-y-1"
+            onClick={isProviderReady ? handleAIGenerateClick : undefined}
+            disabled={!isProviderReady}
+            className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg transform transition-all duration-200 ${isProviderReady ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:shadow-xl hover:-translate-y-1' : 'bg-gray-400/50 text-gray-200 cursor-not-allowed'}`}
+            title={isProviderReady ? 'AI Generate' : `AI unavailable (${serviceStatus})`}
           >
             <SparklesIcon className="h-5 w-5" />
-            <span className="font-medium text-sm">AI Generate</span>
+            <span className="font-medium text-sm">{isProviderReady ? 'AI Generate' : 'AI Unavailable'}</span>
           </button>
 
           {/* Create Note Button */}
