@@ -14,7 +14,7 @@ interface AppHeaderProps {
 
 export default function AppHeader({ className = '' }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
-  const { isGenerating, showAIGenerateModal } = useAI();
+  const { isGenerating, showAIGenerateModal, isProviderReady, serviceStatus } = useAI();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -60,12 +60,13 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
           <div className="hidden md:block">
             <Button 
               onClick={handleAIGenerateClick}
-              disabled={isGenerating}
-              className="gap-2"
+              disabled={isGenerating || !isProviderReady}
+              className={`gap-2 ${!isProviderReady ? 'opacity-60 cursor-not-allowed' : ''}`}
               variant="default"
+              title={!isProviderReady ? `AI unavailable (${serviceStatus})` : 'Generate with AI'}
             >
-              <SparklesIcon className="h-4 w-4" />
-              AI Generate
+              <SparklesIcon className={`h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`} />
+              {isGenerating ? 'Generating...' : 'AI Generate'}
             </Button>
           </div>
 
