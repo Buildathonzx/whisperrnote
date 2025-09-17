@@ -27,7 +27,7 @@ import { aiServiceInstance as aiService } from '@/lib/ai-service';
 import { NotesErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function NotesPage() {
-  const { notes: allNotes, isLoading: isInitialLoading, refetchNotes } = useNotes();
+  const { notes: allNotes, isLoading: isInitialLoading, refetchNotes, hasMore, loadMore } = useNotes();
   const { showLoading, hideLoading } = useLoading();
   const { openOverlay, closeOverlay } = useOverlay();
   const { isGenerating, setIsGenerating, setAIGenerateHandler } = useAI();
@@ -293,15 +293,22 @@ export default function NotesPage() {
           )}
         </div>
       ) : (
-        <div className={getGridClasses()}>
-          {paginatedNotes.map((note) => (
-            <NoteCard 
-              key={note.$id} 
-              note={note} 
-              onUpdate={handleNoteUpdated}
-              onDelete={handleNoteDeleted}
-            />
-          ))}
+        <div className="flex flex-col gap-6">
+          <div className={getGridClasses()}>
+            {paginatedNotes.map((note) => (
+              <NoteCard 
+                key={note.$id} 
+                note={note} 
+                onUpdate={handleNoteUpdated}
+                onDelete={handleNoteDeleted}
+              />
+            ))}
+          </div>
+          {hasMore && !isInitialLoading && (
+            <div className="flex justify-center">
+              <Button variant="secondary" onClick={loadMore}>Load More</Button>
+            </div>
+          )}
         </div>
       )}
 
