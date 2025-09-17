@@ -115,7 +115,7 @@ export class AIService {
     this.config = config;
   }
 
-  async generateContent(prompt: string, type: any): Promise<any> {
+  async generateContent(prompt: string, type: any, options: { signal?: AbortSignal } = {}): Promise<any> {
     const healthyProviders = await this.registry.getHealthyProviders();
     
     if (healthyProviders.length === 0) {
@@ -157,13 +157,22 @@ export class AIService {
   }
 
   private async tryGenerateWithProvider(provider: AIProvider, request: any): Promise<any> {
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), this.config.timeout);
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
 
-    const generatePromise = provider.generateContent(request);
-    
-    return Promise.race([generatePromise, timeoutPromise]);
+    try {
+      const result = await provider.generateContent(request);
+      clearTimeout(timeoutId);
+      return result;
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error?.name === 'AbortError') {
+        throw new Error(`Provider ${provider.id} timed out after ${this.config.timeout}ms`);
+      }
+      // Normalize error messages
+      const message = error?.message || 'Unknown AI provider error';
+      throw new Error(`${provider.id} error: ${message}`);
+    }
   }
 
   private selectProvidersForLoadBalancing(providers: AIProvider[]): AIProvider[] {
