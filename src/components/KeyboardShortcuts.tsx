@@ -6,7 +6,6 @@ import {
   DialogTitle,
   DialogContent,
   Typography,
-  Grid,
   Box,
   IconButton,
   Divider
@@ -88,7 +87,7 @@ export default function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsPr
 
   useEffect(() => {
     // Detect platform
-    setPlatform(navigator.platform.toLowerCase().includes('mac') ? 'mac' : 'windows');
+    setPlatform((typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac')) ? 'mac' : 'windows');
   }, []);
 
   const replaceKeys = (keys: string[]) => {
@@ -127,8 +126,8 @@ export default function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsPr
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
+          <Box>
             <Typography variant="h6" gutterBottom color="primary">
               General
             </Typography>
@@ -152,9 +151,9 @@ export default function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsPr
                 description={shortcut.description}
               />
             ))}
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} md={6}>
+          <Box>
             <Typography variant="h6" gutterBottom color="primary">
               Navigation
             </Typography>
@@ -178,8 +177,8 @@ export default function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsPr
                 description={shortcut.description}
               />
             ))}
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         <Box sx={{ mt: 4, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
           <Typography variant="body2" color="text.secondary">

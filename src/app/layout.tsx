@@ -13,6 +13,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 import Overlay from "@/components/ui/Overlay";
 import { ContextMenuProvider } from "@/components/ui/ContextMenuContext";
 import { GlobalContextMenu } from "@/components/ui/GlobalContextMenu";
+import GlobalShortcuts from "@/components/GlobalShortcuts";
 
 export default function RootLayout({
   children,
@@ -29,14 +30,15 @@ export default function RootLayout({
                 <SubscriptionProvider>
                   <OverlayProvider>
                      <AIProvider>
-                       <ContextMenuProvider>
-                         <RouteGuard>
-                           {children}
-                         </RouteGuard>
-                         <AuthModalContainer />
-                         <Overlay />
-                         <GlobalContextMenu />
-                       </ContextMenuProvider>
+                        <ContextMenuProvider>
+                          <RouteGuard>
+                            {children}
+                          </RouteGuard>
+                          <AuthModalContainer />
+                          <Overlay />
+                          <GlobalContextMenu />
+                          <GlobalShortcuts />
+                        </ContextMenuProvider>
                      </AIProvider>
                   </OverlayProvider>
                 </SubscriptionProvider>

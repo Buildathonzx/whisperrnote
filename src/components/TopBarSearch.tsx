@@ -88,6 +88,7 @@ export function TopBarSearch({ className = '' }: TopBarSearchProps) {
           <MagnifyingGlassIcon className="h-5 w-5 text-muted" />
         </div>
         <input
+          id="topbar-search-input"
           ref={inputRef}
           type="text"
           placeholder="Search notes..."

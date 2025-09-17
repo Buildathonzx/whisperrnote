@@ -123,10 +123,11 @@ export default function NotesPage() {
     );
   }, [openOverlay, closeOverlay, handleAIGenerate, isGenerating]);
 
-  // Check for AI prompt from landing page
+  // Check for AI prompt from landing page and create-note trigger
   useEffect(() => {
     const aiPrompt = searchParams.get('ai-prompt');
     const pendingPrompt = typeof window !== 'undefined' ? sessionStorage.getItem('pending-ai-prompt') : null;
+    const openCreateNote = typeof window !== 'undefined' ? sessionStorage.getItem('open-create-note') : null;
     
     if (aiPrompt) {
       handleAIGenerateFromPrompt(aiPrompt);
@@ -134,7 +135,12 @@ export default function NotesPage() {
       sessionStorage.removeItem('pending-ai-prompt');
       handleAIGenerateFromPrompt(pendingPrompt);
     }
-  }, [searchParams, handleAIGenerateFromPrompt]);
+
+    if (openCreateNote) {
+      try { sessionStorage.removeItem('open-create-note'); } catch {}
+      openOverlay(<CreateNoteForm onNoteCreated={handleNoteCreated} />);
+    }
+  }, [searchParams, handleAIGenerateFromPrompt, openOverlay, handleNoteCreated]);
 
   const handleNoteUpdated = async (updatedNote: Notes) => {
     if (!updatedNote.$id) {
