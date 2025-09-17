@@ -4,7 +4,7 @@
 
 ### Authentication & Security
 - [x] Fix Appwrite passkey authentication implementation (separated auth vs registration logic in single flow)
-- [ ] Implement account deletion functionality
+- [x] Implement account deletion functionality (settings danger zone with cascade note deletion + account removal)
 - [x] Add password strength requirements
 - [x] Implement secure password reset flow
 

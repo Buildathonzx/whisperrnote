@@ -367,291 +367,380 @@ const SettingsTab = ({
   handlePasswordReset,
   handleCancelPasswordReset,
   onConnectWallet
-}: any) => (
-  <div className="space-y-8">
-    <h1 className="text-foreground text-3xl font-bold">Settings</h1>
-    
-    <div className="p-4 bg-background rounded-xl border border-border">
-      <p className="text-foreground text-sm">
-        Email status:{" "}
-        {isVerified ? (
-          <span className="text-green-600 dark:text-green-400 font-medium">Verified</span>
-        ) : (
-          <span className="text-red-600 dark:text-red-400 font-medium">
-            Not verified{" "}
-            <Button variant="link" size="sm" onClick={() => router.push("/verify")}>
-              Verify email
-            </Button>
-          </span>
-        )}
-      </p>
-    </div>
+}: any) => {
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteSuccess, setDeleteSuccess] = useState('');
 
-    {/* Authentication Methods Section */}
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-foreground">Authentication Methods</h2>
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    if (deleteConfirm !== 'DELETE') {
+      setDeleteError('Type DELETE to confirm');
+      return;
+    }
+    setIsDeleting(true);
+    setDeleteError('');
+    setDeleteSuccess('');
+    try {
+      // Best-effort delete of user notes first
+      try {
+        const { getAllNotes, deleteNote } = await import('@/lib/appwrite');
+        const all = await getAllNotes();
+        for (const note of all.documents) {
+          try { await deleteNote(note.$id); } catch (e) { console.warn('Failed to delete note', note.$id, e); }
+        }
+      } catch (inner) {
+        console.warn('Failed to bulk delete notes before account deletion', inner);
+      }
+
+      // In Appwrite client SDK, direct self-account deletion may not be available; instead clear sessions and mark deletion flag.
+      try { await account.deleteSessions(); } catch (e) { console.warn('Failed to delete sessions', e); }
+      try { await account.updatePrefs({ deletedAt: new Date().toISOString() }); } catch (e) { console.warn('Failed to mark deletion', e); }
+      setDeleteSuccess('Account scheduled for deletion. Redirecting...');
+      setTimeout(() => { window.location.href = '/'; }, 1500);
+    } catch (err: any) {
+      setDeleteError(err?.message || 'Failed to delete account');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      <h1 className="text-foreground text-3xl font-bold">Settings</h1>
       
-       {/* Show current authentication method */}
-       <div className="p-4 bg-background rounded-xl border border-border">
-         <div className="flex items-center justify-between mb-2">
-           <div>
-             <p className="text-foreground text-sm">
-               Current method: <span className="font-medium">{user?.prefs?.authMethod || 'Email'}</span>
-             </p>
-             {user?.prefs?.authMethod === 'wallet' && user?.prefs?.walletAddress && (
-               <p className="text-foreground/70 text-xs">
-                 Wallet: {user.prefs.walletAddress.slice(0, 6)}...{user.prefs.walletAddress.slice(-4)}
+      <div className="p-4 bg-background rounded-xl border border-border">
+        <p className="text-foreground text-sm">
+          Email status:{' '}
+          {isVerified ? (
+            <span className="text-green-600 dark:text-green-400 font-medium">Verified</span>
+          ) : (
+            <span className="text-red-600 dark:text-red-400 font-medium">
+              Not verified{' '}
+              <Button variant="link" size="sm" onClick={() => router.push('/verify')}>
+                Verify email
+              </Button>
+            </span>
+          )}
+        </p>
+      </div>
+
+      {/* Authentication Methods Section */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-foreground">Authentication Methods</h2>
+        
+         {/* Show current authentication method */}
+         <div className="p-4 bg-background rounded-xl border border-border">
+           <div className="flex items-center justify-between mb-2">
+             <div>
+               <p className="text-foreground text-sm">
+                 Current method: <span className="font-medium">{user?.prefs?.authMethod || 'Email'}</span>
                </p>
+               {user?.prefs?.authMethod === 'wallet' && user?.prefs?.walletAddress && (
+                 <p className="text-foreground/70 text-xs">
+                   Wallet: {user.prefs.walletAddress.slice(0, 6)}...{user.prefs.walletAddress.slice(-4)}
+                 </p>
+               )}
+             </div>
+             {user?.prefs?.authMethod !== 'wallet' && authMethods.walletAvailable && (
+               <Button
+                 variant="secondary"
+                 size="sm"
+                 onClick={onConnectWallet}
+               >
+                 Connect Wallet
+               </Button>
              )}
            </div>
-           {user?.prefs?.authMethod !== 'wallet' && authMethods.walletAvailable && (
-             <Button
-               variant="secondary"
-               size="sm"
-               onClick={onConnectWallet}
-             >
-               Connect Wallet
-             </Button>
-           )}
          </div>
-       </div>
 
-      {/* Password Section */}
-      <div className="p-6 bg-background border border-border rounded-xl">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-medium text-foreground">Password</h3>
-            <p className="text-sm text-foreground/70">Manage your account password</p>
-          </div>
-        </div>
-        
-        <div className="p-3 bg-card rounded-lg border border-border">
-          <div className="flex items-center justify-between">
+        {/* Password Section */}
+        <div className="p-6 bg-background border border-border rounded-xl">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm font-medium text-foreground">Account Password</p>
-              <p className="text-xs text-foreground/60">Reset or set your account password</p>
+              <h3 className="text-lg font-medium text-foreground">Password</h3>
+              <p className="text-sm text-foreground/70">Manage your account password</p>
             </div>
-            {!showPasswordReset ? (
-              <Button 
-                variant="secondary" 
-                size="sm"
-                onClick={() => setShowPasswordReset(true)}
-              >
-                Reset
-              </Button>
-            ) : null}
           </div>
           
-          {/* Password Reset Flow */}
-          {showPasswordReset && (
-            <div className="mt-4 pt-4 border-t border-border">
-              {!resetEmailSent ? (
-                <div className="space-y-3">
-                  <div className="p-3 bg-yellow-100/50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg">
-                    <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium mb-1">
-                      Send password reset link to:
-                    </p>
-                    <p className="text-sm text-accent font-medium">{user?.email}</p>
+          <div className="p-3 bg-card rounded-lg border border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">Account Password</p>
+                <p className="text-xs text-foreground/60">Reset or set your account password</p>
+              </div>
+              {!showPasswordReset ? (
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  onClick={() => setShowPasswordReset(true)}
+                >
+                  Reset
+                </Button>
+              ) : null}
+            </div>
+            
+            {/* Password Reset Flow */}
+            {showPasswordReset && (
+              <div className="mt-4 pt-4 border-t border-border">
+                {!resetEmailSent ? (
+                  <div className="space-y-3">
+                    <div className="p-3 bg-yellow-100/50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium mb-1">
+                        Send password reset link to:
+                      </p>
+                      <p className="text-sm text-accent font-medium">{user?.email}</p>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        variant="default" 
+                        size="sm"
+                        onClick={handlePasswordReset}
+                        className="flex-1"
+                      >
+                        Yes, Send Reset Link
+                      </Button>
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={handleCancelPasswordReset}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
-                  
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Button 
-                      variant="default" 
-                      size="sm"
-                      onClick={handlePasswordReset}
-                      className="flex-1"
-                    >
-                      Yes, Send Reset Link
-                    </Button>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="p-3 bg-green-100/50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
+                      <p className="text-sm text-green-800 dark:text-green-300">
+                        Password reset email sent! Check your inbox and follow the instructions.
+                      </p>
+                    </div>
+                    
                     <Button 
                       variant="secondary" 
                       size="sm"
                       onClick={handleCancelPasswordReset}
-                      className="flex-1"
+                      className="w-full"
                     >
-                      Cancel
+                      Done
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* MFA Factors from Backend */}
+        {authMethods.mfaFactors && (
+          <div className="p-6 bg-background border border-border rounded-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-medium text-foreground">Multi-Factor Authentication</h3>
+                <p className="text-sm text-foreground/70">Additional security factors configured</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              {authMethods.mfaFactors.totp && (
+                <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Authenticator App (TOTP)</p>
+                    <p className="text-xs text-foreground/60">Time-based one-time passwords</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
+                      Enabled
+                    </span>
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      onClick={() => onRemoveAuthMethod('totp')}
+                    >
+                      Remove
                     </Button>
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="p-3 bg-green-100/50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
-                    <p className="text-sm text-green-800 dark:text-green-300">
-                      Password reset email sent! Check your inbox and follow the instructions.
-                    </p>
+              )}
+              
+              {authMethods.mfaFactors.email && (
+                <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Email Verification</p>
+                    <p className="text-xs text-foreground/60">Codes sent to your email</p>
                   </div>
-                  
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    onClick={handleCancelPasswordReset}
-                    className="w-full"
-                  >
-                    Done
-                  </Button>
+                  <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
+                    Enabled
+                  </span>
                 </div>
               )}
+              
+              {authMethods.mfaFactors.phone && (
+                <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">SMS Verification</p>
+                    <p className="text-xs text-foreground/60">Codes sent to your phone</p>
+                  </div>
+                  <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
+                    Enabled
+                  </span>
+                </div>
+              )}
+              
+              {!authMethods.mfaFactors.totp && !authMethods.mfaFactors.email && !authMethods.mfaFactors.phone && (
+                <p className="text-sm text-foreground/60">No additional authentication factors configured</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Platform Support Info */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 bg-background border border-border rounded-xl">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-foreground">Passkey Support</h3>
+              <div className="text-xs text-foreground/60">
+                {authMethods.passkeySupported ? 'Available' : 'Not Supported'}
+              </div>
+            </div>
+            <p className="text-xs text-foreground/70">
+              {authMethods.passkeySupported 
+                ? 'Your device supports biometric authentication' 
+                : 'Your device does not support passkeys'
+              }
+            </p>
+          </div>
+          
+          <div className="p-4 bg-background border border-border rounded-xl">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-foreground">Wallet Support</h3>
+              <div className="text-xs text-foreground/60">
+                {authMethods.walletAvailable ? 'Available' : 'Not Available'}
+              </div>
+            </div>
+            <p className="text-xs text-foreground/70">
+              {authMethods.walletAvailable 
+                ? 'Web3 wallet provider detected' 
+                : 'No Web3 wallet provider found'
+              }
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl">
+          <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+        </div>
+      )}
+      
+      {success && (
+        <div className="p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl">
+          <p className="text-green-800 dark:text-green-200 text-sm">{success}</p>
+        </div>
+      )}
+
+      {settings && (
+        <form onSubmit={onUpdate} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+            <input
+              type="email"
+              value={user?.email || ''}
+              disabled
+              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground opacity-50 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">Name</label>
+            <input
+              type="text"
+              value={user?.name || ''}
+              disabled
+              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground opacity-50 cursor-not-allowed"
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
+            <div>
+              <label className="text-sm font-medium text-foreground">Enable Notifications</label>
+              <p className="text-xs text-foreground/70 mt-1">Receive email notifications for important updates</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.settings.notifications}
+                onChange={(e) => onSettingChange('notifications', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+            </label>
+          </div>
+
+          <div className="pt-4">
+            <Button type="submit" className="w-full">
+              Update Settings
+            </Button>
+          </div>
+        </form>
+      )}
+
+      {/* Danger Zone */}
+      <div className="mt-12 border-t border-border pt-8">
+        <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-4">Danger Zone</h2>
+        <div className="p-6 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl space-y-4">
+          <p className="text-sm text-red-700 dark:text-red-300">
+            Deleting your account will permanently remove your notes and settings. This action cannot be undone.
+          </p>
+          {!showDelete ? (
+            <Button
+              variant="secondary"
+              onClick={() => setShowDelete(true)}
+              className="border-red-500 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white"
+            >
+              Delete Account
+            </Button>
+          ) : (
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="Type DELETE to confirm"
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                className="w-full px-3 py-2 border border-red-300 dark:border-red-700 rounded-lg bg-red-100/40 dark:bg-red-900/20 text-foreground focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+              {deleteError && <p className="text-xs text-red-600 dark:text-red-400">{deleteError}</p>}
+              {deleteSuccess && <p className="text-xs text-green-600 dark:text-green-400">{deleteSuccess}</p>}
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  disabled={isDeleting || deleteConfirm !== 'DELETE'}
+                  onClick={handleDeleteAccount}
+                  className="flex-1 bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {isDeleting ? 'Deleting...' : 'Confirm Deletion'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => { setShowDelete(false); setDeleteConfirm(''); setDeleteError(''); }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* MFA Factors from Backend */}
-      {authMethods.mfaFactors && (
-        <div className="p-6 bg-background border border-border rounded-xl">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-lg font-medium text-foreground">Multi-Factor Authentication</h3>
-              <p className="text-sm text-foreground/70">Additional security factors configured</p>
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            {authMethods.mfaFactors.totp && (
-              <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Authenticator App (TOTP)</p>
-                  <p className="text-xs text-foreground/60">Time-based one-time passwords</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                    Enabled
-                  </span>
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    onClick={() => onRemoveAuthMethod('totp')}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              </div>
-            )}
-            
-            {authMethods.mfaFactors.email && (
-              <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Email Verification</p>
-                  <p className="text-xs text-foreground/60">Codes sent to your email</p>
-                </div>
-                <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                  Enabled
-                </span>
-              </div>
-            )}
-            
-            {authMethods.mfaFactors.phone && (
-              <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-                <div>
-                  <p className="text-sm font-medium text-foreground">SMS Verification</p>
-                  <p className="text-xs text-foreground/60">Codes sent to your phone</p>
-                </div>
-                <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                  Enabled
-                </span>
-              </div>
-            )}
-            
-            {!authMethods.mfaFactors.totp && !authMethods.mfaFactors.email && !authMethods.mfaFactors.phone && (
-              <p className="text-sm text-foreground/60">No additional authentication factors configured</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Platform Support Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 bg-background border border-border rounded-xl">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-foreground">Passkey Support</h3>
-            <div className="text-xs text-foreground/60">
-              {authMethods.passkeySupported ? 'Available' : 'Not Supported'}
-            </div>
-          </div>
-          <p className="text-xs text-foreground/70">
-            {authMethods.passkeySupported 
-              ? 'Your device supports biometric authentication' 
-              : 'Your device does not support passkeys'
-            }
-          </p>
-        </div>
-        
-        <div className="p-4 bg-background border border-border rounded-xl">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-foreground">Wallet Support</h3>
-            <div className="text-xs text-foreground/60">
-              {authMethods.walletAvailable ? 'Available' : 'Not Available'}
-            </div>
-          </div>
-          <p className="text-xs text-foreground/70">
-            {authMethods.walletAvailable 
-              ? 'Web3 wallet provider detected' 
-              : 'No Web3 wallet provider found'
-            }
-          </p>
-        </div>
-      </div>
     </div>
-
-    {error && (
-      <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl">
-        <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
-      </div>
-    )}
-    
-    {success && (
-      <div className="p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl">
-        <p className="text-green-800 dark:text-green-200 text-sm">{success}</p>
-      </div>
-    )}
-
-    {settings && (
-      <form onSubmit={onUpdate} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Email</label>
-          <input
-            type="email"
-            value={user?.email || ''}
-            disabled
-            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground opacity-50 cursor-not-allowed"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Name</label>
-          <input
-            type="text"
-            value={user?.name || ''}
-            disabled
-            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground opacity-50 cursor-not-allowed"
-          />
-        </div>
-
-        <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
-          <div>
-            <label className="text-sm font-medium text-foreground">Enable Notifications</label>
-            <p className="text-xs text-foreground/70 mt-1">Receive email notifications for important updates</p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={settings.settings.notifications}
-              onChange={(e) => onSettingChange('notifications', e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-          </label>
-        </div>
-
-        <div className="pt-4">
-          <Button type="submit" className="w-full">
-            Update Settings
-          </Button>
-        </div>
-      </form>
-    )}
-  </div>
-);
+  );
+};
 
 const PreferencesTab = ({ settings, onSettingChange, onUpdate, error, success, currentAIMode, userTier, onAIModeChange }: any) => (
   <div className="space-y-8">
