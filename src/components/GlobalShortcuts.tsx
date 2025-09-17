@@ -7,6 +7,7 @@ import { useOverlay } from "@/components/ui/OverlayContext";
 import CreateNoteForm from "@/app/(app)/notes/CreateNoteForm";
 
 
+
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   const editable = target.closest(
