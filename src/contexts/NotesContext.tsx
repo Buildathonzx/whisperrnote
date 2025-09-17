@@ -22,6 +22,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null);
+  const notesRef = useRef<Notes[]>([]);
+  useEffect(() => { notesRef.current = notes; }, [notes]);
   const isFetchingRef = useRef(false);
   const { isAuthenticated } = useAuth();
 
@@ -41,7 +43,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
-      const queries: any[] = [];
+       // Remove unused placeholder queries to avoid triggering re-renders
+       // const queries: any[] = [];
       if (cursor && !reset) {
         // Appwrite cursorAfter requires the document ID; leveraging ordering by createdAt desc
         // Instead of cursor we rely on already fetched count; use listNotes with offset-like behavior by filtering locally if needed.
@@ -72,7 +75,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       isFetchingRef.current = false;
       setIsLoading(false);
     }
-  }, [isAuthenticated, cursor, notes, listNotes]);
+  }, [isAuthenticated, cursor, notes]);
 
   const loadMore = useCallback(async () => {
     if (!hasMore || isFetchingRef.current) return;
@@ -86,7 +89,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   }, [fetchBatch]);
 
   useEffect(() => {
-    fetchBatch(true);
+    // Only trigger an initial fetch when authentication state becomes true or when explicitly resetting.
+    if (isAuthenticated) {
+      fetchBatch(true);
+    } else {
+      setNotes([]);
+      setHasMore(false);
+      setIsLoading(false);
+    }
   }, [isAuthenticated, fetchBatch]);
 
   return (
