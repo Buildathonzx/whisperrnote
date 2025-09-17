@@ -3,7 +3,7 @@
 ## 🔥 Critical Issues & Bug Fixes
 
 ### Authentication & Security
-- [ ] Fix Appwrite passkey authentication implementation
+- [x] Fix Appwrite passkey authentication implementation (separated auth vs registration logic in single flow)
 - [ ] Implement account deletion functionality
 - [x] Add password strength requirements
 - [x] Implement secure password reset flow

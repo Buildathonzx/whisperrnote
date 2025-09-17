@@ -145,19 +145,26 @@ export async function authenticateWithPasskey(email?: string): Promise<PasskeyAu
       return { success: false, error: 'Email is required' };
     }
 
-    // 1) Ask server for options
+    // 1) Ask server for options (authentication only now). If 404 due to missing credential, signal caller to register.
     const genRes = await fetch('/api/auth/passkey/generate-authentication-options', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     });
+
+    if (genRes.status === 404) {
+      // User exists (or maybe not) but no passkey credential -> initiate registration path
+      return { success: false, error: 'NO_CREDENTIAL' };
+    }
+
     if (!genRes.ok) {
-      const err = await genRes.json();
+      const err = await genRes.json().catch(() => ({}));
       return { success: false, error: err.message || 'Failed to get authentication options' };
     }
+
     const { options: requestOptions, userId } = await genRes.json();
 
-    // 2) Browser authenticates
+    // 2) Browser authenticates existing credential
     const authResp: AuthenticationResponseJSON = await startAuthentication({ optionsJSON: requestOptions });
 
     // 3) Verify with server
@@ -167,12 +174,10 @@ export async function authenticateWithPasskey(email?: string): Promise<PasskeyAu
       body: JSON.stringify({ email, authResp, userId }),
     });
     if (!verRes.ok) {
-      const err = await verRes.json();
+      const err = await verRes.json().catch(() => ({}));
       return { success: false, error: err.message || 'Authentication verification failed' };
     }
-    const { secret } = await verRes.json();
 
-    // 4) Create session
     await authenticateWithCustomToken(userId);
 
     return { success: true, userId };

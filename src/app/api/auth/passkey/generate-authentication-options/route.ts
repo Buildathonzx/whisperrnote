@@ -34,12 +34,15 @@ export async function POST(request: NextRequest) {
     const prefs: any = match.prefs || {};
     const credId = prefs.passkeyCredentialId as string | undefined;
 
+    // If user exists but has no registered passkey credential, signal client to initiate registration
+    if (!credId) {
+      return NextResponse.json({ message: 'No passkey credentials found' }, { status: 404 });
+    }
+
     const options = await generateAuthenticationOptions({
       rpID,
       userVerification: 'required',
-      allowCredentials: credId
-        ? [{ id: credId, type: 'public-key', transports: ['internal'] }]
-        : [],
+      allowCredentials: [{ id: credId, type: 'public-key', transports: ['internal'] }],
     } as any);
 
     setChallengeForEmail(email, options.challenge);
