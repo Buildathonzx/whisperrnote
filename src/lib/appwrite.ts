@@ -130,6 +130,42 @@ export async function listUsers(queries: any[] = []) {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_USERS, queries);
 }
 
+// Search users by partial name or email with privacy constraints
+export async function searchUsers(query: string, limit: number = 5) {
+  try {
+    if (!query.trim()) return [];
+
+    const isEmail = /@/.test(query) && /\./.test(query);
+
+    const queries: any[] = [Query.limit(limit)];
+
+    if (isEmail) {
+      // Exact email match only (do not expose partial email enumeration)
+      queries.push(Query.equal('email', query.toLowerCase()));
+    } else {
+      // Name search using Query.search for case-insensitive partial matching
+      queries.push(Query.search('name', query));
+    }
+
+    const res = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_ID_USERS,
+      queries
+    );
+
+    return res.documents.map((doc: any) => ({
+      id: doc.id || doc.$id,
+      name: doc.name,
+      // Only include email if user searched by email (explicit) to reduce leakage
+      email: isEmail ? doc.email : undefined,
+      avatar: doc.avatar || null
+    }));
+  } catch (error) {
+    console.error('searchUsers error:', error);
+    return [];
+  }
+}
+
 // --- NOTES CRUD ---
 
 export async function createNote(data: Partial<Notes>) {
@@ -700,16 +736,35 @@ export async function shareNoteWithUser(noteId: string, email: string, permissio
       [Query.equal('email', email)]
     );
 
-    let targetUserId: string;
     if (usersList.documents.length === 0) {
       throw new Error(`No user found with email: ${email}`);
-    } else {
-      const userId = usersList.documents[0].id || usersList.documents[0].$id;
-      if (!userId) throw new Error(`Invalid user data for email: ${email}`);
-      targetUserId = userId;
     }
 
-    // Check if already shared
+    const targetUserId = usersList.documents[0].id || usersList.documents[0].$id;
+    if (!targetUserId) throw new Error(`Invalid user data for email: ${email}`);
+
+    return await shareNoteWithUserId(noteId, targetUserId, permission, email);
+  } catch (error: any) {
+    console.error('shareNoteWithUser error:', error);
+    throw new Error(error.message || 'Failed to share note');
+  }
+}
+
+// Share note directly with a known userId (used after search selection)
+export async function shareNoteWithUserId(noteId: string, targetUserId: string, permission: 'read' | 'write' | 'admin' = 'read', emailForMessage?: string) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("User not authenticated");
+
+    const note = await getNote(noteId);
+    if (note.userId !== currentUser.$id) {
+      throw new Error("Only note owner can share notes");
+    }
+
+    if (targetUserId === currentUser.$id) {
+      throw new Error("Cannot share a note with yourself");
+    }
+
     const existingShares = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
       APPWRITE_COLLECTION_ID_COLLABORATORS,
@@ -720,7 +775,6 @@ export async function shareNoteWithUser(noteId: string, email: string, permissio
     );
 
     if (existingShares.documents.length > 0) {
-      // Update existing permission
       await databases.updateDocument(
         APPWRITE_DATABASE_ID,
         APPWRITE_COLLECTION_ID_COLLABORATORS,
@@ -728,7 +782,6 @@ export async function shareNoteWithUser(noteId: string, email: string, permissio
         { permission }
       );
     } else {
-      // Create new sharing record
       await databases.createDocument(
         APPWRITE_DATABASE_ID,
         APPWRITE_COLLECTION_ID_COLLABORATORS,
@@ -738,14 +791,14 @@ export async function shareNoteWithUser(noteId: string, email: string, permissio
           userId: targetUserId,
           permission,
           invitedAt: new Date().toISOString(),
-          accepted: true // Auto-accept for now
+          accepted: true
         }
       );
     }
 
-    return { success: true, message: `Note shared with ${email}` };
+    return { success: true, message: `Note shared${emailForMessage ? ' with ' + emailForMessage : ''}` };
   } catch (error: any) {
-    console.error('shareNoteWithUser error:', error);
+    console.error('shareNoteWithUserId error:', error);
     throw new Error(error.message || 'Failed to share note');
   }
 }
@@ -773,6 +826,7 @@ export async function getSharedUsers(noteId: string) {
           );
           return {
             id: collab.userId,
+            name: user.name,
             email: user.email,
             permission: collab.permission,
             collaborationId: collab.$id
@@ -1062,8 +1116,9 @@ export default {
   listPublicNotesByUser,
   getPublicNote,
   shareNoteWithUser,
-  getSharedUsers,
-  removeNoteSharing,
+   shareNoteWithUserId,
+   getSharedUsers,
+   removeNoteSharing,
   getSharedNotes,
   getNoteWithSharing,
   uploadProfilePicture,
