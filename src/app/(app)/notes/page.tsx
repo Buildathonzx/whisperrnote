@@ -52,8 +52,18 @@ export default function NotesPage() {
     debounceMs: 300
   };
 
+  // Derive UI page size from viewport (simple heuristic) or env
+  const derivedPageSize = (() => {
+    if (typeof window === 'undefined') return 12;
+    const width = window.innerWidth;
+    if (width < 640) return 8;
+    if (width < 1024) return 12;
+    if (width < 1440) return 16;
+    return 20;
+  })();
+
   const paginationConfig = {
-    pageSize: 12
+    pageSize: derivedPageSize
   };
 
   // Use the search hook

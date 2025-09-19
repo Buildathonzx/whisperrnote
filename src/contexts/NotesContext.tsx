@@ -32,7 +32,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
   const { isAuthenticated } = useAuth();
 
-  const PAGE_SIZE = 50; // Keep existing page size; loadMore will append
+  const PAGE_SIZE = Number(process.env.NEXT_PUBLIC_NOTES_PAGE_SIZE || 50);
 
   const fetchBatch = useCallback(async (reset: boolean = false) => {
     if (isFetchingRef.current) return;
