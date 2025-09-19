@@ -27,7 +27,7 @@ import { aiServiceInstance as aiService } from '@/lib/ai-service';
 import { NotesErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function NotesPage() {
-  const { notes: allNotes, isLoading: isInitialLoading, refetchNotes, hasMore, loadMore } = useNotes();
+  const { notes: allNotes, totalNotes, isLoading: isInitialLoading, refetchNotes, hasMore, loadMore } = useNotes();
   const { showLoading, hideLoading } = useLoading();
   const { openOverlay, closeOverlay } = useOverlay();
   const { isGenerating, setIsGenerating, setAIGenerateHandler } = useAI();
@@ -211,8 +211,11 @@ export default function NotesPage() {
             My Notes
           </h1>
           <p className="text-lg text-light-fg/70 dark:text-dark-fg/70">
-            {totalCount} {totalCount === 1 ? 'note' : 'notes'} in your collection
-            {hasSearchResults && ` (filtered from ${allNotes.length})`}
+            {allNotes.length < totalNotes && !hasSearchResults ? (
+              <>Loaded {allNotes.length} of {totalNotes} notes</>
+            ) : (
+              <>{hasSearchResults ? `${totalCount} ${totalCount === 1 ? 'note' : 'notes'} (filtered from ${totalNotes})` : `${totalNotes} ${totalNotes === 1 ? 'note' : 'notes'} in your collection`}</>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -250,7 +253,7 @@ export default function NotesPage() {
             onPageChange={goToPage}
             onNextPage={nextPage}
             onPreviousPage={previousPage}
-            totalCount={totalCount}
+            totalCount={hasSearchResults ? totalCount : allNotes.length}
             pageSize={paginationConfig.pageSize}
             compact={false}
           />
@@ -323,7 +326,7 @@ export default function NotesPage() {
       )}
 
       {/* Bottom Pagination */}
-      {totalPages > 1 && paginatedNotes.length > 0 && (
+        {totalPages > 1 && paginatedNotes.length > 0 && (
         <div className="mt-8">
           <Pagination
             currentPage={currentPage}
@@ -333,7 +336,7 @@ export default function NotesPage() {
             onPageChange={goToPage}
             onNextPage={nextPage}
             onPreviousPage={previousPage}
-            totalCount={totalCount}
+            totalCount={hasSearchResults ? totalCount : allNotes.length}
             pageSize={paginationConfig.pageSize}
             compact={false}
           />

@@ -7,6 +7,7 @@ import { useAuth } from '@/components/ui/AuthContext';
 
 interface NotesContextType {
   notes: Notes[];
+  totalNotes: number;
   isLoading: boolean;
   error: string | null;
   hasMore: boolean;
@@ -18,6 +19,7 @@ const NotesContext = createContext<NotesContextType | undefined>(undefined);
 
 export function NotesProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<Notes[]>([]);
+  const [totalNotes, setTotalNotes] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -39,6 +41,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
     if (!isAuthenticated) {
       setNotes([]);
+      setTotalNotes(0);
       setIsLoading(false);
       setHasMore(false);
       setError(null);
@@ -55,6 +58,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       const user = await getCurrentUser();
       if (!user || !user.$id) {
         setNotes([]);
+        setTotalNotes(0);
         setHasMore(false);
         setIsLoading(false);
         return;
@@ -88,6 +92,11 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         return [...prev, ...newOnes];
       });
 
+      // Capture total from response (no extra request)
+      if (typeof (res as any).total === 'number') {
+        setTotalNotes((res as any).total);
+      }
+
       // Determine if more pages likely exist
       setHasMore(batch.length === PAGE_SIZE);
 
@@ -99,7 +108,10 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       }
     } catch (err: any) {
       setError(err.message || 'Failed to fetch notes');
-      if (reset) setNotes([]);
+      if (reset) {
+        setNotes([]);
+        setTotalNotes(0);
+      }
       setHasMore(false);
     } finally {
       isFetchingRef.current = false;
@@ -125,6 +137,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       fetchBatch(true);
     } else {
       setNotes([]);
+      setTotalNotes(0);
       setHasMore(false);
       setIsLoading(false);
       setError(null);
@@ -132,7 +145,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   }, [isAuthenticated, fetchBatch]);
 
   return (
-    <NotesContext.Provider value={{ notes, isLoading, error, hasMore, loadMore, refetchNotes }}>
+    <NotesContext.Provider value={{ notes, totalNotes, isLoading, error, hasMore, loadMore, refetchNotes }}>
       {children}
     </NotesContext.Provider>
   );
