@@ -70,6 +70,36 @@ export async function POST(request: Request) {
 
     const durationMs = Date.now() - started;
 
+    // Persist generation metadata (best-effort, non-blocking failure)
+    (async () => {
+      try {
+        const { databases, APPWRITE_DATABASE_ID } = await import('@/lib/appwrite');
+        const { ID, Query } = await import('@/lib/appwrite');
+        const { hashPrompt } = await import('@/lib/hash');
+        const promptHash = hashPrompt(prompt);
+        const providerUsed = result.provider || providerId || aiService.getConfig().primaryProvider || 'unknown';
+        await databases.createDocument(
+          APPWRITE_DATABASE_ID,
+          process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_AIGENERATIONS || 'ai_generations',
+          (ID as any).unique(),
+          {
+            promptHash,
+            type,
+            provider: providerUsed,
+            mode: resolvedMode,
+            durationMs,
+            tags: Array.from(new Set(tags)),
+            options: resolvedOptions,
+            createdAt: new Date().toISOString(),
+            apiKeyValid: apiKey ? apiKeyValidation.valid : null,
+            apiKeyId: apiKeyValidation.apiKeyId || null
+          }
+        );
+      } catch (e) {
+        console.error('ai generation logging failed', e);
+      }
+    })();
+
     return NextResponse.json({
       data: {
         title: result.title || `AI ${type}: ${prompt.slice(0,40)}`,
@@ -82,8 +112,8 @@ export async function POST(request: Request) {
         mode: resolvedMode,
         durationMs,
         options: resolvedOptions,
-        // placeholder; will be populated when api key tracking added
-        apiKeyValid: apiKey ? apiKeyValidation.valid : null
+        apiKeyValid: apiKey ? apiKeyValidation.valid : null,
+        apiKeyReason: apiKey ? apiKeyValidation.reason : null
       }
     });
   } catch (error) {
