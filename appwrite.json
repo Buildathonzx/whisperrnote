@@ -309,7 +309,54 @@
                     "encrypt": true
                 }
             ],
-            "indexes": []
+            "indexes": [
+                {
+                    "key": "idx_notes_user_updated",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId",
+                        "updatedAt"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_notes_status",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "status"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_notes_isPublic",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "isPublic"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_notes_parent",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "parentNoteId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
         },
         {
             "$id": "67ff06280034908cf08a",
@@ -332,6 +379,15 @@
                 },
                 {
                     "key": "name",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "nameLower",
                     "type": "string",
                     "required": false,
                     "array": false,
@@ -393,7 +449,21 @@
                     "encrypt": false
                 }
             ],
-            "indexes": []
+            "indexes": [
+                {
+                    "key": "idx_tags_user_namelower",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId",
+                        "nameLower"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                }
+            ]
         },
         {
             "$id": "67ff064400263631ffe4",
@@ -416,6 +486,15 @@
                 },
                 {
                     "key": "key",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "keyHash",
                     "type": "string",
                     "required": false,
                     "array": false,
@@ -484,7 +563,30 @@
                     "encrypt": false
                 }
             ],
-            "indexes": []
+            "indexes": [
+                {
+                    "key": "idx_apiKeys_keyHash",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "keyHash"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_apiKeys_userId",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
         },
         {
             "$id": "comments",
@@ -541,7 +643,32 @@
                     "encrypt": false
                 }
             ],
-            "indexes": []
+            "indexes": [
+                {
+                    "key": "idx_comments_note",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "noteId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_comments_note_createdAt",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "noteId",
+                        "createdAt"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                }
+            ]
         },
         {
             "$id": "extensions",
@@ -689,7 +816,38 @@
                     "default": null
                 }
             ],
-            "indexes": []
+            "indexes": [
+                {
+                    "key": "idx_reactions_target",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "targetType",
+                        "targetId"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_reactions_user_target_emoji",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId",
+                        "targetType",
+                        "targetId",
+                        "emoji"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC",
+                        "ASC",
+                        "ASC"
+                    ]
+                }
+            ]
         },
         {
             "$id": "collaborators",
@@ -748,7 +906,43 @@
                     "default": null
                 }
             ],
-            "indexes": []
+            "indexes": [
+                {
+                    "key": "idx_collaborators_note",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "noteId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_collaborators_user",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_collaborators_note_user",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "noteId",
+                        "userId"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                }
+            ]
         },
         {
             "$id": "activityLog",
@@ -814,7 +1008,34 @@
                     "encrypt": false
                 }
             ],
-            "indexes": []
+            "indexes": [
+                {
+                    "key": "idx_activity_user_timestamp",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId",
+                        "timestamp"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_activity_target",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "targetType",
+                        "targetId"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                }
+            ]
         },
         {
             "$id": "settings",
@@ -870,7 +1091,352 @@
                     "encrypt": false
                 }
             ],
-            "indexes": []
+            "indexes": [
+                {
+                    "key": "idx_settings_user",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "note_tags",
+            "$permissions": [
+                "create(\"users\")"
+            ],
+            "databaseId": "67ff05a9000296822396",
+            "name": "note_tags",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "noteId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "tagId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "createdAt",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "idx_note_tags_note_tag",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "noteId",
+                        "tagId"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_note_tags_note",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "noteId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_note_tags_tag",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "tagId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_note_tags_user",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "note_revisions",
+            "$permissions": [
+                "create(\"users\")"
+            ],
+            "databaseId": "67ff05a9000296822396",
+            "name": "note_revisions",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "noteId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "revision",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "title",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": true
+                },
+                {
+                    "key": "content",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 65535,
+                    "default": null,
+                    "encrypt": true
+                },
+                {
+                    "key": "createdAt",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "idx_note_revisions_note_revision",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "noteId",
+                        "revision"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_note_revisions_note",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "noteId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "ai_generations",
+            "$permissions": [
+                "create(\"users\")"
+            ],
+            "databaseId": "67ff05a9000296822396",
+            "name": "ai_generations",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "promptHash",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "prompt",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 1000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "mode",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "providerId",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 128,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "model",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 128,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "durationMs",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "tokensUsed",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "success",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
+                },
+                {
+                    "key": "error",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 512,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "createdAt",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "idx_ai_generations_user_createdAt",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId",
+                        "createdAt"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_ai_generations_promptHash",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "promptHash"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_ai_generations_user_mode",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId",
+                        "mode"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                }
+            ]
         }
     ],
     "buckets": [
