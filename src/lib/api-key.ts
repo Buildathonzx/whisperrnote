@@ -58,3 +58,41 @@ export async function validateApiKey(key: string | null | undefined): Promise<AP
     return { valid: false, reason: 'ERROR' };
   }
 }
+
+export interface CreateApiKeyOptions {
+  name?: string;
+  plan?: string;
+  expiresAt?: string; // ISO
+  userId?: string; // override current user (system usage)
+}
+
+export async function createHashedApiKey(options: CreateApiKeyOptions = {}) {
+  const { generateApiKey, hashApiKey } = await import('./hash');
+  const { getCurrentUser, ID } = await import('./appwrite');
+
+  const user = options.userId ? { $id: options.userId } as any : await (getCurrentUser() as any);
+  if (!user || !user.$id) throw new Error('NOT_AUTHENTICATED');
+
+  const { key } = generateApiKey();
+  const keyHash = hashApiKey(key);
+
+  const now = new Date().toISOString();
+  const doc = await databases.createDocument(
+    APPWRITE_DATABASE_ID,
+    APPWRITE_COLLECTION_ID_APIKEYS,
+    (ID as any).unique(),
+    {
+      name: options.name || 'Default Key',
+      plan: options.plan || 'free',
+      userId: user.$id,
+      keyHash,
+      createdAt: now,
+      lastUsedAt: null,
+      expiresAt: options.expiresAt || null,
+      // Keep raw key field null to avoid storage; migration will remove if exists
+      key: null
+    }
+  );
+
+  return { apiKey: key, apiKeyId: (doc as any).$id };
+}
