@@ -1,118 +1,70 @@
 'use server';
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
+import { aiService } from '@/lib/ai';
+import { GenerationType } from '@/types/ai';
 
+// Provider-agnostic AI generation endpoint.
+// Accepts JSON: { prompt: string; type: GenerationType; providerId?: string; options?: { temperature?: number; maxTokens?: number; model?: string } }
+// If providerId supplied, attempts that provider first; otherwise normal service selection.
 export async function POST(request: Request) {
   try {
-    const { prompt, type } = await request.json();
+    const body = await request.json();
+    const { prompt, type, providerId, options } = body as { prompt: string; type: GenerationType; providerId?: string; options?: any };
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'Gemini API key not configured' },
-        { status: 500 }
-      );
+    if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
+      return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    
-    let systemInstruction = '';
-    let title = '';
-    
-    switch (type) {
-      case 'topic':
-        title = `Topic: ${prompt}`;
-        systemInstruction = `You are an expert researcher and educator. Create a comprehensive note about the given topic.
-        Format your response as a well-structured markdown document with:
-        - A clear introduction explaining what the topic is
-        - Key concepts and definitions
-        - Important details and explanations
-        - Examples where relevant
-        - A conclusion summarizing the main points
-        
-        Make it informative but accessible. Use markdown formatting for headers, lists, and emphasis.`;
-        break;
-        
-      case 'brainstorm':
-        title = `Ideas for: ${prompt}`;
-        systemInstruction = `You are a creative brainstorming expert. Generate innovative ideas related to the given topic.
-        Format your response as a markdown document with:
-        - A brief introduction to the brainstorming session
-        - Multiple creative suggestions organized in sections
-        - Each idea should include a brief explanation
-        - Consider different approaches: traditional, innovative, technology-based, collaborative, cost-effective
-        - Include next steps or action items
-        
-        Be creative and think outside the box while keeping ideas practical.`;
-        break;
-        
-      case 'research':
-        title = `Research on: ${prompt}`;
-        systemInstruction = `You are a research specialist. Provide comprehensive research findings on the given topic.
-        Format your response as a structured research document with:
-        - Executive summary
-        - Key findings with supporting details
-        - Current trends and developments
-        - Important statistics or data points where relevant
-        - Analysis and insights
-        - Potential implications or applications
-        - Areas for further research
-        
-        Present information in a clear, academic style using markdown formatting.`;
-        break;
-        
-      case 'custom':
-        title = `AI Generated: ${prompt.slice(0, 50)}${prompt.length > 50 ? '...' : ''}`;
-        systemInstruction = `You are a helpful AI assistant. Respond to the user's request thoughtfully and comprehensively.
-        Format your response using appropriate markdown formatting.
-        Provide detailed, accurate, and helpful information based on the user's specific request.`;
-        break;
-        
-      default:
-        return NextResponse.json(
-          { error: 'Invalid generation type' },
-          { status: 400 }
-        );
+    if (!['topic','brainstorm','research','custom'].includes(type)) {
+      return NextResponse.json({ error: 'Invalid generation type' }, { status: 400 });
     }
 
-    const model = genAI.getGenerativeModel({ 
-      model: '',
-      systemInstruction: systemInstruction
-    });
-
-    const response = await model.generateContent(prompt);
-    const text = response.response.text();
-
-    if (!text) {
-      return NextResponse.json(
-        { error: 'No content generated' },
-        { status: 500 }
-      );
+    // If explicit provider requested ensure it exists & is enabled/healthy
+    let explicitProvider = null;
+    if (providerId) {
+      const provider = aiService.getRegistry().getProvider(providerId);
+      if (!provider) {
+        return NextResponse.json({ error: 'Requested provider not found' }, { status: 404 });
+      }
+      const available = await provider.isAvailable();
+      if (!available) {
+        return NextResponse.json({ error: 'Requested provider unavailable' }, { status: 503 });
+      }
+      explicitProvider = provider;
     }
 
-    // Extract tags from the prompt
-    const words = prompt.toLowerCase().split(/\s+/);
-    const relevantWords = words.filter((word: string | any[]) => 
-      word.length > 3 && 
-      !['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'man', 'new', 'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did', 'its', 'let', 'put', 'say', 'she', 'too', 'use'].includes(word)
-    );
-    
-    const baseTags = ['ai-generated', type];
-    const additionalTags = relevantWords.slice(0, Math.min(3, relevantWords.length));
-    const tags = [...baseTags, ...additionalTags];
+    // Build a pseudo request for aiService when using explicit provider
+    const exec = async () => {
+      if (explicitProvider) {
+        return await (explicitProvider as any).generateContent({ prompt, type, options: options || {} });
+      }
+      return await (aiService as any).generateContent(prompt, { type, options });
+    };
+
+    const result = await exec();
+
+    // Normalize tags if provider omitted them
+    let tags: string[] = Array.isArray(result.tags) ? result.tags : [];
+    if (tags.length === 0) {
+      const words = prompt.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+      const stop = new Set(['the','and','for','are','but','not','you','with','this','that']);
+      const relevant = words.filter(w => !stop.has(w)).slice(0,3);
+      tags = ['ai-generated', type, ...relevant];
+    }
 
     return NextResponse.json({
-      title,
-      content: text,
-      tags
+      title: result.title || `AI ${type}: ${prompt.slice(0,40)}`,
+      content: result.content,
+      tags: Array.from(new Set(tags)),
+      providerId: providerId || aiService.getConfig().primaryProvider,
+      metadata: {
+        requestedProvider: providerId || null,
+        mode: options?.mode || null
+      }
     });
-
   } catch (error) {
     console.error('AI generation failed:', error);
-    return NextResponse.json(
-      { error: `Failed to generate content: ${error instanceof Error ? error.message : 'Unknown error'}` },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
