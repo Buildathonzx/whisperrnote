@@ -30,3 +30,18 @@ export interface NoteTagPivot {
   userId: string | null;
   createdAt: string | null;
 }
+
+export type SubscriptionPlan = 'free' | 'pro' | 'org';
+export type SubscriptionStatus = 'active' | 'canceled' | 'trialing';
+
+export interface Subscription {
+  $id: string;
+  userId: string;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus | null;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  seats: number | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
