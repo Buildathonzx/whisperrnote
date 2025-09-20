@@ -6,3 +6,27 @@ export enum Status { DRAFT = 'draft', PUBLISHED = 'published', ARCHIVED = 'archi
 export enum TargetType { NOTE = 'note', COMMENT = 'comment' }
 export enum Permission { READ = 'read', WRITE = 'write', ADMIN = 'admin' }
 
+// Extended runtime-only types (not present in generated appwrite.d.ts)
+// Lightweight interfaces so application code can be typed against new backend attributes
+export interface NoteRevision {
+  $id: string;
+  noteId: string;
+  revision: number;
+  userId: string | null;
+  createdAt: string;
+  title: string | null;
+  content: string | null;
+  diff: string | null;
+  diffFormat: 'json' | null;
+  fullSnapshot: boolean | null;
+  cause: string | null; // e.g. manual | ai | collab
+}
+
+export interface NoteTagPivot {
+  $id: string;
+  noteId: string;
+  tagId: string | null; // may be null pre-migration
+  tag: string | null;
+  userId: string | null;
+  createdAt: string | null;
+}

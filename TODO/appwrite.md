@@ -1,123 +1,108 @@
-# Appwrite Backend Revamp TODO (Databases & Storage Only)
+# Appwrite Backend Refined TODO (Databases & Storage)
 
 Legend: [ ] pending | [x] done | [~] in progress
-Scope: Augment ONLY (no destructive edits); preserve all existing collection & attribute IDs. Additive, backward-compatible strategy for scaling notes, tags, collaborations, AI metadata, and future features.
+Scope: Backward-compatible, additive changes only. Avoid destructive schema edits; prefer application guards before unique index migrations.
 
-## 1. Data Modeling Improvements
-- [ ] Introduce explicit many-to-many join collection `note_tags` (noteId, tagId, userId, createdAt)
-- [ ] Keep legacy `notes.tags` & `tags.notes` arrays during transition (dual-write phase)
-- [ ] Add collection `note_revisions` (noteId, userId, revisionNumber, diff|hash, createdAt, size, isAI)
-- [ ] Add collection `note_shares` (noteId, sharedWithUserId|email, permission enum: read|comment|edit, invitedAt, acceptedAt, token)
-- [ ] Add optional AI metadata collection `ai_generations` (noteId, userId, providerId, model, mode, tokensUsed, latencyMs, success, createdAt, sourcePromptHash)
-- [ ] Add `notes` new optional attributes: `aiProvider` (string 64), `aiModel` (string 128), `aiMode` (string 32), `tokensUsed` (integer), `generatedAt` (datetime)
-- [ ] Add collection `note_index` (noteId, userId, titleTokens, tagTokens, updatedAt) for lightweight search caching
-- [ ] Add collection `attachments_meta` (fileId, noteId, userId, kind enum: image|pdf|code|other, sizeBytes, createdAt)
+## 0. Current State Snapshot (2025-09-20)
+- [x] Collections present: notes, tags, note_tags (pivot), note_revisions, ai_generations, comments, collaborators, reactions, activityLog, settings, apiKeys, walletMap, extensions.
+- [x] Pivot in use: note_tags (dual-write implemented); legacy notes.tags & tags.notes arrays still exist (read fallback / migration safety).
+- [x] Revisions: note_revisions storing full snapshots (title, content) + revision integer; diffing not yet implemented.
+- [x] AI generations logging present; basic indexes (user+createdAt, promptHash, user+mode).
+- [ ] No enforced uniqueness on composite logical keys (reactions, note_tags, collaborators) -> risk of duplicate rows.
+- [ ] Aggregated counters (reaction counts, view counts, tag usage maintenance) not yet automated.
+- [ ] Search layer (full text / token index) not yet implemented; only basic attribute filters.
+- [ ] Arrays in notes (comments, collaborators, attachments, extensions) partly redundant with dedicated collections (bloat risk) but retained for compatibility.
 
-## 2. Backwards Compatibility & Migration
-- [ ] Phase 0: Design schemas & IDs (all lowercase, concise) and review before applying
-- [ ] Phase 1: Create new collections without altering existing usage
-- [ ] Phase 2: Implement dual-write (app code writes arrays + join collections)
-- [ ] Phase 3: Backfill join & revision data via script/function
-- [ ] Phase 4: Enable read-from new sources (prefer join; fallback arrays)
-- [ ] Phase 5: (Optional later) Mark legacy array fields internally deprecated (NO removal until major version)
+## 1. Integrity & Uniqueness
+- [ ] Application-level guard: prevent duplicate reaction (userId,targetType,targetId,emoji) before insert (pre-index uniqueness step).
+- [ ] Application-level guard: prevent duplicate note_tags (noteId,tagId) and collaborators (noteId,userId) before insert.
+- [ ] Data hygiene script: scan & soft-dedupe existing duplicates (log only, no deletion yet).
+- [ ] Plan & schedule unique index rollout (staged): reactions composite, note_tags noteId+tagId, collaborators noteId+userId (ensure zero dupes first).
 
-## 3. Collections - Detailed Schema Tasks
-- [ ] `note_tags` indexes: (noteId ASC, tagId ASC unique), (tagId ASC), (userId ASC)
-- [ ] `note_revisions` indexes: (noteId DESC, revisionNumber DESC), (userId ASC)
-- [ ] `note_shares` indexes: (noteId ASC, sharedWithUserId ASC unique), (noteId ASC), (sharedWithUserId ASC)
-- [ ] `ai_generations` indexes: (noteId ASC), (userId ASC, createdAt DESC), (providerId ASC, createdAt DESC)
-- [ ] `note_index` indexes: (userId ASC, updatedAt DESC), (titleTokens ASC), (tagTokens ASC)
-- [ ] `attachments_meta` indexes: (noteId ASC), (userId ASC), (kind ASC)
+## 2. Counters & Aggregates
+- [ ] Implement atomic tag usageCount updates on pivot add/remove (fallback reconciliation job).
+- [ ] Introduce note_metrics (noteId, reactionsCount, commentsCount, viewsCount, lastActivityAt) – optional, only if dashboard requires fast aggregates.
+- [ ] Write periodic consolidation function (idempotent) to recompute note_metrics & repair tag usageCount.
+- [ ] Add lightweight reaction count cache into note.metadata (JSON) (increment/decrement with guard) – evaluate vs separate collection.
 
-## 4. Attribute Design (Appwrite Constraints)
-- [ ] Confirm max string sizes (tokens fields use <=1000 chars aggregated)
-- [ ] Use `integer` for tokensUsed/latencyMs; avoid float
-- [ ] Use standardized datetime fields: createdAt / updatedAt / generatedAt
-- [ ] Avoid premature encryption on index/search helper collections (indexing requires plaintext)
+## 3. Revision Optimization
+- [ ] Decide diff strategy: JSON Patch vs minimal text diff vs hash-only (add revision.diff + revision.diffFormat fields if chosen).
+- [ ] Snapshot policy: fullSnapshot boolean every N (configurable, e.g. every 10 revisions) to bound replay cost.
+- [ ] Retention policy: keep last N (e.g. 50) + milestone snapshots; trimming script respecting recent activity.
+- [ ] Add revision provenance flag (cause: manual|ai|collab) for analytics.
 
-## 5. Notes & Tags Improvements
-- [ ] Normalized tag frequency: maintain `tags.usageCount` atomically on join insert/delete
-- [ ] Enforce case-insensitive unique constraint for tag `name` per user (add deterministic lowercase name attribute `nameLower` + index)
-- [ ] Add attribute `nameLower` to `tags` (size 256) + unique index (userId, nameLower)
-- [ ] Introduce soft-delete pattern (add optional `deletedAt` to notes, tags) for recovery & indexing hygiene
+## 4. Collaboration & Sharing
+- [ ] Evaluate need for separate note_shares vs reusing collaborators collection (current model sufficient -> defer new collection to avoid bloat).
+- [ ] Add permission change audit: log in activityLog with details (old->new, actor, target user).
+- [ ] Add optional invite token flow (email pre-user) using collaborators (allow null userId + email attribute) instead of creating new note_shares collection.
 
-## 6. AI Metadata Strategy
-- [ ] Decide between embedding AI metadata in `notes` vs separate `ai_generations` (final: dual: summary on note, detailed rows separate)
-- [ ] Store original prompt hash (SHA-256 hex truncated) not full prompt for privacy & dedupe
-- [ ] Add provider health snapshot fields (providerId, latencyMs, success flag)
-- [ ] Support regenerations: multiple rows per note -> latest successful updates note summary fields
+## 5. Search & Indexing
+- [ ] Defer dedicated note_index collection until usage justifies (avoid premature index bloat).
+- [ ] Prototype external search (e.g. Meilisearch) using note id, title, tags; fall back to Appwrite queries if service unavailable.
+- [ ] If internal only: add on-demand derived tokens (not stored persistently) for simple substring/tag filtering first.
+- [ ] Prepare abstraction layer so search backend can swap without schema churn.
 
-## 7. Revisions & Auditability
-- [ ] Capture revision on: create, manual save, AI generation, collaborator save
-- [ ] Store diff (JSON patch or semantic hash) vs full to reduce storage (decide format field `diffFormat`)
-- [ ] Add optional `fullSnapshot` boolean (true every N revisions for restore speed)
-- [ ] Link to ActivityLog by storing revision id in activity details
+## 6. Attachments Handling
+- [ ] Decide if attachments_meta needed (filtering by type/size). If yes, create minimal collection (fileId, noteId, kind, sizeBytes, createdAt) – defer until feature requires.
+- [ ] Or store essential metadata in note.metadata.attachments[] (bounded) and rely on bucket listing for details.
+- [ ] Orphan cleanup job for buckets (files without linkage > 24h) – leverage temp_uploads purge first.
 
-## 8. Collaboration & Sharing
-- [ ] Move ephemeral `collaborators` array logic toward authoritative `note_shares`
-- [ ] Support external email invites (email stored; userId null until acceptance)
-- [ ] Add `permission` escalation logging to ActivityLog
+## 7. Migration & Deprecation Roadmap
+- [ ] Mark legacy arrays (notes.tags, tags.notes) as deprecated in code comments once read path confirmed stable via pivot.
+- [ ] Phase out notes.comments & notes.collaborators arrays (ensure no code depends) – keep ONLY collections.
+- [ ] Provide feature flag to disable writing to legacy arrays after confidence period.
+- [ ] Document rollback (reenable dual-write + ignore pivot) before cutting arrays from write path.
 
-## 9. Search & Indexing
-- [ ] Populate `note_index` asynchronously (function trigger after note write)
-- [ ] Tokenization: lowercase, strip punctuation, limit tokens count
-- [ ] Provide lightweight search API using `note_index` + secondary filtering by tags via `note_tags`
-- [ ] (Future) Evaluate vector/embedding store (separate system) for semantic search—keep placeholder attribute `embeddingRef` in `note_index`
+## 8. Metrics & Instrumentation
+- [ ] Implement activity ingestion pipeline: when reactions/comments created, bump note_metrics lastActivityAt.
+- [ ] Add simple per-user quota counters (notesCreated, apiCalls) in activityLog or a new user_usage collection (defer schema until requirement firm).
+- [ ] Expose instrumentation endpoints (internal) for health of counters vs raw tallies.
 
-## 10. Attachments & Storage
-- [ ] Enforce attachment metadata row for each stored file (consistency check job)
-- [ ] Add cleanup job for orphan files (no `attachments_meta` row & older than grace period)
-- [ ] Add `temp_uploads` lifecycle: auto-purge unlinked >24h (scheduled function)
+## 9. Security & Permissions
+- [ ] Ensure internal helper collections (note_revisions, ai_generations, future note_metrics) not directly exposed to untrusted clients (API layer only).
+- [ ] Add ownership assertion utility reused across CRUD functions (single source).
+- [ ] Redact encrypted fields before logging (content, title) in revision diff logs.
 
-## 11. Performance & Index Tuning
-- [ ] Add composite index for common dashboard query: (userId ASC, updatedAt DESC) on notes
-- [ ] Add index (userId ASC, createdAt DESC) on notes for chronological fetch
-- [ ] Add index (noteId ASC, createdAt DESC) on comments for pagination (currently missing)
-- [ ] Evaluate reaction summary caching (aggregate counts per note into `metadata` or separate `note_metrics` collection)
+## 10. Performance Tuning
+- [ ] Validate existing indexes meet primary dashboard queries; add (userId DESC, updatedAt DESC) variant ONLY if query analyzer shows benefit (avoid duplicate direction indexes prematurely).
+- [ ] Consider partial caching for recent N noteIds per user in memory (edge function / KV) before adding more DB indexes.
+- [ ] Batch fetch tags for lists (already implemented) – monitor latency & adjust page size.
 
-## 12. Metrics & Instrumentation
-- [ ] Add `note_metrics` collection (noteId, viewsCount, reactionsCount, commentsCount, lastActivityAt)
-- [ ] Write consolidation function: periodic recompute from raw collections
-- [ ] Protect heavy analytics queries (pre-aggregated access only)
+## 11. Consistency Jobs
+- [ ] Duplicate detector (dry-run) for reactions / note_tags / collaborators (see Section 1) and emit report.
+- [ ] Tag usage reconciliation (compute pivot counts vs stored usageCount).
+- [ ] Revision trim executor respecting policy (Section 3).
+- [ ] Orphan file scanner (Section 6).
 
-## 13. Consistency & Integrity Jobs
-- [ ] Backfill job: arrays -> join table (`notes.tags` & `tags.notes` -> `note_tags`)
-- [ ] Referential check: remove dangling join rows where note/tag missing
-- [ ] Revision trim policy (keep last N + milestones)
-- [ ] Metrics rebuild script (idempotent)
+## 12. Deferred / Dropped (To Reduce Bloat)
+- [x] Separate note_shares collection (reused collaborators instead) – revisit only if email invite model diverges.
+- [x] note_index collection (deferred; external search or lightweight dynamic approach first).
+- [x] attachments_meta collection (defer until filtering/reporting use-cases emerge).
+- [x] Embedding AI summary fields directly on notes (avoid widening hot document; keep detailed rows in ai_generations).
 
-## 14. Security & Permissions (Within DB Scope)
-- [ ] Ensure all new collections mirror existing permission model (create users; doc-level security ON where needed)
-- [ ] Add per-row ownership enforcement (store userId; validate in API layer)
-- [ ] Avoid exposing internal helper collections (`note_index`, `ai_generations`) directly to client—access through API only
+## 13. Open Decisions
+- [ ] Diff format selection & tooling.
+- [ ] Unique index timing (after zero-duplicate validation window length?).
+- [ ] External vs internal search MVP scope.
+- [ ] Metrics aggregation cadence (cron frequency vs event-driven only).
 
-## 15. Migration Plan (Execution Order)
-1. Define & review new schemas (PR + signoff)
-2. Create new collections & attributes (no code changes yet)
-3. Implement dual-write in service layer (notes/tags updates also write note_tags)
-4. Backfill historical data
-5. Deploy read-path changes (prefer joins)
-6. Introduce revisions & AI metadata writes
-7. Add indexes after data volume estimation (avoid premature index bloat)
-8. Activate search/index function
-9. Add metrics aggregation
-10. Optimize & prune unused legacy array reads (final sweep)
+## 14. Execution Order (Revised Minimal Path)
+1. Integrity guards in application layer (prevent new dupes).
+2. Duplicate audit + cleanup plan (no deletes yet, just inventory).
+3. Counters: implement tag usage & reaction counts (in metadata or metrics collection).
+4. Revision diff & retention strategy.
+5. Permission/invite enhancements (email invites via collaborators).
+6. Search prototype (external or dynamic tokens) – decision gate.
+7. Metrics aggregation & note_metrics (if still needed post-search decisions).
+8. Unique index rollout (post-validation) & array deprecation flags.
+9. Optional attachment metadata if feature demand arises.
 
-## 16. Risk Mitigation
-- [ ] Feature flag dual-write & read-switch
-- [ ] Dry-run validation script before each batch (counts, null anomalies)
-- [ ] Rollback plan: keep legacy arrays pristine until completion
-
-## 17. Open Questions
-- [ ] Diff format decision: JSON Patch vs line-based vs hash-only
-- [ ] Frequency of full revision snapshots
-- [ ] AI token usage billing integration (future external system?)
-- [ ] Tag global vs per-user namespace option
-
-## 18. Immediate Next Actions
-- [ ] Approve proposed new collection IDs & schema list
-- [ ] Implement schema creation in staging (DO NOT touch production yet)
-- [ ] Add planning doc section referencing this TODO in README or ARCHITECTURE.md
+## 15. Completed (Historical)
+- [x] Create note_tags pivot & batch hydration logic.
+- [x] Implement note_revisions collection & initial revision logging.
+- [x] Add ai_generations collection & indexes.
+- [x] Add tags.nameLower attribute + index (case-insensitive tag uniqueness basis).
+- [x] Shrink reactions.userId size to satisfy composite index limits.
 
 ---
-Last Updated: INITIAL DRAFT
+Last Updated: 2025-09-20

@@ -197,32 +197,79 @@ export async function createNote(data: Partial<Notes>) {
     doc.$id,
     { id: doc.$id }
   );
-  // Dual-write tags to note_tags pivot if available (with basic dedupe)
+  // Dual-write tags to note_tags pivot including tagId resolution
   try {
     const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
-    const tags: string[] = Array.isArray((data as any).tags) ? (data as any).tags.filter(Boolean) : [];
-    if (tags.length) {
-      const unique = Array.from(new Set(tags));
-      // Fetch existing pivots once
-      const existingPivot = await databases.listDocuments(
-        APPWRITE_DATABASE_ID,
-        noteTagsCollection,
-        [Query.equal('noteId', doc.$id), Query.limit(200)] as any
-      );
-      const existingSet = new Set(existingPivot.documents.map((p: any) => p.tag));
-      for (const tag of unique) {
-        // Increment usage count (best-effort)
-        adjustTagUsage(user.$id, tag, 1);
-        if (!tag || existingSet.has(tag)) continue;
+    const tagsCollection = APPWRITE_COLLECTION_ID_TAGS;
+    const rawTags: string[] = Array.isArray((data as any).tags) ? (data as any).tags.filter(Boolean) : [];
+    if (rawTags.length) {
+      const unique = Array.from(new Set(rawTags.map(t => t.trim()))).filter(Boolean);
+      if (unique.length) {
+        // Preload existing tag docs for user (only those needed)
+        let existingTagDocs: Record<string, any> = {};
         try {
-          await databases.createDocument(
+          const existingTagsRes = await databases.listDocuments(
             APPWRITE_DATABASE_ID,
-            noteTagsCollection,
-            ID.unique(),
-            { noteId: doc.$id, tag, userId: user.$id, createdAt: now }
+            tagsCollection,
+            [Query.equal('userId', user.$id), Query.equal('nameLower', unique.map(t => t.toLowerCase())), Query.limit(unique.length)] as any
           );
-        } catch (e: any) {
-          console.error('note_tags create failed', e?.message || e);
+          for (const td of existingTagsRes.documents as any[]) {
+            if (td.nameLower) existingTagDocs[td.nameLower] = td;
+          }
+        } catch (tagListErr) {
+          console.error('tag preload failed', tagListErr);
+        }
+        // Create missing tag docs (best-effort, ignoring races)
+        for (const tagName of unique) {
+          const key = tagName.toLowerCase();
+          if (!existingTagDocs[key]) {
+            try {
+              const created = await databases.createDocument(
+                APPWRITE_DATABASE_ID,
+                tagsCollection,
+                ID.unique(),
+                { name: tagName, nameLower: key, userId: user.$id, createdAt: now, usageCount: 0 }
+              );
+              existingTagDocs[key] = created;
+            } catch (createTagErr: any) {
+              // Possible race: re-fetch single
+              try {
+                const retry = await databases.listDocuments(
+                  APPWRITE_DATABASE_ID,
+                  tagsCollection,
+                  [Query.equal('userId', user.$id), Query.equal('nameLower', key), Query.limit(1)] as any
+                );
+                if (retry.documents.length) existingTagDocs[key] = retry.documents[0];
+              } catch {}
+            }
+          }
+        }
+        // Fetch existing pivot rows once
+        const existingPivot = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          noteTagsCollection,
+          [Query.equal('noteId', doc.$id), Query.limit(500)] as any
+        );
+        const existingPairs = new Set(existingPivot.documents.map((p: any) => `${p.tagId || ''}::${p.tag || ''}`));
+        for (const tagName of unique) {
+          const key = tagName.toLowerCase();
+          const tagDoc = existingTagDocs[key];
+          const tagId = tagDoc ? (tagDoc.$id || tagDoc.id) : undefined;
+          if (!tagId) continue; // must have tagId for unique index
+          const pairKey = `${tagId}::${tagName}`;
+          // Increment usage count (best-effort)
+          adjustTagUsage(user.$id, tagName, 1);
+          if (existingPairs.has(pairKey)) continue;
+          try {
+            await databases.createDocument(
+              APPWRITE_DATABASE_ID,
+              noteTagsCollection,
+              ID.unique(),
+              { noteId: doc.$id, tagId, tag: tagName, userId: user.$id, createdAt: now }
+            );
+          } catch (e: any) {
+            console.error('note_tags create failed', e?.message || e);
+          }
         }
       }
     }
@@ -258,7 +305,7 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   const updatedData = { ...rest, updatedAt };
   const before = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as any;
   const doc = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, updatedData) as any;
-  // Note revisions logging (best-effort)
+  // Note revisions logging (best-effort) aligned with new schema
   try {
     const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTEREVISIONS || 'note_revisions';
     const significantFields = ['title', 'content', 'tags'];
@@ -289,6 +336,10 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
           revisionNumber = (existing.documents[0] as any).revision + 1;
         }
       } catch {}
+      // Build diff JSON (bounded by 8000 size limit of diff attribute)
+      let diffObj = { changes } as any;
+      let diffStr = '';
+      try { diffStr = JSON.stringify(diffObj).slice(0, 7900); } catch { diffStr = ''; }
       await databases.createDocument(
         APPWRITE_DATABASE_ID,
         revisionsCollection,
@@ -298,58 +349,136 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
           revision: revisionNumber,
           userId: before.userId || null,
           createdAt: updatedAt,
-          changes,
-          snapshot: { title: doc.title, content: doc.content, tags: (data as any).tags || doc.tags }
+          title: doc.title,
+          content: doc.content,
+          diff: diffStr || null,
+          diffFormat: diffStr ? 'json' : null,
+          fullSnapshot: true,
+          cause: 'manual'
         }
       );
     }
   } catch (revErr) {
     console.error('note revision log failed', revErr);
   }
-  // Dual-write tags with cleanup (remove stale pivots) and dedupe
+  // Dual-write tags with cleanup (remove stale pivots) and dedupe + tagId resolution
   try {
     if (Array.isArray((data as any).tags)) {
       const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
-      const incoming: string[] = (data as any).tags.filter(Boolean);
-      const uniqueIncoming = new Set(incoming);
+      const tagsCollection = APPWRITE_COLLECTION_ID_TAGS;
+      const incomingRaw: string[] = (data as any).tags.filter(Boolean).map((t: string) => t.trim());
+      const normalizedIncoming = Array.from(new Set(incomingRaw)).filter(Boolean);
+      const incomingSet = new Set(normalizedIncoming);
       const currentUser = await getCurrentUser();
-      // Fetch existing pivot rows once
+
+      // Preload or create tag documents for all incoming
+      const tagDocs: Record<string, any> = {};
+      if (normalizedIncoming.length && currentUser?.$id) {
+        try {
+          const existingTagsRes = await databases.listDocuments(
+            APPWRITE_DATABASE_ID,
+            tagsCollection,
+            [Query.equal('userId', currentUser.$id), Query.equal('nameLower', normalizedIncoming.map(t => t.toLowerCase())), Query.limit(normalizedIncoming.length)] as any
+          );
+          for (const td of existingTagsRes.documents as any[]) {
+            if (td.nameLower) tagDocs[td.nameLower] = td;
+          }
+        } catch (preErr) {
+          console.error('updateNote tag preload failed', preErr);
+        }
+        for (const tagName of normalizedIncoming) {
+          const key = tagName.toLowerCase();
+          if (!tagDocs[key]) {
+            try {
+              const created = await databases.createDocument(
+                APPWRITE_DATABASE_ID,
+                tagsCollection,
+                ID.unique(),
+                { name: tagName, nameLower: key, userId: currentUser?.$id, createdAt: updatedAt, usageCount: 0 }
+              );
+              tagDocs[key] = created;
+            } catch (createErr) {
+              // Race: re-fetch
+              try {
+                const retry = await databases.listDocuments(
+                  APPWRITE_DATABASE_ID,
+                  tagsCollection,
+                  [Query.equal('userId', currentUser?.$id), Query.equal('nameLower', key), Query.limit(1)] as any
+                );
+                if (retry.documents.length) tagDocs[key] = retry.documents[0];
+              } catch {}
+            }
+          }
+        }
+      }
+
+      // Fetch existing pivot rows
       const existingPivot = await databases.listDocuments(
         APPWRITE_DATABASE_ID,
         noteTagsCollection,
         [Query.equal('noteId', noteId), Query.limit(500)] as any
       );
-      const existingMap = new Map<string, any>();
+      const existingByTag: Record<string, any> = {};
+      const existingPairs = new Set<string>();
       for (const p of existingPivot.documents as any[]) {
-        if (p.tag) existingMap.set(p.tag, p);
+        if (p.tag) existingByTag[p.tag] = p;
+        if (p.tagId && p.tag) existingPairs.add(`${p.tagId}::${p.tag}`);
       }
-      // Add missing
-      for (const tag of uniqueIncoming) {
-          // Increment usage for new tag
-          adjustTagUsage(currentUser?.$id, tag, 1);
-        if (!existingMap.has(tag)) {
-          try {
-            await databases.createDocument(
-              APPWRITE_DATABASE_ID,
-              noteTagsCollection,
-              ID.unique(),
-              { noteId, tag, userId: currentUser?.$id || null, createdAt: updatedAt }
-            );
-          } catch (ie) {
-            console.error('note_tags create (updateNote) failed', ie);
+
+      // Patch legacy rows lacking tagId if possible
+      for (const p of existingPivot.documents as any[]) {
+        if (!p.tagId && p.tag) {
+          const key = p.tag.toLowerCase();
+          const tagDoc = tagDocs[key];
+          if (tagDoc) {
+            try {
+              await databases.updateDocument(
+                APPWRITE_DATABASE_ID,
+                noteTagsCollection,
+                p.$id,
+                { tagId: tagDoc.$id || tagDoc.id }
+              );
+              existingPairs.add(`${tagDoc.$id || tagDoc.id}::${p.tag}`);
+            } catch (patchErr) {
+              console.error('legacy pivot patch failed', patchErr);
+            }
           }
         }
       }
-      // Remove stale
-      for (const [tag, pivotDoc] of existingMap.entries()) {
-          // Decrement usage for removed tag
-          if (!uniqueIncoming.has(tag)) adjustTagUsage(currentUser?.$id, tag, -1);
-        if (!uniqueIncoming.has(tag)) {
+
+      // Add missing pivots
+      for (const tagName of normalizedIncoming) {
+        const key = tagName.toLowerCase();
+        const tagDoc = tagDocs[key];
+        const tagId = tagDoc ? (tagDoc.$id || tagDoc.id) : undefined;
+        if (!tagId) continue;
+        const pairKey = `${tagId}::${tagName}`;
+        if (existingPairs.has(pairKey)) continue;
+        // Increment usage for new association only if not already there
+        adjustTagUsage(currentUser?.$id, tagName, 1);
+        try {
+          await databases.createDocument(
+            APPWRITE_DATABASE_ID,
+            noteTagsCollection,
+            ID.unique(),
+            { noteId, tagId, tag: tagName, userId: currentUser?.$id || null, createdAt: updatedAt }
+          );
+          existingPairs.add(pairKey);
+        } catch (ie) {
+          console.error('note_tags create (updateNote) failed', ie);
+        }
+      }
+
+      // Remove stale associations (those existingByTag where tag not in incoming)
+      for (const [tagName, pivotDoc] of Object.entries(existingByTag)) {
+        if (!incomingSet.has(tagName)) {
+          // Decrement usage
+          adjustTagUsage(currentUser?.$id, tagName, -1);
           try {
             await databases.deleteDocument(
               APPWRITE_DATABASE_ID,
               noteTagsCollection,
-              pivotDoc.$id
+              (pivotDoc as any).$id
             );
           } catch (de) {
             console.error('note_tags stale delete failed', de);
@@ -1300,6 +1429,127 @@ export async function deleteNoteAttachment(fileId: string) {
 
 // ...add similar helpers for other buckets as needed...
 
+// --- NOTE REVISIONS UTILITIES ---
+export async function listNoteRevisions(noteId: string, limit: number = 50) {
+  try {
+    const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTEREVISIONS || 'note_revisions';
+    const res = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      revisionsCollection,
+      [Query.equal('noteId', noteId), Query.orderDesc('revision'), Query.limit(limit)] as any
+    );
+    return res;
+  } catch (e) {
+    console.error('listNoteRevisions failed', e);
+    return { documents: [], total: 0 } as any;
+  }
+}
+
+// --- MAINTENANCE HELPERS (Best-effort, on-demand) ---
+// Backfill tagId on legacy note_tags rows missing tagId for a user's notes
+export async function backfillNoteTagPivots(userId?: string) {
+  try {
+    const currentUser = userId ? { $id: userId } as any : await getCurrentUser();
+    if (!currentUser?.$id) throw new Error('User not authenticated');
+    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+    const tagsCollection = APPWRITE_COLLECTION_ID_TAGS;
+    // Fetch tag docs for user
+    const tagDocsRes = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      tagsCollection,
+      [Query.equal('userId', currentUser.$id), Query.limit(500)] as any
+    );
+    const byNameLower: Record<string, any> = {};
+    for (const td of tagDocsRes.documents as any[]) {
+      if (td.nameLower) byNameLower[td.nameLower] = td;
+      else if (td.name) byNameLower[String(td.name).toLowerCase()] = td;
+    }
+    // Fetch pivots missing tagId
+    const pivotsRes = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      noteTagsCollection,
+      [Query.equal('userId', currentUser.$id), Query.isNull('tagId'), Query.limit(1000)] as any
+    );
+    let patched = 0;
+    for (const p of pivotsRes.documents as any[]) {
+      if (!p.tag || p.tagId) continue;
+      const key = String(p.tag).toLowerCase();
+      const tagDoc = byNameLower[key];
+      if (tagDoc) {
+        try {
+          await databases.updateDocument(
+            APPWRITE_DATABASE_ID,
+            noteTagsCollection,
+            p.$id,
+            { tagId: tagDoc.$id || tagDoc.id }
+          );
+          patched++;
+        } catch (upErr) {
+          console.error('backfill pivot update failed', upErr);
+        }
+      }
+    }
+    return { attempted: pivotsRes.documents.length, patched };
+  } catch (e) {
+    console.error('backfillNoteTagPivots failed', e);
+    return { attempted: 0, patched: 0, error: String(e) };
+  }
+}
+
+// Recompute tag usageCount by counting pivot rows per tag for a user
+export async function reconcileTagUsage(userId?: string) {
+  try {
+    const currentUser = userId ? { $id: userId } as any : await getCurrentUser();
+    if (!currentUser?.$id) throw new Error('User not authenticated');
+    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+    const tagsCollection = APPWRITE_COLLECTION_ID_TAGS;
+    // Fetch all user tag docs
+    const tagDocsRes = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      tagsCollection,
+      [Query.equal('userId', currentUser.$id), Query.limit(500)] as any
+    );
+    const tagDocs = tagDocsRes.documents as any[];
+    const tagIdToDoc: Record<string, any> = {};
+    for (const td of tagDocs) tagIdToDoc[td.$id || td.id] = td;
+    // Fetch all pivots for user
+    const pivotsRes = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      noteTagsCollection,
+      [Query.equal('userId', currentUser.$id), Query.limit(5000)] as any
+    );
+    const counts: Record<string, number> = {};
+    for (const p of pivotsRes.documents as any[]) {
+      const tId = p.tagId;
+      if (!tId) continue;
+      counts[tId] = (counts[tId] || 0) + 1;
+    }
+    let updated = 0;
+    for (const td of tagDocs) {
+      const desired = counts[td.$id] || 0;
+      const current = typeof td.usageCount === 'number' ? td.usageCount : 0;
+      if (desired !== current) {
+        try {
+          await databases.updateDocument(
+            APPWRITE_DATABASE_ID,
+            tagsCollection,
+            td.$id,
+            { usageCount: desired }
+          );
+          updated++;
+        } catch (upErr) {
+          console.error('reconcileTagUsage update failed', upErr);
+        }
+      }
+    }
+    return { tags: tagDocs.length, pivots: pivotsRes.documents.length, updated };
+  } catch (e) {
+    console.error('reconcileTagUsage failed', e);
+    return { tags: 0, pivots: 0, updated: 0, error: String(e) };
+  }
+}
+
+
 // --- EXPORT DEFAULTS ---
 export default {
   client,
@@ -1412,5 +1662,8 @@ export default {
   deleteProfilePicture,
   uploadNoteAttachment,
   getNoteAttachment,
-  deleteNoteAttachment,
+   deleteNoteAttachment,
+   listNoteRevisions,
+   backfillNoteTagPivots,
+   reconcileTagUsage,
 };
