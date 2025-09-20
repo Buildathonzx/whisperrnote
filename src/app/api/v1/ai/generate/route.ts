@@ -3,6 +3,7 @@
 import { NextResponse } from 'next/server';
 import { aiService } from '@/lib/ai';
 import { GenerationType, AIMode, AI_MODE_CONFIG } from '@/types/ai';
+import { validateApiKey } from '@/lib/api-key';
 
 // v1 AI generation endpoint with explicit response schema & API key stub
 // Request JSON: { prompt: string; type: GenerationType; mode?: AIMode; providerId?: string; options?: {...} }
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
     const { prompt, type, providerId, options, mode } = body as { prompt: string; type: GenerationType; providerId?: string; options?: any; mode?: AIMode };
 
     const apiKey = request.headers.get('x-api-key') || request.headers.get('X-API-Key');
-    // TODO(api-key): validate apiKey when storage & hashing implemented
+    const apiKeyValidation = await validateApiKey(apiKey);
 
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
       return NextResponse.json({ error: 'Prompt is required', code: 'BAD_REQUEST' }, { status: 400 });
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
         durationMs,
         options: resolvedOptions,
         // placeholder; will be populated when api key tracking added
-        apiKeyValid: apiKey ? false : null
+        apiKeyValid: apiKey ? apiKeyValidation.valid : null
       }
     });
   } catch (error) {
