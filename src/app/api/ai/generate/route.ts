@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { aiService } from '@/lib/ai';
-import { GenerationType } from '@/types/ai';
+import { GenerationType, AIMode, AI_MODE_CONFIG } from '@/types/ai';
 
 // Provider-agnostic AI generation endpoint.
 // Accepts JSON: { prompt: string; type: GenerationType; providerId?: string; options?: { temperature?: number; maxTokens?: number; model?: string } }
@@ -10,7 +10,24 @@ import { GenerationType } from '@/types/ai';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { prompt, type, providerId, options } = body as { prompt: string; type: GenerationType; providerId?: string; options?: any };
+    const { prompt, type, providerId, options, mode } = body as { prompt: string; type: GenerationType; providerId?: string; options?: any; mode?: AIMode };
+
+    // Resolve AI mode configuration if provided
+    let resolvedOptions = { ...(options || {}) };
+    if (mode && AI_MODE_CONFIG[mode]) {
+      const cfg = AI_MODE_CONFIG[mode];
+      // Do not override if explicitly provided
+      if (resolvedOptions.temperature === undefined && cfg.temperature !== undefined) {
+        resolvedOptions.temperature = cfg.temperature;
+      }
+      if (resolvedOptions.maxTokens === undefined && cfg.maxTokens !== undefined) {
+        resolvedOptions.maxTokens = cfg.maxTokens;
+      }
+      if (resolvedOptions.model === undefined && cfg.model) {
+        resolvedOptions.model = cfg.model;
+      }
+      resolvedOptions.mode = mode;
+    }
 
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
@@ -37,9 +54,9 @@ export async function POST(request: Request) {
     // Build a pseudo request for aiService when using explicit provider
     const exec = async () => {
       if (explicitProvider) {
-        return await (explicitProvider as any).generateContent({ prompt, type, options: options || {} });
+        return await (explicitProvider as any).generateContent({ prompt, type, options: resolvedOptions });
       }
-      return await (aiService as any).generateContent(prompt, { type, options });
+      return await (aiService as any).generateContent(prompt, { type, options: resolvedOptions });
     };
 
     const result = await exec();
@@ -60,7 +77,7 @@ export async function POST(request: Request) {
       providerId: providerId || aiService.getConfig().primaryProvider,
       metadata: {
         requestedProvider: providerId || null,
-        mode: options?.mode || null
+         mode: resolvedOptions?.mode || null
       }
     });
   } catch (error) {

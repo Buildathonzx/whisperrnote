@@ -115,21 +115,37 @@ export class AIService {
     this.config = config;
   }
 
-  async generateContent(prompt: string, type: any, options: { signal?: AbortSignal } = {}): Promise<any> {
+  async generateContent(
+    prompt: string,
+    typeOrRequest: any,
+    genOptions: any = {}
+  ): Promise<any> {
+    // Backward compatibility: allow (prompt, type, options) or (prompt, { type, options })
+    let type: any;
+    let options: any;
+    if (typeof typeOrRequest === 'string') {
+      type = typeOrRequest;
+      options = genOptions || {};
+    } else if (typeOrRequest && typeof typeOrRequest === 'object') {
+      type = typeOrRequest.type;
+      options = { ...(typeOrRequest.options || {}), ...(genOptions || {}) };
+    } else {
+      throw new Error('Invalid generation request arguments');
+    }
+
     const healthyProviders = await this.registry.getHealthyProviders();
-    
     if (healthyProviders.length === 0) {
       throw new Error('No AI providers available');
     }
 
     let lastError: Error | null = null;
-    
+
     // Try primary provider first if configured
     if (this.config.primaryProvider) {
       const primaryProvider = this.registry.getProvider(this.config.primaryProvider);
       if (primaryProvider && healthyProviders.includes(primaryProvider)) {
         try {
-          return await this.tryGenerateWithProvider(primaryProvider, { prompt, type });
+          return await this.tryGenerateWithProvider(primaryProvider, { prompt, type, options });
         } catch (error) {
           console.warn(`Primary provider ${this.config.primaryProvider} failed:`, error);
           lastError = error as Error;
@@ -139,14 +155,10 @@ export class AIService {
 
     // Try other providers based on load balancing strategy
     const providersToTry = this.selectProvidersForLoadBalancing(healthyProviders);
-    
     for (const provider of providersToTry) {
-      if (provider.id === this.config.primaryProvider) {
-        continue; // Already tried primary provider
-      }
-      
+      if (provider.id === this.config.primaryProvider) continue; // Already tried primary provider
       try {
-        return await this.tryGenerateWithProvider(provider, { prompt, type });
+        return await this.tryGenerateWithProvider(provider, { prompt, type, options });
       } catch (error) {
         console.warn(`Provider ${provider.id} failed:`, error);
         lastError = error as Error;
@@ -163,13 +175,15 @@ export class AIService {
     try {
       const result = await provider.generateContent(request);
       clearTimeout(timeoutId);
-      return result;
+      return {
+        ...result,
+        provider: provider.id
+      };
     } catch (error: any) {
       clearTimeout(timeoutId);
       if (error?.name === 'AbortError') {
         throw new Error(`Provider ${provider.id} timed out after ${this.config.timeout}ms`);
       }
-      // Normalize error messages
       const message = error?.message || 'Unknown AI provider error';
       throw new Error(`${provider.id} error: ${message}`);
     }
