@@ -1480,8 +1480,127 @@
                     ]
                 }
             ]
+        },
+        {
+            "$id": "subscriptions",
+            "$permissions": [
+                "create(\"users\")"
+            ],
+            "databaseId": "67ff05a9000296822396",
+            "name": "subscriptions",
+            "enabled": true,
+            "documentSecurity": true,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "plan",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 32,
+                    "elements": [
+                        "free",
+                        "pro",
+                        "org"
+                    ],
+                    "format": "enum",
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 32,
+                    "elements": [
+                        "active",
+                        "canceled",
+                        "trialing"
+                    ],
+                    "format": "enum",
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "currentPeriodStart",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "currentPeriodEnd",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "seats",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "createdAt",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "updatedAt",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "idx_subscriptions_user",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_subscriptions_user_plan",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId",
+                        "plan"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                }
+            ]
         }
     ],
+
     "buckets": [
         {
             "$id": "profile_pictures",
@@ -1494,8 +1613,8 @@
             "fileSecurity": false,
             "name": "profile_pictures",
             "enabled": true,
-            "maximumFileSize": 5000000000,
-            "allowedFileExtensions": [],
+            "maximumFileSize": 5242880,
+            "allowedFileExtensions": ["png","jpg","jpeg","webp","gif"],
             "compression": "none",
             "encryption": true,
             "antivirus": true
@@ -1511,8 +1630,8 @@
             "fileSecurity": false,
             "name": "notes_attachments",
             "enabled": true,
-            "maximumFileSize": 5000000000,
-            "allowedFileExtensions": [],
+            "maximumFileSize": 20971520,
+            "allowedFileExtensions": ["png","jpg","jpeg","webp","gif","pdf","md","txt"],
             "compression": "none",
             "encryption": true,
             "antivirus": true
@@ -1528,8 +1647,8 @@
             "fileSecurity": false,
             "name": "blog_media",
             "enabled": true,
-            "maximumFileSize": 5000000000,
-            "allowedFileExtensions": [],
+            "maximumFileSize": 52428800,
+            "allowedFileExtensions": ["png","jpg","jpeg","webp","gif","mp4","webm","svg"],
             "compression": "none",
             "encryption": true,
             "antivirus": true
@@ -1545,8 +1664,8 @@
             "fileSecurity": false,
             "name": "extension_assets",
             "enabled": true,
-            "maximumFileSize": 5000000000,
-            "allowedFileExtensions": [],
+            "maximumFileSize": 2097152,
+            "allowedFileExtensions": ["js","json","css","png","jpg","jpeg","svg"],
             "compression": "none",
             "encryption": true,
             "antivirus": true
@@ -1562,8 +1681,8 @@
             "fileSecurity": false,
             "name": "backups",
             "enabled": true,
-            "maximumFileSize": 5000000000,
-            "allowedFileExtensions": [],
+            "maximumFileSize": 524288000,
+            "allowedFileExtensions": ["json","gz","tar","zip"],
             "compression": "none",
             "encryption": true,
             "antivirus": true
@@ -1579,8 +1698,8 @@
             "fileSecurity": false,
             "name": "temp_uploads",
             "enabled": true,
-            "maximumFileSize": 5000000000,
-            "allowedFileExtensions": [],
+            "maximumFileSize": 20971520,
+            "allowedFileExtensions": ["png","jpg","jpeg","webp","gif","pdf","txt","md"],
             "compression": "none",
             "encryption": true,
             "antivirus": true
