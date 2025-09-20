@@ -169,21 +169,15 @@ export async function searchUsers(query: string, limit: number = 5) {
 // --- NOTES CRUD ---
 
 export async function createNote(data: Partial<Notes>) {
-  // Get current user for userId
   const user = await getCurrentUser();
   if (!user || !user.$id) throw new Error("User not authenticated");
-  
-  // Create note with proper timestamps
   const now = new Date().toISOString();
   const cleanData = cleanDocumentData(data);
-  
-  // Set initial permissions - private by default (only owner can access)
   const initialPermissions = [
     Permission.read(Role.user(user.$id)),
     Permission.update(Role.user(user.$id)),
     Permission.delete(Role.user(user.$id))
   ];
-  
   const doc = await databases.createDocument(
     APPWRITE_DATABASE_ID,
     APPWRITE_COLLECTION_ID_NOTES,
@@ -191,22 +185,43 @@ export async function createNote(data: Partial<Notes>) {
     {
       ...cleanData,
       userId: user.$id,
-      id: null, // id will be set after creation
+      id: null,
       createdAt: now,
       updatedAt: now
     },
     initialPermissions
   );
-  
-  // Patch the note to set id = $id (Appwrite does not set this automatically)
   await databases.updateDocument(
     APPWRITE_DATABASE_ID,
     APPWRITE_COLLECTION_ID_NOTES,
     doc.$id,
     { id: doc.$id }
   );
-  
-  // Return the updated document as Notes type
+  // Dual-write tags to note_tags pivot if available
+  try {
+    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+    const tags: string[] = Array.isArray((data as any).tags) ? (data as any).tags : [];
+    for (const tag of tags) {
+      if (!tag) continue;
+      try {
+        await databases.createDocument(
+          APPWRITE_DATABASE_ID,
+          noteTagsCollection,
+          ID.unique(),
+          {
+            noteId: doc.$id,
+            tag,
+            userId: user.$id,
+            createdAt: now
+          }
+        );
+      } catch (e: any) {
+        console.error('note_tags create failed', e?.message || e);
+      }
+    }
+  } catch (e) {
+    console.error('dual-write note_tags error', e);
+  }
   return await getNote(doc.$id);
 }
 
@@ -215,17 +230,43 @@ export async function getNote(noteId: string): Promise<Notes> {
 }
 
 export async function updateNote(noteId: string, data: Partial<Notes>) {
-  // Use cleanDocumentData to remove Appwrite system fields and id/userId
   const cleanData = cleanDocumentData(data);
   const { id, userId, ...rest } = cleanData;
-  
-  // Add updatedAt timestamp
-  const updatedData = {
-    ...rest,
-    updatedAt: new Date().toISOString()
-  };
-  
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, updatedData) as Promise<Notes>;
+  const updatedAt = new Date().toISOString();
+  const updatedData = { ...rest, updatedAt };
+  const doc = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, updatedData) as any;
+  // Dual-write tags: naive strategy append new tags if not existing
+  try {
+    if (Array.isArray((data as any).tags)) {
+      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+      const tags: string[] = (data as any).tags;
+      const currentUser = await getCurrentUser();
+      for (const tag of tags) {
+        if (!tag) continue;
+        try {
+          // Check existence by querying same noteId+tag (best-effort)
+          const existing = await databases.listDocuments(
+            APPWRITE_DATABASE_ID,
+            noteTagsCollection,
+            [Query.equal('noteId', noteId), Query.equal('tag', tag), Query.limit(1)] as any
+          );
+          if (!existing.documents.length) {
+            await databases.createDocument(
+              APPWRITE_DATABASE_ID,
+              noteTagsCollection,
+              ID.unique(),
+              { noteId, tag, userId: currentUser?.$id || null, createdAt: updatedAt }
+            );
+          }
+        } catch (ie) {
+          console.error('note_tags update dual-write failed', ie);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('dual-write note_tags update error', e);
+  }
+  return doc as Notes;
 }
 
 export async function deleteNote(noteId: string) {
