@@ -197,26 +197,31 @@ export async function createNote(data: Partial<Notes>) {
     doc.$id,
     { id: doc.$id }
   );
-  // Dual-write tags to note_tags pivot if available
+  // Dual-write tags to note_tags pivot if available (with basic dedupe)
   try {
     const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
-    const tags: string[] = Array.isArray((data as any).tags) ? (data as any).tags : [];
-    for (const tag of tags) {
-      if (!tag) continue;
-      try {
-        await databases.createDocument(
-          APPWRITE_DATABASE_ID,
-          noteTagsCollection,
-          ID.unique(),
-          {
-            noteId: doc.$id,
-            tag,
-            userId: user.$id,
-            createdAt: now
-          }
-        );
-      } catch (e: any) {
-        console.error('note_tags create failed', e?.message || e);
+    const tags: string[] = Array.isArray((data as any).tags) ? (data as any).tags.filter(Boolean) : [];
+    if (tags.length) {
+      const unique = Array.from(new Set(tags));
+      // Fetch existing pivots once
+      const existingPivot = await databases.listDocuments(
+        APPWRITE_DATABASE_ID,
+        noteTagsCollection,
+        [Query.equal('noteId', doc.$id), Query.limit(200)] as any
+      );
+      const existingSet = new Set(existingPivot.documents.map((p: any) => p.tag));
+      for (const tag of unique) {
+        if (!tag || existingSet.has(tag)) continue;
+        try {
+          await databases.createDocument(
+            APPWRITE_DATABASE_ID,
+            noteTagsCollection,
+            ID.unique(),
+            { noteId: doc.$id, tag, userId: user.$id, createdAt: now }
+          );
+        } catch (e: any) {
+          console.error('note_tags create failed', e?.message || e);
+        }
       }
     }
   } catch (e) {
@@ -250,31 +255,50 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   const updatedAt = new Date().toISOString();
   const updatedData = { ...rest, updatedAt };
   const doc = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, updatedData) as any;
-  // Dual-write tags: naive strategy append new tags if not existing
+  // Dual-write tags with cleanup (remove stale pivots) and dedupe
   try {
     if (Array.isArray((data as any).tags)) {
       const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
-      const tags: string[] = (data as any).tags;
+      const incoming: string[] = (data as any).tags.filter(Boolean);
+      const uniqueIncoming = new Set(incoming);
       const currentUser = await getCurrentUser();
-      for (const tag of tags) {
-        if (!tag) continue;
-        try {
-          // Check existence by querying same noteId+tag (best-effort)
-          const existing = await databases.listDocuments(
-            APPWRITE_DATABASE_ID,
-            noteTagsCollection,
-            [Query.equal('noteId', noteId), Query.equal('tag', tag), Query.limit(1)] as any
-          );
-          if (!existing.documents.length) {
+      // Fetch existing pivot rows once
+      const existingPivot = await databases.listDocuments(
+        APPWRITE_DATABASE_ID,
+        noteTagsCollection,
+        [Query.equal('noteId', noteId), Query.limit(500)] as any
+      );
+      const existingMap = new Map<string, any>();
+      for (const p of existingPivot.documents as any[]) {
+        if (p.tag) existingMap.set(p.tag, p);
+      }
+      // Add missing
+      for (const tag of uniqueIncoming) {
+        if (!existingMap.has(tag)) {
+          try {
             await databases.createDocument(
               APPWRITE_DATABASE_ID,
               noteTagsCollection,
               ID.unique(),
               { noteId, tag, userId: currentUser?.$id || null, createdAt: updatedAt }
             );
+          } catch (ie) {
+            console.error('note_tags create (updateNote) failed', ie);
           }
-        } catch (ie) {
-          console.error('note_tags update dual-write failed', ie);
+        }
+      }
+      // Remove stale
+      for (const [tag, pivotDoc] of existingMap.entries()) {
+        if (!uniqueIncoming.has(tag)) {
+          try {
+            await databases.deleteDocument(
+              APPWRITE_DATABASE_ID,
+              noteTagsCollection,
+              pivotDoc.$id
+            );
+          } catch (de) {
+            console.error('note_tags stale delete failed', de);
+          }
         }
       }
     }
