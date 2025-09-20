@@ -254,7 +254,56 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   const { id, userId, ...rest } = cleanData;
   const updatedAt = new Date().toISOString();
   const updatedData = { ...rest, updatedAt };
+  const before = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as any;
   const doc = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, updatedData) as any;
+  // Note revisions logging (best-effort)
+  try {
+    const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTEREVISIONS || 'note_revisions';
+    const significantFields = ['title', 'content', 'tags'];
+    let changed = false;
+    const changes: Record<string, { before: any; after: any }> = {};
+    for (const f of significantFields) {
+      if (f in (data as any)) {
+        const prevVal = before[f];
+        const newVal = (data as any)[f];
+        const prevSerialized = JSON.stringify(prevVal ?? null);
+        const newSerialized = JSON.stringify(newVal ?? null);
+        if (prevSerialized !== newSerialized) {
+          changed = true;
+          changes[f] = { before: prevVal ?? null, after: newVal ?? null };
+        }
+      }
+    }
+    if (changed) {
+      // Determine next revision number
+      let revisionNumber = 1;
+      try {
+        const existing = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          revisionsCollection,
+          [Query.equal('noteId', noteId), Query.orderDesc('revision'), Query.limit(1)] as any
+        );
+        if (existing.documents.length) {
+          revisionNumber = (existing.documents[0] as any).revision + 1;
+        }
+      } catch {}
+      await databases.createDocument(
+        APPWRITE_DATABASE_ID,
+        revisionsCollection,
+        ID.unique(),
+        {
+          noteId,
+          revision: revisionNumber,
+          userId: before.userId || null,
+          createdAt: updatedAt,
+          changes,
+          snapshot: { title: doc.title, content: doc.content, tags: (data as any).tags || doc.tags }
+        }
+      );
+    }
+  } catch (revErr) {
+    console.error('note revision log failed', revErr);
+  }
   // Dual-write tags with cleanup (remove stale pivots) and dedupe
   try {
     if (Array.isArray((data as any).tags)) {
