@@ -211,6 +211,8 @@ export async function createNote(data: Partial<Notes>) {
       );
       const existingSet = new Set(existingPivot.documents.map((p: any) => p.tag));
       for (const tag of unique) {
+        // Increment usage count (best-effort)
+        adjustTagUsage(user.$id, tag, 1);
         if (!tag || existingSet.has(tag)) continue;
         try {
           await databases.createDocument(
@@ -323,6 +325,8 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
       }
       // Add missing
       for (const tag of uniqueIncoming) {
+          // Increment usage for new tag
+          adjustTagUsage(currentUser?.$id, tag, 1);
         if (!existingMap.has(tag)) {
           try {
             await databases.createDocument(
@@ -338,6 +342,8 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
       }
       // Remove stale
       for (const [tag, pivotDoc] of existingMap.entries()) {
+          // Decrement usage for removed tag
+          if (!uniqueIncoming.has(tag)) adjustTagUsage(currentUser?.$id, tag, -1);
         if (!uniqueIncoming.has(tag)) {
           try {
             await databases.deleteDocument(
@@ -587,6 +593,37 @@ export async function getAllTags(): Promise<{ documents: Tags[], total: number }
 
 export async function listTagsByUser(userId: string) {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, [Query.equal('userId', userId)]);
+}
+
+// Internal helper: adjust tag usage count (best-effort, non-atomic)
+async function adjustTagUsage(userId: string | null | undefined, tagName: string, delta: number) {
+  try {
+    if (!userId || !tagName) return;
+    const res = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_ID_TAGS,
+      [Query.equal('userId', userId), Query.equal('name', tagName), Query.limit(1)] as any
+    );
+    if (res.documents.length) {
+      const doc: any = res.documents[0];
+      const current = typeof doc.usageCount === 'number' && !isNaN(doc.usageCount) ? doc.usageCount : 0;
+      const next = current + delta;
+      if (next >= 0 && next !== current) {
+        try {
+          await databases.updateDocument(
+            APPWRITE_DATABASE_ID,
+            APPWRITE_COLLECTION_ID_TAGS,
+            doc.$id,
+            { usageCount: next }
+          );
+        } catch (upErr) {
+          console.error('adjustTagUsage update failed', upErr);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('adjustTagUsage failed', e);
+  }
 }
 
 // --- APIKEYS CRUD ---
