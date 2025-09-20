@@ -785,7 +785,7 @@
                     "type": "string",
                     "required": true,
                     "array": false,
-                    "size": 256,
+                    "size": 64,
                     "default": null,
                     "encrypt": false
                 },
@@ -794,7 +794,7 @@
                     "type": "string",
                     "required": true,
                     "array": false,
-                    "size": 256,
+                    "size": 64,
                     "default": null,
                     "encrypt": false
                 },
