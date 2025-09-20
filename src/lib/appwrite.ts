@@ -226,7 +226,22 @@ export async function createNote(data: Partial<Notes>) {
 }
 
 export async function getNote(noteId: string): Promise<Notes> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as unknown as Notes;
+  const doc = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as any;
+  try {
+    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+    const pivot = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      noteTagsCollection,
+      [Query.equal('noteId', noteId), Query.limit(200)] as any
+    );
+    if (pivot.documents.length) {
+      const tags = Array.from(new Set(pivot.documents.map((p: any) => p.tag).filter(Boolean)));
+      (doc as any).tags = tags;
+    }
+  } catch (e) {
+    // Non-fatal
+  }
+  return doc as Notes;
 }
 
 export async function updateNote(noteId: string, data: Partial<Notes>) {
@@ -274,29 +289,55 @@ export async function deleteNote(noteId: string) {
 }
 
 export async function listNotes(queries: any[] = [], limit: number = 100) {
-  // By default, fetch all notes for the current user
+  // Default: notes for current user
   if (!queries.length) {
     const user = await getCurrentUser();
     if (!user || !user.$id) {
-      // Return empty result instead of throwing error for unauthenticated users
-      return { 
-        documents: [], 
-        total: 0 
-      };
+      return { documents: [], total: 0 };
     }
-    queries = [Query.equal("userId", user.$id)];
+    queries = [Query.equal('userId', user.$id)];
   }
-  
-  // Add limit and ordering
+
   const finalQueries = [
     ...queries,
     Query.limit(limit),
-    Query.orderDesc("$createdAt") // Order by creation date, newest first
+    Query.orderDesc('$createdAt')
   ];
-  
-  // Cast documents to Notes[]
+
   const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, finalQueries);
-  return { ...res, documents: res.documents as unknown as Notes[] };
+  const notes = res.documents as unknown as Notes[];
+
+  // Hydrate tags from pivot collection in batch (best-effort)
+  try {
+    if (notes.length) {
+      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+      const noteIds = notes.map((n: any) => n.$id || (n as any).id).filter(Boolean);
+      if (noteIds.length) {
+        // Appwrite supports passing array to Query.equal for multiple values
+        const pivotRes = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          noteTagsCollection,
+          [Query.equal('noteId', noteIds), Query.limit(Math.min(1000, noteIds.length * 10))] as any
+        );
+        const tagMap: Record<string, Set<string>> = {};
+        for (const p of pivotRes.documents as any[]) {
+          if (!p.noteId || !p.tag) continue;
+            if (!tagMap[p.noteId]) tagMap[p.noteId] = new Set();
+          tagMap[p.noteId].add(p.tag);
+        }
+        for (const n of notes as any[]) {
+          const id = n.$id || n.id;
+          if (id && tagMap[id] && tagMap[id].size) {
+            n.tags = Array.from(tagMap[id]);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    // Non-fatal hydration error
+  }
+
+  return { ...res, documents: notes };
 }
 
 // New function to get all notes with cursor pagination
@@ -305,41 +346,56 @@ export async function getAllNotes(): Promise<{ documents: Notes[], total: number
   if (!user || !user.$id) {
     return { documents: [], total: 0 };
   }
-
   let allNotes: Notes[] = [];
-  let cursor: string | undefined = undefined;
-  const batchSize = 100; // Appwrite's max limit
-  
+  let cursor: string | undefined;
+  const batchSize = 100;
   while (true) {
-    const queries = [
-      Query.equal("userId", user.$id),
+    const queries: any[] = [
+      Query.equal('userId', user.$id),
       Query.limit(batchSize),
-      Query.orderDesc("$createdAt")
+      Query.orderDesc('$createdAt')
     ];
-    
-    // Add cursor for pagination
-    if (cursor) {
-      queries.push(Query.cursorAfter(cursor));
-    }
-    
+    if (cursor) queries.push(Query.cursorAfter(cursor));
     const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, queries);
     const notes = res.documents as unknown as Notes[];
-    
-    allNotes = [...allNotes, ...notes];
-    
-    // If we got fewer results than requested, we've reached the end
-    if (notes.length < batchSize) {
-      break;
-    }
-    
-    // Set cursor to the last document's ID for next batch
+    allNotes.push(...notes);
+    if (notes.length < batchSize) break;
     cursor = notes[notes.length - 1].$id;
   }
-  
-  return {
-    documents: allNotes,
-    total: allNotes.length
-  };
+  // Hydrate all tags in one or multiple batches if necessary
+  try {
+    if (allNotes.length) {
+      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+      const noteIds = allNotes.map((n: any) => n.$id || (n as any).id).filter(Boolean);
+      if (noteIds.length) {
+        // Appwrite max limit per request (assuming 100); chunk ids
+        const chunk = <T,>(arr: T[], size: number): T[][] => arr.length ? [arr.slice(0, size), ...chunk(arr.slice(size), size)] : [];
+        const idChunks = chunk(noteIds, 100);
+        const tagMap: Record<string, Set<string>> = {};
+        for (const ids of idChunks) {
+          const pivotRes = await databases.listDocuments(
+            APPWRITE_DATABASE_ID,
+            noteTagsCollection,
+            [Query.equal('noteId', ids), Query.limit(Math.min(1000, ids.length * 10))] as any
+          );
+          for (const p of pivotRes.documents as any[]) {
+            if (!p.noteId || !p.tag) continue;
+            if (!tagMap[p.noteId]) tagMap[p.noteId] = new Set();
+            tagMap[p.noteId].add(p.tag);
+          }
+        }
+        for (const n of allNotes as any[]) {
+          const id = n.$id || n.id;
+            if (id && tagMap[id] && tagMap[id].size) {
+            n.tags = Array.from(tagMap[id]);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    // Non-fatal
+  }
+  return { documents: allNotes, total: allNotes.length };
 }
 
 // --- TAGS CRUD ---
