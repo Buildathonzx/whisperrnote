@@ -1550,6 +1550,65 @@ export async function reconcileTagUsage(userId?: string) {
 }
 
 
+// --- MAINTENANCE AUDIT HELPERS ---
+// Analyze note_tags pivot health for a user without mutating data
+export async function auditNoteTagPivots(userId?: string) {
+  try {
+    const currentUser = userId ? { $id: userId } as any : await getCurrentUser();
+    if (!currentUser?.$id) throw new Error('User not authenticated');
+    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+
+    // Fetch pivots (bounded)
+    const pivotsRes = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      noteTagsCollection,
+      [Query.equal('userId', currentUser.$id), Query.limit(5000)] as any
+    );
+    const pivots = pivotsRes.documents as any[];
+
+    let missingTagId = 0;
+    const sampleMissing: string[] = [];
+    const pairCounts: Record<string, number> = {};
+
+    for (const p of pivots) {
+      if (!p.tagId) {
+        missingTagId++;
+        if (sampleMissing.length < 10) sampleMissing.push(p.$id);
+      }
+      if (p.tagId && p.tag) {
+        const key = `${p.tagId}::${p.tag}`;
+        pairCounts[key] = (pairCounts[key] || 0) + 1;
+      }
+    }
+
+    const duplicatePairs = Object.entries(pairCounts)
+      .filter(([, count]) => count > 1)
+      .map(([key, count]) => {
+        const [tagId, tag] = key.split('::');
+        return { tagId, tag, count };
+      })
+      .sort((a, b) => b.count - a.count);
+
+    const suggested: string[] = [];
+    if (missingTagId > 0) suggested.push('Run backfillNoteTagPivots to patch missing tagId values');
+    if (duplicatePairs.length > 0) suggested.push('Consider enforcing unique constraint (noteId, tagId) and deduplicating');
+    if (!missingTagId && !duplicatePairs.length) suggested.push('No action needed');
+
+    return {
+      userId: currentUser.$id,
+      total: pivots.length,
+      missingTagId,
+      duplicatePairCount: duplicatePairs.length,
+      duplicatePairs,
+      sampleMissing,
+      suggested
+    };
+  } catch (e) {
+    console.error('auditNoteTagPivots failed', e);
+    return { error: String(e) };
+  }
+}
+
 // --- EXPORT DEFAULTS ---
 export default {
   client,
@@ -1666,4 +1725,5 @@ export default {
    listNoteRevisions,
    backfillNoteTagPivots,
    reconcileTagUsage,
+   auditNoteTagPivots,
 };

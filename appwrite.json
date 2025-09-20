@@ -452,7 +452,7 @@
             "indexes": [
                 {
                     "key": "idx_tags_user_namelower",
-                    "type": "key",
+                    "type": "unique",
                     "status": "available",
                     "attributes": [
                         "userId",
@@ -832,7 +832,7 @@
                 },
                 {
                     "key": "idx_reactions_user_target_emoji",
-                    "type": "key",
+                    "type": "unique",
                     "status": "available",
                     "attributes": [
                         "userId",
@@ -931,7 +931,7 @@
                 },
                 {
                     "key": "idx_collaborators_note_user",
-                    "type": "key",
+                    "type": "unique",
                     "status": "available",
                     "attributes": [
                         "noteId",
@@ -1134,6 +1134,15 @@
                     "encrypt": false
                 },
                 {
+                    "key": "tag",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
                     "key": "userId",
                     "type": "string",
                     "required": true,
@@ -1154,7 +1163,7 @@
             "indexes": [
                 {
                     "key": "idx_note_tags_note_tag",
-                    "type": "key",
+                    "type": "unique",
                     "status": "available",
                     "attributes": [
                         "noteId",
@@ -1262,12 +1271,46 @@
                     "array": false,
                     "format": "",
                     "default": null
+                },
+                {
+                    "key": "diff",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 8000,
+                    "default": null,
+                    "encrypt": true
+                },
+                {
+                    "key": "diffFormat",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 32,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "fullSnapshot",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
+                },
+                {
+                    "key": "cause",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "elements": ["manual","ai","collab"],
+                    "format": "enum",
+                    "default": null
                 }
             ],
             "indexes": [
                 {
                     "key": "idx_note_revisions_note_revision",
-                    "type": "key",
+                    "type": "unique",
                     "status": "available",
                     "attributes": [
                         "noteId",
