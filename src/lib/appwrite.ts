@@ -715,6 +715,40 @@ export async function listExtensions(queries: any[] = []) {
 // --- REACTIONS CRUD ---
 
 export async function createReaction(data: Partial<Reactions>) {
+  // Duplicate guard: ensure single (userId,targetType,targetId,emoji)
+  try {
+    if (data && (data as any).userId && (data as any).targetId && (data as any).emoji) {
+      const userId = (data as any).userId;
+      const targetId = (data as any).targetId;
+      const emoji = (data as any).emoji;
+      const targetType = (data as any).targetType;
+      try {
+        const existing = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_COLLECTION_ID_REACTIONS,
+          [
+            Query.equal('userId', userId),
+            Query.equal('targetId', targetId),
+            Query.equal('emoji', emoji),
+            Query.equal('targetType', targetType),
+            Query.limit(1)
+          ] as any
+        );
+        if (existing.documents.length) {
+          // Idempotent return existing document
+            return existing.documents[0] as any;
+        }
+      } catch (listErr) {
+        console.error('createReaction duplicate guard list failed', listErr);
+      }
+      // Attach createdAt if not present
+      if (!(data as any).createdAt) {
+        (data as any).createdAt = new Date().toISOString();
+      }
+    }
+  } catch (guardErr) {
+    console.error('createReaction duplicate guard failed', guardErr);
+  }
   return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_REACTIONS, ID.unique(), cleanDocumentData(data));
 }
 
@@ -737,6 +771,51 @@ export async function listReactions(queries: any[] = []) {
 // --- COLLABORATORS CRUD ---
 
 export async function createCollaborator(data: Partial<Collaborators>) {
+  // Duplicate guard: unique per (noteId,userId)
+  try {
+    if (data && (data as any).noteId && (data as any).userId) {
+      const noteId = (data as any).noteId;
+      const userId = (data as any).userId;
+      try {
+        const existing = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_COLLECTION_ID_COLLABORATORS,
+          [
+            Query.equal('noteId', noteId),
+            Query.equal('userId', userId),
+            Query.limit(1)
+          ] as any
+        );
+        if (existing.documents.length) {
+          // Optionally update permission if provided and different
+          if ((data as any).permission && existing.documents[0].permission !== (data as any).permission) {
+            try {
+              await databases.updateDocument(
+                APPWRITE_DATABASE_ID,
+                APPWRITE_COLLECTION_ID_COLLABORATORS,
+                existing.documents[0].$id,
+                { permission: (data as any).permission }
+              );
+              (existing.documents[0] as any).permission = (data as any).permission;
+            } catch (upErr) {
+              console.error('createCollaborator permission sync failed', upErr);
+            }
+          }
+          return existing.documents[0] as any;
+        }
+      } catch (listErr) {
+        console.error('createCollaborator duplicate guard list failed', listErr);
+      }
+      if (!(data as any).invitedAt) {
+        (data as any).invitedAt = new Date().toISOString();
+      }
+      if (typeof (data as any).accepted === 'undefined') {
+        (data as any).accepted = true;
+      }
+    }
+  } catch (guardErr) {
+    console.error('createCollaborator duplicate guard failed', guardErr);
+  }
   return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, ID.unique(), cleanDocumentData(data));
 }
 
