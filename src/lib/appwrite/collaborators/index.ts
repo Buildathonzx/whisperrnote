@@ -8,19 +8,8 @@ function cleanDocumentData<T>(data: Partial<T>): Record<string, any> {
   return cleanData;
 }
 
-// Count collaborators for a note (used for plan limit enforcement per-note if needed)
-async function countNoteCollaborators(noteId: string): Promise<number> {
-  try {
-    const res = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_COLLABORATORS,
-      [Query.equal('noteId', noteId), Query.limit(1000)] as any
-    );
-    return res.total || res.documents.length;
-  } catch {
-    return 0;
-  }
-}
+// Use shared metrics helper for collaborator counting
+import { countNoteCollaborators } from '../usage/metrics';
 
 // Create collaborator with duplicate guard and (optional) plan limit per note
 export async function createCollaborator(data: Partial<Collaborators>) {
