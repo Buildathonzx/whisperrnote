@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { updateNote, deleteNote } from '@/lib/appwrite';
 import { useNotes } from '@/contexts/NotesContext';
-import { useLoading } from '@/components/ui/LoadingContext';
+
 import { useOverlay } from '@/components/ui/OverlayContext';
-import { useAI } from '@/components/ui/AIContext';
+import { useOptionalAI } from '@/components/ui/AIContext';
 import { useSearchParams } from 'next/navigation';
 import type { Notes } from '@/types/appwrite.d';
 import NoteCard from '@/components/ui/NoteCard';
@@ -28,10 +28,12 @@ import { NotesErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function NotesPage() {
   const { notes: allNotes, totalNotes, isLoading: isInitialLoading, refetchNotes, hasMore, loadMore } = useNotes();
-  const { showLoading, hideLoading } = useLoading();
   const { openOverlay, closeOverlay } = useOverlay();
-  // AI integration (independent of core CRUD)
-  const { isGenerating, setIsGenerating, setAIGenerateHandler } = useAI();
+  // AI integration (independent of core CRUD) - optional
+  const ai = useOptionalAI();
+  const isGenerating = ai?.isGenerating ?? false;
+  const setIsGenerating = ai?.setIsGenerating ?? (() => {});
+  const setAIGenerateHandler = ai?.setAIGenerateHandler ?? (() => {});
   const { isCollapsed } = useSidebar();
   const { isOpen: isDynamicSidebarOpen } = useDynamicSidebar();
   const searchParams = useSearchParams();
@@ -120,9 +122,10 @@ export default function NotesPage() {
 
   // Register AI handler (independent: removing note CRUD dependency)
   useEffect(() => {
+    if (!ai) return; // no provider mounted
     setAIGenerateHandler(handleAIGenerate);
     return () => setAIGenerateHandler(undefined);
-  }, [setAIGenerateHandler, handleAIGenerate]);
+  }, [ai, setAIGenerateHandler, handleAIGenerate]);
 
   const handleAIGenerateFromPrompt = useCallback((prompt: string) => {
     openOverlay(
@@ -142,10 +145,18 @@ export default function NotesPage() {
     const openCreateNote = typeof window !== 'undefined' ? sessionStorage.getItem('open-create-note') : null;
     
     if (aiPrompt) {
-      handleAIGenerateFromPrompt(aiPrompt);
+      if (ai) {
+        handleAIGenerateFromPrompt(aiPrompt);
+      } else {
+        console.warn('AI prompt ignored: AI provider not available');
+      }
     } else if (pendingPrompt) {
       sessionStorage.removeItem('pending-ai-prompt');
-      handleAIGenerateFromPrompt(pendingPrompt);
+      if (ai) {
+        handleAIGenerateFromPrompt(pendingPrompt);
+      } else {
+        console.warn('Pending AI prompt ignored: AI provider not available');
+      }
     }
 
     if (openCreateNote) {

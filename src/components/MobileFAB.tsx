@@ -6,7 +6,7 @@ import { useOverlay } from '@/components/ui/OverlayContext';
 import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 import { aiService } from '@/lib/ai-service';
-import { useAI } from '@/components/ui/AIContext';
+import { useOptionalAI } from '@/components/ui/AIContext';
 
 interface MobileFABProps {
   className?: string;
@@ -14,8 +14,10 @@ interface MobileFABProps {
 
 export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
   const { openOverlay, closeOverlay } = useOverlay();
-  // Direct AI usage (AI button separate from core create note)
-  const { isProviderReady, serviceStatus } = useAI();
+  // Optional AI usage (AI button independent from core create note)
+  const ai = useOptionalAI();
+  const isProviderReady = ai?.isProviderReady ?? false;
+  const serviceStatus: 'unknown' | 'healthy' | 'degraded' | 'unhealthy' = ai?.serviceStatus ?? 'unknown';
   const [isExpanded, setIsExpanded] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 

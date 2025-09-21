@@ -97,3 +97,8 @@ export const useAI = (): AIContextType => {
   }
   return context;
 };
+
+// Optional variant that gracefully returns undefined if provider not present.
+export const useOptionalAI = (): AIContextType | undefined => {
+  return useContext(AIContext);
+};
