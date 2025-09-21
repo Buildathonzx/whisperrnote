@@ -45,7 +45,8 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
     
     try {
       // Use real AI generation with Gemini
-      const result = await aiService.generateContent(prompt, type);
+      const safeType = type || 'custom';
+      const result = await aiService.generateContent(prompt, safeType);
       
       // Close the prompt modal and open create note form with content
       closeOverlay();

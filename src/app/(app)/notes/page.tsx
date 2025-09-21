@@ -97,7 +97,8 @@ export default function NotesPage() {
   const handleAIGenerate = useCallback(async (prompt: string, type: 'topic' | 'brainstorm' | 'research' | 'custom') => {
     setIsGenerating(true);
     try {
-      const result = await aiService.generateContent(prompt, type);
+      const safeType = type || 'custom';
+      const result = await aiService.generateContent(prompt, safeType);
       closeOverlay();
       openOverlay(
         <CreateNoteForm 

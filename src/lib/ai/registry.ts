@@ -130,7 +130,18 @@ export class AIService {
       type = typeOrRequest.type;
       options = { ...(typeOrRequest.options || {}), ...(genOptions || {}) };
     } else {
-      throw new Error('Invalid generation request arguments');
+      // Gracefully handle missing/invalid type argument
+      type = 'custom';
+      options = genOptions || {};
+    }
+
+    // Final validation & fallback
+    if (!type || typeof type !== 'string') {
+      type = 'custom';
+    }
+    const allowed = ['topic','brainstorm','research','custom'];
+    if (!allowed.includes(type)) {
+      type = 'custom';
     }
 
     const healthyProviders = await this.registry.getHealthyProviders();
