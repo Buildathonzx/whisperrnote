@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { UserCircleIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/components/ui/AuthContext';
-import { useAI } from '@/components/ui/AIContext';
+// AI context removed for lazy loading
 import { TopBarSearch } from '@/components/TopBarSearch';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -14,7 +14,8 @@ interface AppHeaderProps {
 
 export default function AppHeader({ className = '' }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
-  const { isGenerating, showAIGenerateModal, isProviderReady, serviceStatus } = useAI();
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiGenerating, setAiGenerating] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -26,8 +27,22 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
     logout();
   };
 
-  const handleAIGenerateClick = () => {
-    showAIGenerateModal();
+  const handleAIGenerateClick = async () => {
+    if (aiLoading) return;
+    setAiLoading(true);
+    try {
+      const { ensureAI } = await import('@/lib/ai/lazy');
+      const ai = await ensureAI();
+      await ai.openGenerateModal({
+        onGenerated: () => {
+          // Additional handling if needed
+        }
+      });
+    } catch (e) {
+      console.error('Failed to load AI', e);
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   if (!isAuthenticated) {
@@ -60,13 +75,13 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
           <div className="hidden md:block">
             <Button 
               onClick={handleAIGenerateClick}
-              disabled={isGenerating || !isProviderReady}
-              className={`gap-2 ${!isProviderReady ? 'opacity-60 cursor-not-allowed' : ''}`}
+              disabled={aiLoading || aiGenerating}
+              className={`gap-2 ${aiLoading ? 'opacity-60 cursor-wait' : ''}`}
               variant="default"
-              title={!isProviderReady ? `AI unavailable (${serviceStatus})` : 'Generate with AI'}
+              title={aiLoading ? 'Loading AI...' : 'Generate with AI'}
             >
-              <SparklesIcon className={`h-4 w-4 ${isGenerating ? 'animate-pulse' : ''}`} />
-              {isGenerating ? 'Generating...' : 'AI Generate'}
+              <SparklesIcon className={`h-4 w-4 ${aiLoading || aiGenerating ? 'animate-pulse' : ''}`} />
+              {aiLoading ? 'Loading...' : aiGenerating ? 'Generating...' : 'AI Generate'}
             </Button>
           </div>
 

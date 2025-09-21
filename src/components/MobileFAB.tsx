@@ -5,8 +5,8 @@ import { PlusIcon, SparklesIcon, DocumentPlusIcon } from '@heroicons/react/24/ou
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
-import { aiService } from '@/lib/ai-service';
-import { useOptionalAI } from '@/components/ui/AIContext';
+import { ensureAI } from '@/lib/ai/lazy';
+// AI context removed; using lazy ensureAI loader
 
 interface MobileFABProps {
   className?: string;
@@ -15,9 +15,7 @@ interface MobileFABProps {
 export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
   const { openOverlay, closeOverlay } = useOverlay();
   // Optional AI usage (AI button independent from core create note)
-  const ai = useOptionalAI();
-  const isProviderReady = ai?.isProviderReady ?? false;
-  const serviceStatus: 'unknown' | 'healthy' | 'degraded' | 'unhealthy' = ai?.serviceStatus ?? 'unknown';
+  const [aiLoading, setAiLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -32,49 +30,36 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
     );
   };
 
-  const handleAIGenerateClick = () => {
+  const handleAIGenerateClick = async () => {
     setIsExpanded(false);
-    openOverlay(
-      <AIGeneratePromptModal
-        onClose={closeOverlay}
-        onGenerate={handleAIGenerate}
-        isGenerating={isGenerating}
-      />
-    );
-  };
-
-  const handleAIGenerate = async (prompt: string, type: 'topic' | 'brainstorm' | 'research' | 'custom') => {
-    setIsGenerating(true);
-    
+    setAiLoading(true);
     try {
-      // Use real AI generation with Gemini
-      const safeType = type || 'custom';
-      const result = await aiService.generateContent(prompt, safeType);
-      
-      // Close the prompt modal and open create note form with content
-      closeOverlay();
-      
-      // Open the create note form with pre-filled content
-      openOverlay(
-        <CreateNoteForm 
-          initialContent={{
-            title: result.title,
-            content: result.content,
-            tags: result.tags
-          }}
-          onNoteCreated={(newNote) => {
-            console.log('AI-generated note created:', newNote);
-            closeOverlay();
-          }} 
-        />
-      );
-      
-    } catch (error) {
-      console.error('AI Generation Failed:', error instanceof Error ? error.message : 'Unable to generate content. Please try again.');
+      const ai = await ensureAI();
+      await ai.openGenerateModal({
+        onGenerated: (result) => {
+          openOverlay(
+            <CreateNoteForm 
+              initialContent={{
+                title: result.title,
+                content: result.content,
+                tags: result.tags
+              }}
+              onNoteCreated={(newNote) => {
+                console.log('AI-generated note created:', newNote);
+                closeOverlay();
+              }} 
+            />
+          );
+        }
+      });
+    } catch (e) {
+      console.error('Failed to load AI', e);
     } finally {
-      setIsGenerating(false);
+      setAiLoading(false);
     }
   };
+
+  // Legacy direct AI generation removed; handled within ensureAI modal callback
 
   return (
     <div className={`fixed bottom-20 right-6 z-40 md:hidden ${className}`}>
@@ -90,15 +75,15 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
       {/* Expanded Action Buttons */}
       {isExpanded && (
         <div className="flex flex-col gap-3 mb-4">
-          {/* AI Generate Button (AI independent of core CRUD) */}
+          {/* AI Generate Button (lazy loaded) */}
           <button
-            onClick={isProviderReady ? handleAIGenerateClick : undefined}
-            disabled={!isProviderReady}
-            className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg transform transition-all duration-200 ${isProviderReady ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:shadow-xl hover:-translate-y-1' : 'bg-gray-400/50 text-gray-200 cursor-not-allowed'}`}
-            title={isProviderReady ? 'AI Generate' : `AI unavailable (${serviceStatus})`}
+            onClick={aiLoading ? undefined : handleAIGenerateClick}
+            disabled={aiLoading}
+            className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg transform transition-all duration-200 bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:shadow-xl hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed`}
+            title={aiLoading ? 'Loading AI...' : 'AI Generate'}
           >
             <SparklesIcon className="h-5 w-5" />
-            <span className="font-medium text-sm">{isProviderReady ? 'AI Generate' : 'AI Unavailable'}</span>
+            <span className="font-medium text-sm">{aiLoading ? 'Loading AI...' : 'AI Generate'}</span>
           </button>
 
           {/* Create Note Button */}
