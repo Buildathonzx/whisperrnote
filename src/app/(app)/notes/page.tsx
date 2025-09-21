@@ -23,7 +23,7 @@ import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
 import { MobileFAB } from '@/components/MobileFAB';
 import { useSidebar } from '@/components/ui/SidebarContext';
 import { useDynamicSidebar } from '@/components/ui/DynamicSidebar';
-import { aiServiceInstance as aiService } from '@/lib/ai-service';
+import { aiService } from '@/lib/ai-service';
 import { NotesErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function NotesPage() {
