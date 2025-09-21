@@ -6,7 +6,7 @@ let _loaded: LazyAI | null = null;
 
 export interface LazyAI {
   service: typeof import('./index');
-  openGenerateModal: (options?: { initialPrompt?: string; onGenerated?: (result: any) => void }) => Promise<void>;
+  getOpenGenerateModal: (deps: { openOverlay: (c: any)=>void; closeOverlay: ()=>void }) => (options?: { initialPrompt?: string; onGenerated?: (result: any) => void }) => Promise<void>;
 }
 
 export function isAILoaded() {
@@ -18,21 +18,19 @@ export async function ensureAI(): Promise<LazyAI> {
   if (_loading) return _loading;
   _loading = (async () => {
     // Dynamically import needed modules only on demand
-    const [aiModule, modalModule, overlayModule, React] = await Promise.all([
+    const [aiModule, modalModule, React] = await Promise.all([
       import('./index'),
       import('@/components/AIGeneratePromptModal'),
-      import('@/components/ui/OverlayContext'),
       import('react')
     ]);
 
     const { aiService } = aiModule;
     const { AIGeneratePromptModal } = modalModule;
-    const { openOverlay, closeOverlay } = overlayModule.useOverlay();
 
-    const openGenerateModal = async (options?: { initialPrompt?: string; onGenerated?: (result: any) => void }) => {
+    const getOpenGenerateModal = (deps: { openOverlay: (c: any)=>void; closeOverlay: ()=>void }) => async (options?: { initialPrompt?: string; onGenerated?: (result: any) => void }) => {
+      const { openOverlay, closeOverlay } = deps;
       const initialPrompt = options?.initialPrompt;
       const onGenerated = options?.onGenerated;
-      // Mount modal directly; no provider dependency
       openOverlay(
         React.createElement(AIGeneratePromptModal, {
           onClose: closeOverlay,
@@ -52,7 +50,7 @@ export async function ensureAI(): Promise<LazyAI> {
       );
     };
 
-    _loaded = { service: aiModule, openGenerateModal } as LazyAI;
+    _loaded = { service: aiModule, getOpenGenerateModal } as LazyAI;
     return _loaded;
   })();
   try {

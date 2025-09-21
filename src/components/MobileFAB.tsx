@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { PlusIcon, SparklesIcon, DocumentPlusIcon } from '@heroicons/react/24/outline';
 import { useOverlay } from '@/components/ui/OverlayContext';
-import { AIGeneratePromptModal } from '@/components/AIGeneratePromptModal';
+// AIGeneratePromptModal will be dynamically imported via lazy AI loader
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 import { ensureAI } from '@/lib/ai/lazy';
 // AI context removed; using lazy ensureAI loader
@@ -35,7 +35,8 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
     setAiLoading(true);
     try {
       const ai = await ensureAI();
-      await ai.openGenerateModal({
+      const openGenerateModal = ai.getOpenGenerateModal({ openOverlay, closeOverlay });
+      await openGenerateModal({
         onGenerated: (result) => {
           openOverlay(
             <CreateNoteForm 

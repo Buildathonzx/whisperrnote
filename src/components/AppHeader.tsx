@@ -7,6 +7,7 @@ import { useAuth } from '@/components/ui/AuthContext';
 import { TopBarSearch } from '@/components/TopBarSearch';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useOverlay } from '@/components/ui/OverlayContext';
 
 interface AppHeaderProps {
   className?: string;
@@ -14,6 +15,7 @@ interface AppHeaderProps {
 
 export default function AppHeader({ className = '' }: AppHeaderProps) {
   const { user, isAuthenticated, logout } = useAuth();
+  const { openOverlay, closeOverlay } = useOverlay();
   const [aiLoading, setAiLoading] = useState(false);
   const [aiGenerating, setAiGenerating] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -33,7 +35,8 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
     try {
       const { ensureAI } = await import('@/lib/ai/lazy');
       const ai = await ensureAI();
-      await ai.openGenerateModal({
+      const openGenerateModal = ai.getOpenGenerateModal({ openOverlay, closeOverlay });
+      await openGenerateModal({
         onGenerated: () => {
           // Additional handling if needed
         }
