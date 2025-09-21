@@ -135,7 +135,14 @@ export class AIService {
 
     const healthyProviders = await this.registry.getHealthyProviders();
     if (healthyProviders.length === 0) {
-      throw new Error('No AI providers available');
+      // Graceful fallback: return stub content instead of throwing
+      return {
+        title: 'AI Unavailable',
+        content: `The AI service is currently unavailable. Your prompt was: "${prompt}". Please try again later or configure a provider.`,
+        tags: ['ai', 'unavailable'],
+        provider: 'none',
+        fallback: true
+      };
     }
 
     let lastError: Error | null = null;

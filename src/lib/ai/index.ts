@@ -48,9 +48,13 @@ export function initializeAIProviders() {
 }
 
 // Auto-initialize when this module is imported
-if (typeof window === 'undefined') {
-  // Server-side initialization
-  initializeAIProviders();
+// Prevent duplicate initialization (especially in hot reload / edge environments)
+const globalAny: any = globalThis as any;
+if (!globalAny.__AI_PROVIDERS_INITIALIZED__) {
+  if (typeof window === 'undefined') {
+    initializeAIProviders();
+  }
+  globalAny.__AI_PROVIDERS_INITIALIZED__ = true;
 }
 
 export { aiProviderRegistry, aiService };

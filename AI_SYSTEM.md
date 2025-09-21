@@ -46,9 +46,9 @@ The system is currently configured with:
 
 ### Basic Usage
 ```typescript
-import { aiServiceInstance } from '@/lib/ai-service';
+import { aiService } from '@/lib/ai-service';
 
-const result = await aiServiceInstance.generateContent(
+const result = await aiService.generateContent(
   "Write about sustainable energy",
   "research"
 );
