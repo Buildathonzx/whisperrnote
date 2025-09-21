@@ -30,7 +30,13 @@ export default function NotesPage() {
   const { notes: allNotes, totalNotes, isLoading: isInitialLoading, refetchNotes, hasMore, loadMore } = useNotes();
   const { showLoading, hideLoading } = useLoading();
   const { openOverlay, closeOverlay } = useOverlay();
-  const { isGenerating, setIsGenerating, setAIGenerateHandler } = useAI();
+  // AI is optional; consume context defensively
+  let aiContext: any = null;
+  try { aiContext = useAI(); } catch {}
+  const isAIFeatureEnabled = process.env.NEXT_PUBLIC_ENABLE_AI !== 'false';
+  const isGenerating = aiContext?.isGenerating || false;
+  const setIsGenerating = aiContext?.setIsGenerating || (()=>{});
+  const setAIGenerateHandler = aiContext?.setAIGenerateHandler || (()=>{});
   const { isCollapsed } = useSidebar();
   const { isOpen: isDynamicSidebarOpen } = useDynamicSidebar();
   const searchParams = useSearchParams();
@@ -117,13 +123,16 @@ export default function NotesPage() {
     }
   }, [setIsGenerating, aiService, closeOverlay, openOverlay, handleNoteCreated]);
 
-  // Register AI handler with context (only when handler identity changes)
+  // Register AI handler with context only if AI feature enabled and context available
   useEffect(() => {
-    setAIGenerateHandler(handleAIGenerate);
-    return () => setAIGenerateHandler(undefined);
-  }, [setAIGenerateHandler, handleAIGenerate]);
+    if (isAIFeatureEnabled && aiContext) {
+      setAIGenerateHandler(handleAIGenerate);
+      return () => setAIGenerateHandler(undefined);
+    }
+  }, [isAIFeatureEnabled, aiContext, setAIGenerateHandler, handleAIGenerate]);
 
   const handleAIGenerateFromPrompt = useCallback((prompt: string) => {
+    if (!isAIFeatureEnabled || !aiContext) return; // silently ignore if disabled/unavailable
     openOverlay(
       <AIGeneratePromptModal
         onClose={closeOverlay}
@@ -132,7 +141,7 @@ export default function NotesPage() {
         initialPrompt={prompt}
       />
     );
-  }, [openOverlay, closeOverlay, handleAIGenerate, isGenerating]);
+  }, [openOverlay, closeOverlay, handleAIGenerate, isGenerating, isAIFeatureEnabled, aiContext]);
 
   // Check for AI prompt from landing page and create-note trigger
   useEffect(() => {
@@ -140,18 +149,23 @@ export default function NotesPage() {
     const pendingPrompt = typeof window !== 'undefined' ? sessionStorage.getItem('pending-ai-prompt') : null;
     const openCreateNote = typeof window !== 'undefined' ? sessionStorage.getItem('open-create-note') : null;
     
-    if (aiPrompt) {
-      handleAIGenerateFromPrompt(aiPrompt);
+    if (isAIFeatureEnabled && aiContext) {
+      if (aiPrompt) {
+        handleAIGenerateFromPrompt(aiPrompt);
+      } else if (pendingPrompt) {
+        sessionStorage.removeItem('pending-ai-prompt');
+        handleAIGenerateFromPrompt(pendingPrompt);
+      }
     } else if (pendingPrompt) {
+      // Feature disabled: just clear the stored prompt
       sessionStorage.removeItem('pending-ai-prompt');
-      handleAIGenerateFromPrompt(pendingPrompt);
     }
 
     if (openCreateNote) {
       try { sessionStorage.removeItem('open-create-note'); } catch {}
       openOverlay(<CreateNoteForm onNoteCreated={handleNoteCreated} />);
     }
-  }, [searchParams, handleAIGenerateFromPrompt, openOverlay, handleNoteCreated]);
+  }, [searchParams, handleAIGenerateFromPrompt, openOverlay, handleNoteCreated, isAIFeatureEnabled, aiContext]);
 
   const handleNoteUpdated = async (updatedNote: Notes) => {
     if (!updatedNote.$id) {
