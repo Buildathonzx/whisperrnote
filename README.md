@@ -9,6 +9,12 @@
 
 ---
 
+encrypted_notes canister created with canister id: uxrrr-q7777-77774-qaaaq-cai
+
+internet-identity canister created with canister id: rdmx6-jaaaa-aaaaa-aaadq-cai
+
+---
+
 *"Transform your thoughts into intelligent insights with AI automation,*  
 *while blockchain technology guards your privacy like a digital fortress."*
 
