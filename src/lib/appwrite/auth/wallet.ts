@@ -55,9 +55,14 @@ export async function requestNonce(address: string): Promise<NonceResponse> {
   const res = await fetch('/api/auth/wallet/nonce', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ address }),
+    body: JSON.stringify({ address: address?.trim() }),
   });
-  if (!res.ok) throw new Error('Failed to request nonce');
+  if (!res.ok) {
+    let info: any = {};
+    try { info = await res.json(); } catch {}
+    const message = info?.error || info?.message || `Failed to request nonce (status ${res.status})`;
+    throw new Error(message);
+  }
   return res.json();
 }
 
