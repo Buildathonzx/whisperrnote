@@ -49,14 +49,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: e.message || 'User provisioning failed' }, { status: 500 });
     }
 
+    // simplewebauthn (v ≥ 10) deprecates plain string userID; must supply raw bytes (<=64)
+    // Use UTF-8 bytes of Appwrite user id (already random & URL-safe). Length is well under 64 bytes.
+    const userIdBytes = Buffer.from(appwriteUserId, 'utf-8');
+
     const options = await generateRegistrationOptions({
       rpName,
       rpID,
       userName: email,
       userDisplayName: displayName || email.split('@')[0],
-      // simplewebauthn allows string userID; if types require Buffer, runtime accepts string
-      // cast to any to satisfy TS without bringing extra types
-      userID: appwriteUserId as any,
+      userID: userIdBytes,
       attestationType: 'none',
       authenticatorSelection: {
         residentKey: 'preferred',
