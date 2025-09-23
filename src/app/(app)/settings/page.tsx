@@ -337,48 +337,71 @@ export default function SettingsPage() {
   );
 }
 
-const ProfileTab = ({ user, profilePicUrl, onEditProfile, onRemoveProfilePicture, isRemovingProfilePic }: any) => (
-  <div className="space-y-8">
-    <h1 className="text-foreground text-3xl font-bold">Profile</h1>
-    
-    <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-      <div className="flex flex-col items-center gap-4 flex-shrink-0">
-        <div
-          className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-40 border-4 border-accent shadow-lg"
-          style={{ backgroundImage: `url(${profilePicUrl || 'https://via.placeholder.com/150'})` }}
-        ></div>
-        <div className="flex flex-col items-center justify-center text-center">
-          <p className="text-foreground text-3xl font-bold">{user?.name}</p>
-          <p className="text-foreground/70 text-lg">{user?.email}</p>
-          <p className="text-foreground/60 text-base">Joined {new Date(user?.$createdAt).getFullYear()}</p>
-        </div>
-          <div className="flex items-center gap-3">
-            <Button onClick={onEditProfile}>Edit Profile</Button>
-            {user?.prefs?.profilePicId && (
-              <Button variant="secondary" onClick={onRemoveProfilePicture} disabled={isRemovingProfilePic}>
-                {isRemovingProfilePic ? 'Removing...' : 'Remove'}
-              </Button>
+const ProfileTab = ({ user, profilePicUrl, onEditProfile, onRemoveProfilePicture, isRemovingProfilePic }: any) => {
+  const getInitials = (name?: string, email?: string) => {
+    if (name) {
+      const parts = name.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    if (email) {
+      const local = email.split('@')[0];
+      return local.slice(0, 1).toUpperCase();
+    }
+    return '';
+  };
+
+  const initials = getInitials(user?.name, user?.email);
+
+  return (
+    <div className="space-y-8">
+      <h1 className="text-foreground text-3xl font-bold">Profile</h1>
+      
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+        <div className="flex flex-col items-center gap-4 flex-shrink-0">
+          <div className="rounded-full size-40 border-4 border-accent shadow-lg overflow-hidden flex items-center justify-center">
+            {profilePicUrl ? (
+              <div className="bg-center bg-no-repeat w-full h-full bg-cover" style={{ backgroundImage: `url(${profilePicUrl})` }} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-accent">
+                <span className="text-card-foreground text-2xl font-bold">{initials || (user?.name ? user.name[0].toUpperCase() : '?')}</span>
+              </div>
             )}
           </div>
 
-      </div>
-      
-      <div className="w-full mt-8 md:mt-0">
-        {/* Content for the right side of the profile tab can be added here in the future. */}
-        <div className="border-b border-border mb-6">
-            <div className="flex px-4 gap-8">
-                <div className="flex flex-col items-center justify-center border-b-2 border-accent text-accent pb-3 pt-4">
-                <p className="text-base font-bold">Activity</p>
-                </div>
+          <div className="flex flex-col items-center justify-center text-center">
+            <p className="text-foreground text-3xl font-bold">{user?.name}</p>
+            <p className="text-foreground/70 text-lg">{user?.email}</p>
+            <p className="text-foreground/60 text-base">Joined {new Date(user?.$createdAt).getFullYear()}</p>
+          </div>
+            <div className="flex items-center gap-3">
+              <Button onClick={onEditProfile}>Edit Profile</Button>
+              {user?.prefs?.profilePicId && (
+                <Button variant="secondary" onClick={onRemoveProfilePicture} disabled={isRemovingProfilePic}>
+                  {isRemovingProfilePic ? 'Removing...' : 'Remove'}
+                </Button>
+              )}
             </div>
+
         </div>
-        <div className="text-center py-12">
-            <p className="text-foreground/60">User activity feed will be displayed here.</p>
+        
+        <div className="w-full mt-8 md:mt-0">
+          {/* Content for the right side of the profile tab can be added here in the future. */}
+          <div className="border-b border-border mb-6">
+              <div className="flex px-4 gap-8">
+                  <div className="flex flex-col items-center justify-center border-b-2 border-accent text-accent pb-3 pt-4">
+                  <p className="text-base font-bold">Activity</p>
+                  </div>
+              </div>
+          </div>
+          <div className="text-center py-12">
+              <p className="text-foreground/60">User activity feed will be displayed here.</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const SettingsTab = ({
   user,
