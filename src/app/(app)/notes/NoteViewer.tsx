@@ -17,6 +17,7 @@ import Collaborators from './Collaborators';
 import AttachmentViewer from './AttachmentViewer';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { preProcessMarkdown } from '@/lib/markdown';
 import rehypeSanitize from 'rehype-sanitize';
 
 interface NoteViewerProps {
@@ -76,7 +77,7 @@ export default function NoteViewer({ note, onClose }: NoteViewerProps) {
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeSanitize]}
               >
-                {note.content}
+                {preProcessMarkdown(note.content)}
               </ReactMarkdown>
             ) : (
               <Typography variant="body1" color="text.secondary" fontStyle="italic">

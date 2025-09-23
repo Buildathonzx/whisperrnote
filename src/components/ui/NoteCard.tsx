@@ -206,7 +206,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
           </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col justify-between min-h-0">
-          <p className="text-xs sm:text-sm text-foreground/70 line-clamp-4 sm:line-clamp-5 md:line-clamp-6 overflow-hidden">
+          <p className="text-xs sm:text-sm text-foreground/70 line-clamp-4 sm:line-clamp-5 md:line-clamp-6 overflow-hidden whitespace-pre-wrap">
             {note.content}
           </p>
           {note.tags && note.tags.length > 0 && (
