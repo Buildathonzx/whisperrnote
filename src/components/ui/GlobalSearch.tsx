@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
+import { getUserProfilePicId } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './AuthContext';
 
@@ -102,16 +103,16 @@ export default function GlobalSearch({
 
   useEffect(() => {
     let mounted = true;
-    // Try synchronous cached read first
-    const cached = getCachedProfilePreview(user?.prefs?.profilePicId);
+    const profilePicId = getUserProfilePicId(user);
+    const cached = getCachedProfilePreview(profilePicId || undefined);
     if (cached !== undefined) {
       setSmallProfileUrl(cached ?? null);
     }
 
     const load = async () => {
-      if (!user?.prefs?.profilePicId) return;
+      if (!profilePicId) return;
       try {
-        const url = await fetchProfilePreview(user.prefs.profilePicId, 24, 24);
+        const url = await fetchProfilePreview(profilePicId, 24, 24);
         if (mounted) setSmallProfileUrl(url);
       } catch {
         if (mounted) setSmallProfileUrl(null);
@@ -119,7 +120,7 @@ export default function GlobalSearch({
     };
     load();
     return () => { mounted = false; };
-  }, [user?.prefs?.profilePicId]);
+  }, [getUserProfilePicId(user)]);
 
   useEffect(() => {
     if (query.length > 0) {
