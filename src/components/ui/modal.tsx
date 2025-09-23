@@ -17,9 +17,9 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
         className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className={`relative bg-white dark:bg-dark-900 rounded-2xl shadow-2xl border border-light-200 dark:border-dark-800 max-w-md w-full mx-4 max-h-[90vh] overflow-auto ${className}`}>
-        <div className="flex items-center justify-between p-6 border-b border-light-200 dark:border-dark-800">
-          <h2 className="text-xl font-bold text-light-900 dark:text-dark-50">
+      <div className={`relative bg-card rounded-2xl shadow-2xl border border-border max-w-md w-full mx-4 max-h-[90vh] overflow-auto ${className}`}>
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <h2 className="text-xl font-bold text-foreground">
             {title}
           </h2>
           <button
