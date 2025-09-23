@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useToast } from './Toast';
 import { Notes } from '@/types/appwrite';
 import { PencilIcon, TrashIcon, UserIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
@@ -11,6 +10,7 @@ import { getNoteWithSharing } from '@/lib/appwrite';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
+import { useToast } from './Toast';
 
 interface NoteDetailSidebarProps {
   note: Notes;
@@ -24,12 +24,6 @@ interface EnhancedNote extends Notes {
   sharedBy?: { name: string; email: string } | null;
 }
 
-interface NoteDetailSidebarProps {
-  note: Notes;
-  onUpdate: (updatedNote: Notes) => void;
-  onDelete: (noteId: string) => void;
-}
-
 export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSidebarProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -37,6 +31,8 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   const [content, setContent] = useState(note.content);
   const [tags, setTags] = useState(note.tags?.join(', ') || '');
   const [enhancedNote, setEnhancedNote] = useState<EnhancedNote | null>(null);
+
+  const { showSuccess, showError } = useToast();
 
   // Load enhanced note with sharing information
   useEffect(() => {
@@ -160,12 +156,14 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
                     onClick={async () => {
                       try {
                         await navigator.clipboard.writeText(note.content || '');
-                        // show success toast
+                        showSuccess('Copied', 'Markdown copied to clipboard');
                       } catch (err) {
-                        // show error toast
+                        console.error('Failed to copy note content', err);
+                        showError('Copy failed', 'Could not copy content to clipboard');
                       }
                     }}
                   >
+                    <ClipboardDocumentIcon className="h-4 w-4 mr-2" />
                     Copy
                   </Button>
                 </div>
@@ -209,7 +207,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
           <div className="text-sm text-muted">
             Updated: {formatNoteUpdatedDate(note)}
           </div>
-          
+
           {/* Sharing Information */}
           {enhancedNote?.isSharedWithUser && enhancedNote?.sharedBy && (
               <div className="pt-2 border-t border-border">
