@@ -1384,6 +1384,14 @@ export async function getProfilePicture(fileId: string) {
   return storage.getFileView(APPWRITE_BUCKET_PROFILE_PICTURES, fileId);
 }
 
+export async function getFilePreview(bucketId: string, fileId: string, width: number = 64, height: number = 64) {
+  return storage.getFilePreview(bucketId, fileId, width, height);
+}
+
+export async function getProfilePicturePreview(fileId: string, width: number = 64, height: number = 64) {
+  return getFilePreview(APPWRITE_BUCKET_PROFILE_PICTURES, fileId, width, height);
+}
+
 export async function deleteProfilePicture(fileId: string) {
   return deleteFile(APPWRITE_BUCKET_PROFILE_PICTURES, fileId);
 }

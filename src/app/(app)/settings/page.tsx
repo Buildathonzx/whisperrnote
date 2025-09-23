@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail } from "@/lib/appwrite";
+import { account, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, getUser, deleteProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail, updateUser } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useAuth } from "@/components/ui/AuthContext";
@@ -225,8 +225,16 @@ export default function SettingsPage() {
         onProfileUpdate={async (updatedUser: any, newProfilePic: boolean) => {
           setUser(updatedUser);
           if (newProfilePic) {
-            const url = await getProfilePicture(updatedUser.prefs.profilePicId);
-            setProfilePicUrl(url as string);
+            if (updatedUser?.prefs?.profilePicId) {
+              try {
+                const url = await getProfilePicture(updatedUser.prefs.profilePicId);
+                setProfilePicUrl(`${url as string}?t=${Date.now()}`);
+              } catch (e) {
+                setProfilePicUrl(null);
+              }
+            } else {
+              setProfilePicUrl(null);
+            }
           }
         }}
       />
