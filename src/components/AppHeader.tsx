@@ -8,6 +8,7 @@ import { TopBarSearch } from '@/components/TopBarSearch';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useOverlay } from '@/components/ui/OverlayContext';
+import { getProfilePicturePreview } from '@/lib/appwrite';
 
 interface AppHeaderProps {
   className?: string;
@@ -19,10 +20,30 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiGenerating, setAiGenerating] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
 
   useEffect(() => {
     // Component initialization if needed
   }, [isAuthenticated, user]);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchPreview = async () => {
+      try {
+        if (user?.prefs?.profilePicId) {
+          const url = await getProfilePicturePreview(user.prefs.profilePicId, 64, 64);
+          if (mounted) setSmallProfileUrl(url as unknown as string);
+        } else {
+          if (mounted) setSmallProfileUrl(null);
+        }
+      } catch (err) {
+        console.warn('Failed to load profile preview', err);
+        if (mounted) setSmallProfileUrl(null);
+      }
+    };
+    fetchPreview();
+    return () => { mounted = false; };
+  }, [user?.prefs?.profilePicId]);
 
   const handleLogout = () => {
     setIsAccountMenuOpen(false);
@@ -88,16 +109,27 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
             </Button>
           </div>
 
-          {/* Account Menu Button - Mobile Only */}
-          <button
-            onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-            className="md:hidden flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card hover:bg-card/80 transition-all duration-200"
-          >
-            <UserCircleIcon className="h-5 w-5 text-foreground" />
-            <span className="hidden sm:inline text-sm font-medium text-foreground">
-              {user?.name || user?.email || 'Account'}
-            </span>
-          </button>
+           {/* Account Menu Button - Mobile Only */}
+           <button
+             onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+             className="md:hidden flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card hover:bg-card/80 transition-all duration-200"
+           >
+             {/* Render profile picture if available, otherwise fallback to initials */}
+             {smallProfileUrl ? (
+               <img
+                 src={smallProfileUrl}
+                 alt={user?.name || user?.email || 'Account'}
+                 className="h-5 w-5 rounded-full object-cover"
+               />
+             ) : (
+               <div className="h-5 w-5 rounded-full bg-accent/80 flex items-center justify-center text-white text-xs font-medium">
+                 {user?.name ? user.name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U'}
+               </div>
+             )}
+             <span className="hidden sm:inline text-sm font-medium text-foreground">
+               {user?.name || user?.email || 'Account'}
+             </span>
+           </button>
 
           {/* Account Dropdown Menu */}
           {isAccountMenuOpen && (

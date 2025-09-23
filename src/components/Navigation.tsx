@@ -19,6 +19,8 @@ import { useAuth } from '@/components/ui/AuthContext';
 import { useSidebar } from '@/components/ui/SidebarContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
+import { useState, useEffect } from 'react';
+import { getProfilePicturePreview } from '@/lib/appwrite';
 
 interface NavigationProps {
   className?: string;
@@ -91,6 +93,27 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
   const pathname = usePathname();
   const { openOverlay } = useOverlay();
   const { user, isAuthenticated, logout } = useAuth();
+
+  const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchPreview = async () => {
+      try {
+        if (user?.prefs?.profilePicId) {
+          const url = await getProfilePicturePreview(user.prefs.profilePicId, 64, 64);
+          if (mounted) setSmallProfileUrl(url as unknown as string);
+        } else {
+          if (mounted) setSmallProfileUrl(null);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch profile preview', err);
+        if (mounted) setSmallProfileUrl(null);
+      }
+    };
+    fetchPreview();
+    return () => { mounted = false; };
+  }, [user?.prefs?.profilePicId]);
 
   const handleCreateClick = () => {
     openOverlay(
@@ -176,9 +199,13 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
         {/* User Info */}
         {isAuthenticated && user && (
           <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-            <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center text-white font-bold text-sm">
-              {user.name ? user.name[0].toUpperCase() : user.email ? user.email[0].toUpperCase() : 'U'}
-            </div>
+            {smallProfileUrl ? (
+              <img src={smallProfileUrl} alt={user.name || user.email || 'User'} className="w-8 h-8 rounded-xl object-cover" />
+            ) : (
+              <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent/80 rounded-xl flex items-center justify-center text-white font-bold text-sm">
+                {user.name ? user.name[0].toUpperCase() : user.email ? user.email[0].toUpperCase() : 'U'}
+              </div>
+            )}
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-light-fg dark:text-dark-fg truncate text-sm">

@@ -1205,21 +1205,28 @@ export async function getSharedUsers(noteId: string) {
       [Query.equal('noteId', noteId)]
     );
 
-    // Get user details for each collaborator
+    // Get user details for each collaborator and include profile picture id when available
     const sharedUsers = await Promise.all(
       collaborations.documents.map(async (collab: any) => {
         try {
-          const user = await databases.getDocument(
+          const user: any = await databases.getDocument(
             APPWRITE_DATABASE_ID,
             APPWRITE_COLLECTION_ID_USERS,
             collab.userId
           );
+
+          // Prefer the prefs.profilePicId field but fall back to a legacy avatar field if present
+          const profilePicId = (user?.prefs && (user as any).prefs.profilePicId)
+            ? (user as any).prefs.profilePicId
+            : (user?.avatar || null);
+
           return {
             id: collab.userId,
             name: user.name,
             email: user.email,
             permission: collab.permission,
-            collaborationId: collab.$id
+            collaborationId: collab.$id,
+            profilePicId
           };
         } catch (error) {
           console.error('Error fetching user details:', error);
