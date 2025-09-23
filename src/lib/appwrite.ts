@@ -24,9 +24,11 @@ import {
 // Named re-exports for user profile helpers
 export { createUser, getUser, updateUser, deleteUser, listUsers, searchUsers };
 
+const APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT ?? 'https://fra.cloud.appwrite.io/v1';
+const APPWRITE_PROJECT_ID = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID ?? '67fe9627001d97e37ef3';
 const client = new Client()
-  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
+  .setEndpoint(APPWRITE_ENDPOINT)
+  .setProject(APPWRITE_PROJECT_ID);
 
 const account = new Account(client);
 const databases = new Databases(client);
@@ -34,7 +36,7 @@ const storage = new Storage(client);
 const functions = new Functions(client);
 
 // export app public uri
-export const APP_URI = process.env.NEXT_PUBLIC_APP_URI!;
+ export const APP_URI = process.env.NEXT_PUBLIC_APP_URI ?? 'http://localhost:3000';
 
 // Appwrite config IDs from env
 export const APPWRITE_DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
@@ -57,6 +59,11 @@ export const APPWRITE_BUCKET_BACKUPS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_B
 export const APPWRITE_BUCKET_TEMP_UPLOADS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_TEMP_UPLOADS!;
 
 export { client, account, databases, storage, functions, ID, Query, Permission, Role };
+
+function cleanDocumentData<T>(data: Partial<T>): Record<string, any> {
+  const { $id, $sequence, $collectionId, $databaseId, $createdAt, $updatedAt, $permissions, ...cleanData } = data as any;
+  return cleanData;
+}
 
 // --- AUTHENTICATION ---
 
