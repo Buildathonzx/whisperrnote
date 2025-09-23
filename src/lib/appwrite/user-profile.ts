@@ -50,8 +50,8 @@ export async function searchUsers(query: string, limit: number = 5) {
     } else {
       // Name search using Query.search for case-insensitive partial matching
       queries.push(Query.search('name', query));
-      // Only include users who have explicitly made their profile public
-      queries.push(Query.equal('prefs.publicProfile', true));
+      // Only include users who have explicitly made their profile public (top-level field)
+      queries.push(Query.equal('publicProfile', true));
     }
 
     const res = await databases.listDocuments(
@@ -65,7 +65,8 @@ export async function searchUsers(query: string, limit: number = 5) {
       name: doc.name,
       // Only include email if user searched by email (explicit) to reduce leakage
       email: isEmail ? doc.email : undefined,
-      avatar: (doc.prefs && (doc.prefs as any).profilePicId) ? (doc.prefs as any).profilePicId : (doc.avatar || null)
+      // Prefer top-level profilePicId, then legacy prefs.profilePicId, then avatar
+      avatar: doc.profilePicId || (doc.prefs && (doc.prefs as any).profilePicId) || doc.avatar || null
     }));
   } catch (error) {
     console.error('searchUsers error:', error);

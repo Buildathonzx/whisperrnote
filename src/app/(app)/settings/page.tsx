@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, deleteProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail } from "@/lib/appwrite";
+import { account, updateUser, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, deleteProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useAuth } from "@/components/ui/AuthContext";
@@ -237,23 +237,30 @@ export default function SettingsPage() {
   // Remove profile picture handler: delete stored file and clear prefs
   const handleRemoveProfilePicture = async () => {
     if (!user) return;
-    if (!user.prefs?.profilePicId) return;
+    if (!user.prefs?.profilePicId && !user.profilePicId) return;
     setIsRemovingProfilePic(true);
     try {
       setError('');
       setSuccess('');
-      const oldId = user.prefs.profilePicId;
+      const oldId = user.prefs?.profilePicId || user.profilePicId;
       // Optimistically clear UI
       setProfilePicUrl(null);
       // Attempt to delete file then clear prefs
       try {
-        await deleteProfilePicture(oldId);
+        if (oldId) await deleteProfilePicture(oldId);
       } catch (delErr) {
         console.warn('Failed to delete profile picture from storage', delErr);
       }
       try {
-        const updated = await account.updatePrefs({ ...user.prefs, profilePicId: null });
+        const updated = await account.updatePrefs({ ...(user.prefs || {}), profilePicId: null });
         setUser(updated);
+        // Best-effort mirror to users collection top-level field
+        try {
+          const uid = (updated && (updated.$id || (updated as any).id)) || (user && (user.$id || (user as any).id));
+          if (uid) await updateUser(uid, { profilePicId: null });
+        } catch (mirrorErr) {
+          console.warn('Failed to mirror profilePicId to users collection', mirrorErr);
+        }
         setSuccess('Profile picture removed');
       } catch (prefErr) {
         setError('Failed to update user preferences');
