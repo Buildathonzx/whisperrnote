@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { shareNoteWithUser, shareNoteWithUserId, getSharedUsers, removeNoteSharing, searchUsers, updateCollaborator } from '@/lib/appwrite';
+import { account, shareNoteWithUser, shareNoteWithUserId, getSharedUsers, removeNoteSharing, searchUsers, updateCollaborator } from '@/lib/appwrite';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 
 interface ShareNoteModalProps {
@@ -40,6 +40,7 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
   const [results, setResults] = useState<FoundUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedUser, setSelectedUser] = useState<FoundUser | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [updatingCollab, setUpdatingCollab] = useState<string | null>(null);
@@ -91,6 +92,21 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
   useEffect(() => {
     if (isOpen) {
       loadSharedUsers();
+      (async () => {
+        try {
+          const u: any = await account.get();
+          setCurrentUserId(u?.$id ?? null);
+        } catch {
+          setCurrentUserId(null);
+        }
+      })();
+    } else {
+      // reset transient state when modal closes
+      setResults([]);
+      setSelectedUser(null);
+      setQuery('');
+      setErrorMsg(null);
+      setSuccessMsg(null);
     }
   }, [isOpen, loadSharedUsers]);
 
@@ -101,14 +117,20 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     }
     setIsSearching(true);
     try {
-      const res = await searchUsers(query);
-      setResults(res as FoundUser[]);
+      const res = await searchUsers(query) as FoundUser[];
+      const filtered = (res || []).filter(u => {
+        if (!u || !u.id) return false;
+        if (currentUserId && u.id === currentUserId) return false;
+        if (sharedUsers.some(s => s.id === u.id)) return false;
+        return true;
+      });
+      setResults(filtered as FoundUser[]);
     } catch {
       setResults([]);
     } finally {
       setIsSearching(false);
     }
-  }, [query, selectedUser]);
+  }, [query, selectedUser, currentUserId, sharedUsers]);
 
   useEffect(() => {
     const t = setTimeout(() => {

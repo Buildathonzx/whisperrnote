@@ -267,6 +267,19 @@ export default function SettingsPage() {
     }
   };
 
+  const handlePublicProfileToggle = async (value: boolean) => {
+    if (!user) return;
+    setError('');
+    setSuccess('');
+    try {
+      const updated = await account.updatePrefs({ ...(user.prefs || {}), publicProfile: value });
+      setUser(updated);
+      setSuccess(value ? 'Profile is now public.' : 'Profile is now private.');
+    } catch (err: any) {
+      setError((err as Error)?.message || 'Failed to update profile visibility');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -308,24 +321,25 @@ export default function SettingsPage() {
           <div className="p-8">
             {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} onEditProfile={handleEditProfile} onRemoveProfilePicture={handleRemoveProfilePicture} isRemovingProfilePic={isRemovingProfilePic} />}
              {activeTab === 'settings' && (
-               <SettingsTab
-                 user={user}
-                 settings={settings}
-                 isVerified={isVerified}
-                 error={error}
-                 success={success}
-                 onUpdate={handleUpdate}
-                 onSettingChange={handleSettingChange}
-                 router={router}
-                 authMethods={authMethods}
-                 onRemoveAuthMethod={handleRemoveAuthMethod}
-                 showPasswordReset={showPasswordReset}
-                 setShowPasswordReset={setShowPasswordReset}
-                 resetEmailSent={resetEmailSent}
-                 handlePasswordReset={handlePasswordReset}
-                 handleCancelPasswordReset={handleCancelPasswordReset}
-                 onConnectWallet={handleConnectWallet}
-               />
+                <SettingsTab
+                  user={user}
+                  settings={settings}
+                  isVerified={isVerified}
+                  error={error}
+                  success={success}
+                  onUpdate={handleUpdate}
+                  onSettingChange={handleSettingChange}
+                  router={router}
+                  authMethods={authMethods}
+                  onRemoveAuthMethod={handleRemoveAuthMethod}
+                  showPasswordReset={showPasswordReset}
+                  setShowPasswordReset={setShowPasswordReset}
+                  resetEmailSent={resetEmailSent}
+                  handlePasswordReset={handlePasswordReset}
+                  handleCancelPasswordReset={handleCancelPasswordReset}
+                  onConnectWallet={handleConnectWallet}
+                  onPublicProfileToggle={handlePublicProfileToggle}
+                />
              )}
             {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} currentAIMode={currentAIMode} userTier={userTier} onAIModeChange={handleAIModeChange} />}
             {activeTab === 'subscription' && <SubscriptionTab />}
@@ -419,7 +433,8 @@ const SettingsTab = ({
   resetEmailSent,
   handlePasswordReset,
   handleCancelPasswordReset,
-  onConnectWallet
+  onConnectWallet,
+  onPublicProfileToggle
 }: any) => {
   const [showDelete, setShowDelete] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -730,6 +745,22 @@ const SettingsTab = ({
                 type="checkbox"
                 checked={settings.settings.notifications}
                 onChange={(e) => onSettingChange('notifications', e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-card-foreground after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
+            <div>
+              <label className="text-sm font-medium text-foreground">Make Profile Public</label>
+              <p className="text-xs text-foreground/70 mt-1">Allow other users to find your profile and share notes with you</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!!user?.prefs?.publicProfile}
+                onChange={(e) => onPublicProfileToggle && onPublicProfileToggle(e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-card-foreground after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
