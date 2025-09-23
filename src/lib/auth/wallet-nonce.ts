@@ -25,6 +25,26 @@ export interface NoncePayload {
 
 const VERSION = '1';
 
+// Retrieve server nonce secret with dev fallback (non-production only)
+function getServerNonceSecret(override?: string): string {
+  let secret = override ?? process.env.SERVER_NONCE_SECRET;
+  if (!secret || !secret.trim()) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SERVER_NONCE_SECRET not set');
+    }
+    const g: any = globalThis as any;
+    if (!g.__DEV_SERVER_NONCE_SECRET__) {
+      // Insecure dev-only fallback. Do NOT use in production.
+      g.__DEV_SERVER_NONCE_SECRET__ = 'dev-insecure-server-nonce-secret';
+      if (typeof console !== 'undefined') {
+        console.warn('[wallet-auth] Using insecure development nonce secret fallback. Set SERVER_NONCE_SECRET in .env for production.');
+      }
+    }
+    secret = g.__DEV_SERVER_NONCE_SECRET__;
+  }
+  return secret;
+}
+
 export function createNonceToken(params: {
   addr: string;
   chainId: number;
@@ -46,8 +66,7 @@ export function createNonceToken(params: {
     uri: params.uri,
   };
 
-  const secret = params.serverSecret ?? process.env.SERVER_NONCE_SECRET ?? '';
-  if (!secret) throw new Error('SERVER_NONCE_SECRET not set');
+  const secret = getServerNonceSecret(params.serverSecret);
 
   const header = { alg: 'HS256', typ: 'JWT', kid: 'nonce-hmac-v1' };
   const encHeader = base64url(JSON.stringify(header));
@@ -60,8 +79,7 @@ export function createNonceToken(params: {
 
 export function verifyNonceToken(token: string, opts?: { serverSecret?: string }): NoncePayload | null {
   try {
-    const secret = opts?.serverSecret ?? process.env.SERVER_NONCE_SECRET ?? '';
-    if (!secret) throw new Error('SERVER_NONCE_SECRET not set');
+    const secret = getServerNonceSecret(opts?.serverSecret);
 
     const parts = token.split('.');
     if (parts.length !== 3) return null;
