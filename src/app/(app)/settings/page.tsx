@@ -37,7 +37,6 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState("");
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
-  const [notes, setNotes] = useState<import('@/types/appwrite').Notes[]>([]);
   const [currentAIMode, setCurrentAIMode] = useState<AIMode>(AIMode.STANDARD);
   const [authMethods, setAuthMethods] = useState<AuthMethods>({
     mfaFactors: null,
@@ -65,9 +64,6 @@ export default function SettingsPage() {
           const url = await getProfilePicture(u.prefs.profilePicId);
           setProfilePicUrl(url as string);
         }
-
-        const notesResponse = await listNotes();
-        setNotes(notesResponse.documents);
 
         try {
           const s = await getSettings(u.$id);
@@ -274,7 +270,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="p-8">
-            {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} notes={notes} onEditProfile={handleEditProfile} />}
+            {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} onEditProfile={handleEditProfile} />}
              {activeTab === 'settings' && (
                <SettingsTab
                  user={user}
@@ -304,7 +300,7 @@ export default function SettingsPage() {
   );
 }
 
-const ProfileTab = ({ user, profilePicUrl, notes, onEditProfile }: any) => (
+const ProfileTab = ({ user, profilePicUrl, onEditProfile }: any) => (
   <div className="space-y-8">
     <h1 className="text-foreground text-3xl font-bold">Profile</h1>
     
@@ -323,27 +319,16 @@ const ProfileTab = ({ user, profilePicUrl, notes, onEditProfile }: any) => (
       </div>
       
       <div className="w-full mt-8 md:mt-0">
+        {/* Content for the right side of the profile tab can be added here in the future. */}
         <div className="border-b border-border mb-6">
-          <div className="flex px-4 gap-8">
-            <div className="flex flex-col items-center justify-center border-b-2 border-accent text-accent pb-3 pt-4">
-              <p className="text-base font-bold">Notes</p>
-            </div>
-          </div>
-        </div>
-        <div className="divide-y divide-border">
-          {notes.map((note: any) => (
-            <div key={note.$id} className="p-6 bg-card/50 rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300 my-4 border border-border">
-              <div className="flex items-start justify-between gap-6">
-                <div className="flex flex-col gap-3">
-                  <p className="text-foreground/60 text-sm">Published</p>
-                  <p className="text-foreground text-xl font-bold">{note.title}</p>
-                  <p className="text-foreground/70 text-base">{note.content.substring(0, 100)}...</p>
-                  <Button variant="secondary">Read Note</Button>
+            <div className="flex px-4 gap-8">
+                <div className="flex flex-col items-center justify-center border-b-2 border-accent text-accent pb-3 pt-4">
+                <p className="text-base font-bold">Activity</p>
                 </div>
-                <div className="w-full bg-center bg-no-repeat aspect-[4/3] bg-cover rounded-lg flex-1 shadow-lg border border-border" style={{backgroundImage: `url(${note.coverImage || 'https://via.placeholder.com/300x200'})`}}></div>
-              </div>
             </div>
-          ))}
+        </div>
+        <div className="text-center py-12">
+            <p className="text-foreground/60">User activity feed will be displayed here.</p>
         </div>
       </div>
     </div>
@@ -908,8 +893,8 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
         updatedUser = await account.updatePrefs(newPrefs);
       }
       if (name !== user.name) {
-        // TypeScript error suggests updateName takes string directly
-        updatedUser = await (account as any).updateName({ name });
+        // Correctly call updateName with the new name string
+        updatedUser = await account.updateName(name);
       }
       onProfileUpdate(updatedUser, !!profilePic);
       onClose();

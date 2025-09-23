@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { getCurrentUser, logout as authLogout } from '@/lib/auth';
 import { InitialLoadingScreen } from './InitialLoadingScreen';
 import { EmailVerificationReminder } from './EmailVerificationReminder';
+import { getUser, createUser } from '@/lib/appwrite/user-profile';
 // Removed AuthErrorBoundary to avoid leaking auth errors into UI
 // import { AuthErrorBoundary } from './ErrorBoundary';
 
@@ -47,6 +48,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refreshUser = async (isRetry = false) => {
     try {
       const currentUser = await getCurrentUser();
+      if (currentUser) {
+        try {
+          await getUser(currentUser.$id);
+        } catch (e) {
+          // Assuming a 'not found' error, create the user profile
+          try {
+            await createUser({
+              id: currentUser.$id,
+              email: currentUser.email,
+              name: currentUser.name,
+            });
+          } catch (createError) {
+            console.error('Failed to create user profile:', createError);
+          }
+        }
+      }
       setUser(currentUser);
       // Reset retry count on success
       if (isRetry) {
