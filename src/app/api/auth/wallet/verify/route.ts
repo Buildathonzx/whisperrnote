@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Client, Users, ID } from 'node-appwrite';
 import { getUserIdByWallet, setWalletMap } from '@/lib/appwrite/wallet-map';
 import { verifyNonceToken } from '@/lib/auth/wallet-nonce';
-import { getAddress } from 'viem';
+
 
 // Simple in-memory rate limiter (in production, use Redis or similar)
 const rateLimit = new Map<string, { count: number; resetTime: number }>();
@@ -54,13 +54,14 @@ function buildSiweMessage(params: {
   statement: string;
   uri: string;
   version: string;
-  chainId: number;
   nonce: string;
   issuedAt: string;
   expirationTime: string;
+  chainId?: number | null;
 }) {
-  const { domain, address, statement, uri, version, chainId, nonce, issuedAt, expirationTime } = params;
-  return `${domain} wants you to sign in with your Ethereum account:\n${address}\n\n${statement}\n\nURI: ${uri}\nVersion: ${version}\nChain ID: ${chainId}\nNonce: ${nonce}\nIssued At: ${issuedAt}\nExpiration Time: ${expirationTime}`;
+  const { domain, address, statement, uri, version, nonce, issuedAt, expirationTime, chainId } = params;
+  const chainLine = chainId != null ? `\nChain: ${chainId}` : '';
+  return `${domain} wants you to prove control of your wallet:\n${address}\n\n${statement}\n\nDomain: ${uri}\nVersion: ${version}${chainLine}\nNonce: ${nonce}\nIssued At: ${issuedAt}\nExpiration Time: ${expirationTime}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -172,22 +173,19 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Enforce domain/uri/version/chainId from server config (SIWE_*)
+    // Enforce only domain + uri (chain/version flexible for agnostic mode)
     const expectedDomain = String(process.env.SIWE_DOMAIN || 'localhost');
     const expectedUri = String(process.env.SIWE_URI || 'http://localhost:3000');
-    const expectedVersion = String(process.env.SIWE_VERSION || '1');
-    const expectedChainId = Number(process.env.SIWE_CHAIN_ID || 1);
-
-    if (payload.domain !== expectedDomain || payload.uri !== expectedUri || payload.version !== expectedVersion || payload.chainId !== expectedChainId) {
+    if (payload.domain !== expectedDomain || payload.uri !== expectedUri) {
       logWalletEvent('warn', 'verify_request_context_mismatch', {
         clientIP,
         addressPreview,
         hasEmail,
-        expected: { domain: expectedDomain, uri: expectedUri, version: expectedVersion, chainId: expectedChainId },
-        received: { domain: payload.domain, uri: payload.uri, version: payload.version, chainId: payload.chainId }
+        expected: { domain: expectedDomain, uri: expectedUri },
+        received: { domain: payload.domain, uri: payload.uri }
       });
       return NextResponse.json({
-        error: 'Authentication context mismatch. Please refresh the page and try again.',
+        error: 'Authentication context mismatch. Please refresh and try again.',
         code: 'CONTEXT_MISMATCH'
       }, { status: 400 });
     }
@@ -212,7 +210,7 @@ export async function POST(request: NextRequest) {
     const expirationTime = new Date(payload.exp * 1000).toISOString();
     const message = buildSiweMessage({
       domain: payload.domain,
-      address: getAddress(address),
+      address: address,
       statement,
       uri: payload.uri,
       version: payload.version,

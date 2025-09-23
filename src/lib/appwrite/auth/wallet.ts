@@ -67,11 +67,10 @@ export async function requestNonce(address: string): Promise<NonceResponse> {
 }
 
 export function buildSiweMessage(fields: NonceResponse): string {
-  // Use standard SIWE message; nonce must be the server-provided nonce
   const issuedAt = fields.issuedAt;
   const expirationTime = fields.expirationTime;
-  const nonceForMessage = fields.nonce || '';
-  return `${fields.domain} wants you to sign in with your Ethereum account:\n${fields.address}\n\n${fields.statement}\n\nURI: ${fields.uri}\nVersion: ${fields.version}\nChain ID: ${fields.chainId}\nNonce: ${nonceForMessage}\nIssued At: ${issuedAt}\nExpiration Time: ${expirationTime}`;
+  const nonceForMessage = fields.nonce || ''; // legacy support; server still includes nonce for now
+  return `${fields.domain} wants you to prove control of your wallet:\n${fields.address}\n\n${fields.statement}\n\nDomain: ${fields.uri}\nVersion: ${fields.version}\nNonce: ${nonceForMessage}\nIssued At: ${issuedAt}\nExpiration Time: ${expirationTime}`;
 }
 
 export async function signMessage(message: string, expectedAddress?: string): Promise<string> {
