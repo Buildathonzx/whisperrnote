@@ -177,18 +177,25 @@ export default function NotesPage() {
 
       {/* Tags Filter */}
       {tags.length > 0 && (
-        <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
+        <div className="mb-6 flex gap-3 overflow-x-auto pb-2 items-center">
           {tags.map((tag, index) => (
             <Button 
               key={index} 
-              variant="secondary" 
+              variant={searchQuery === tag ? 'default' : 'secondary'} 
               size="sm" 
               className="whitespace-nowrap"
-              onClick={() => setSearchQuery(tag)}
+              aria-pressed={searchQuery === tag}
+              onClick={() => searchQuery === tag ? clearSearch() : setSearchQuery(tag)}
             >
               {tag}
             </Button>
           ))}
+
+          {hasSearchResults && (
+            <Button variant="ghost" size="sm" onClick={clearSearch} className="ml-2">
+              Clear
+            </Button>
+          )}
         </div>
       )}
 

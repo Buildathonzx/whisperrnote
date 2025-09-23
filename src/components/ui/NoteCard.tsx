@@ -16,6 +16,7 @@ import {
   LockClosedIcon,
   ClipboardDocumentIcon,
   UserGroupIcon,
+  ArrowTopRightOnSquareIcon,
   EllipsisVerticalIcon
 } from '@heroicons/react/24/outline';
 
@@ -108,6 +109,16 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
   const noteIsPublic = isNotePublic(note);
 
   const contextMenuItems = [
+    {
+      label: 'Open In New Tab',
+      icon: <ArrowTopRightOnSquareIcon className="w-4 h-4" />,
+      onClick: () => {
+        if (note.$id) {
+          // Open the note page in a new tab
+          window.open(`/notes/${note.$id}`, '_blank');
+        }
+      }
+    },
     {
       label: 'View Details',
       icon: <EyeIcon className="w-4 h-4" />,
