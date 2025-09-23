@@ -9,7 +9,7 @@ import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
-import { getWalletAvailability, authenticateWithWallet } from "@/lib/appwrite/auth/wallet";
+import { getWalletAvailability, authenticateWithWallet, getWalletStatus } from "@/lib/appwrite/auth/wallet";
 import { isICPEnabled } from "@/integrations/icp";
 import { SubscriptionTab } from "./SubscriptionTab";
 
@@ -62,8 +62,10 @@ export default function SettingsPage() {
         setUser(u);
         setIsVerified(!!u.emailVerification);
 
-        if (u.prefs?.profilePicId) {
-          const url = await getProfilePicture(u.prefs.profilePicId);
+        // Prefer top-level profilePicId, fallback to legacy prefs.profilePicId
+        const picId = (u as any).profilePicId || u.prefs?.profilePicId;
+        if (picId) {
+          const url = await getProfilePicture(picId);
           setProfilePicUrl(url as string);
         }
 
@@ -210,6 +212,22 @@ export default function SettingsPage() {
           ...prev,
           walletAvailable: true
         }));
+
+        // Best-effort: mirror authMethod and walletAddress to users collection top-level fields
+        try {
+          const walletStatus = await getWalletStatus();
+          const address = walletStatus?.address || null;
+          const uid = (updatedUser && (updatedUser.$id || (updatedUser as any).id)) || (user && (user.$id || (user as any).id));
+          if (uid) {
+            await updateUser(uid, {
+              authMethod: 'wallet',
+              walletAddress: address,
+              lastWalletSignInAt: new Date().toISOString()
+            });
+          }
+        } catch (mirrorErr) {
+          console.warn('Failed to mirror wallet details to users collection', mirrorErr);
+        }
       } else {
         setError(result.error || "Failed to connect wallet");
       }
@@ -226,7 +244,7 @@ export default function SettingsPage() {
         onProfileUpdate={async (updatedUser: any, newProfilePic: boolean) => {
           setUser(updatedUser);
           if (newProfilePic) {
-            const url = await getProfilePicture(updatedUser.prefs.profilePicId);
+            const url = await getProfilePicture((updatedUser as any).profilePicId || updatedUser.prefs?.profilePicId);
             setProfilePicUrl(url as string);
           }
         }}
@@ -281,6 +299,13 @@ export default function SettingsPage() {
     try {
       const updated = await account.updatePrefs({ ...(user.prefs || {}), publicProfile: value });
       setUser(updated);
+      // Best-effort mirror to users collection top-level field
+      try {
+        const uid = (updated && (updated.$id || (updated as any).id)) || (user && (user.$id || (user as any).id));
+        if (uid) await updateUser(uid, { publicProfile: value });
+      } catch (mirrorErr) {
+        console.warn('Failed to mirror publicProfile to users collection', mirrorErr);
+      }
       setSuccess(value ? 'Profile is now public.' : 'Profile is now private.');
     } catch (err: any) {
       setError((err as Error)?.message || 'Failed to update profile visibility');
@@ -472,15 +497,23 @@ const SettingsTab = ({
 
       // In Appwrite client SDK, direct self-account deletion may not be available; instead clear sessions and mark deletion flag.
       try { await account.deleteSessions(); } catch (e) { console.warn('Failed to delete sessions', e); }
-      try { await account.updatePrefs({ deletedAt: new Date().toISOString() }); } catch (e) { console.warn('Failed to mark deletion', e); }
-      setDeleteSuccess('Account scheduled for deletion. Redirecting...');
-      setTimeout(() => { window.location.href = '/'; }, 1500);
-    } catch (err: any) {
-      setDeleteError(err?.message || 'Failed to delete account');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+      try { const updated = await account.updatePrefs({ ...(user.prefs || {}), deletedAt: new Date().toISOString() });
+          // Best-effort mirror deletedAt flag to users collection
+          try {
+            const uid = (updated && (updated.$id || (updated as any).id)) || (user && (user.$id || (user as any).id));
+            if (uid) await updateUser(uid, { deletedAt: updated.prefs?.deletedAt || new Date().toISOString() });
+          } catch (mirrorErr) {
+            console.warn('Failed to mirror deletedAt to users collection', mirrorErr);
+          }
+        } catch (e) { console.warn('Failed to mark deletion', e); }
+       setDeleteSuccess('Account scheduled for deletion. Redirecting...');
+       setTimeout(() => { window.location.href = '/'; }, 1500);
+     } catch (err: any) {
+       setDeleteError(err?.message || 'Failed to delete account');
+     } finally {
+       setIsDeleting(false);
+     }
+   };
 
   return (
     <div className="space-y-8">
@@ -999,9 +1032,9 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
     try {
       let updatedUser = user;
       // Handle profile picture swap: upload new, update prefs, delete old
+      let uploadedFile: any = null;
       if (profilePic) {
-        const oldId = user?.prefs?.profilePicId;
-        let uploadedFile: any = null;
+        const oldId = (user as any).profilePicId || user?.prefs?.profilePicId;
         try {
           uploadedFile = await uploadProfilePicture(profilePic);
         } catch (uploadErr) {
@@ -1012,7 +1045,7 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
         }
 
         try {
-          const newPrefs = { ...user.prefs, profilePicId: uploadedFile.$id };
+          const newPrefs = { ...(user.prefs || {}), profilePicId: uploadedFile.$id };
           updatedUser = await account.updatePrefs(newPrefs);
         } catch (prefErr) {
           console.error('Failed to update prefs with new profilePicId', prefErr);
@@ -1028,12 +1061,23 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
         }
 
         // Successfully updated prefs; delete old file if present and different
-        if (oldId && oldId !== uploadedFile.$id) {
+        const oldIdAfter = (user as any).profilePicId || user?.prefs?.profilePicId;
+        if (oldIdAfter && uploadedFile && oldIdAfter !== uploadedFile.$id) {
           try {
-            await deleteProfilePicture(oldId);
+            await deleteProfilePicture(oldIdAfter);
           } catch (delOldErr) {
             console.warn('Failed to delete previous profile picture', delOldErr);
           }
+        }
+
+        // Best-effort mirror to users collection top-level field
+        try {
+          const uid = (updatedUser && (updatedUser.$id || (updatedUser as any).id)) || (user && (user.$id || (user as any).id));
+          if (uid && uploadedFile && uploadedFile.$id) {
+            await updateUser(uid, { profilePicId: uploadedFile.$id });
+          }
+        } catch (mirrorErr) {
+          console.warn('Failed to mirror new profilePicId to users collection', mirrorErr);
         }
       }
 
@@ -1041,6 +1085,13 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
       if (name !== user.name) {
         try {
           updatedUser = await account.updateName(name);
+          // Mirror name to users collection
+          try {
+            const uid = (updatedUser && (updatedUser.$id || (updatedUser as any).id)) || (user && (user.$id || (user as any).id));
+            if (uid) await updateUser(uid, { name });
+          } catch (mirrorNameErr) {
+            console.warn('Failed to mirror name to users collection', mirrorNameErr);
+          }
         } catch (nameErr) {
           console.error('Failed to update name', nameErr);
           setSaveError('Failed to update name');
