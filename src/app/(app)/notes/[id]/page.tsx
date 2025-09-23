@@ -50,12 +50,12 @@ export default function NoteEditorPage() {
       <main className="flex-1 px-16 sm:px-24 md:px-32 lg:px-48 xl:px-64 2xl:px-80 py-12 flex justify-center">
         <div className="w-full max-w-4xl">
           <input
-            className="form-input w-full resize-none overflow-hidden border-none bg-transparent p-4 text-5xl font-bold text-light-fg dark:text-dark-fg placeholder:text-gray-400 focus:outline-none focus:ring-0"
+            className="form-input w-full overflow-visible border-none bg-transparent p-4 text-5xl font-bold text-light-fg dark:text-dark-fg placeholder:text-gray-400 focus:outline-none focus:ring-0"
             placeholder="Note Title"
             defaultValue={note.title || ''}
           />
           <textarea
-            className="form-textarea mt-4 w-full min-h-[60vh] resize-none overflow-hidden border-none bg-transparent p-4 text-xl leading-relaxed text-light-fg dark:text-dark-fg placeholder:text-gray-400 focus:outline-none focus:ring-0"
+            className="form-textarea mt-4 w-full min-h-[60vh] max-h-[calc(100vh-12rem)] resize-y overflow-auto border-none bg-transparent p-4 text-xl leading-relaxed text-light-fg dark:text-dark-fg placeholder:text-gray-400 focus:outline-none focus:ring-0"
             placeholder="Start writing your beautiful notes here..."
             defaultValue={note.content || ''}
           ></textarea>
