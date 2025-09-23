@@ -21,6 +21,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 import { useState, useEffect } from 'react';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
+import { getUserProfilePicId } from '@/lib/utils';
 
 interface NavigationProps {
   className?: string;
@@ -98,13 +99,14 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
 
   useEffect(() => {
     let mounted = true;
-    const cached = getCachedProfilePreview(user?.prefs?.profilePicId);
+    const profilePicId = getUserProfilePicId(user);
+    const cached = getCachedProfilePreview(profilePicId || undefined);
     if (cached !== undefined) setSmallProfileUrl(cached ?? null);
 
     const fetchPreview = async () => {
       try {
-        if (user?.prefs?.profilePicId) {
-          const url = await fetchProfilePreview(user.prefs.profilePicId, 64, 64);
+        if (profilePicId) {
+          const url = await fetchProfilePreview(profilePicId, 64, 64);
           if (mounted) setSmallProfileUrl(url as unknown as string);
         } else {
           if (mounted) setSmallProfileUrl(null);
@@ -116,7 +118,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
     };
     fetchPreview();
     return () => { mounted = false; };
-  }, [user?.prefs?.profilePicId]);
+  }, [getUserProfilePicId(user)]);
 
   const handleCreateClick = () => {
     openOverlay(

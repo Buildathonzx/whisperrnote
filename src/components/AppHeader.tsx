@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useOverlay } from '@/components/ui/OverlayContext';
 import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
+import { getUserProfilePicId } from '@/lib/utils';
 
 interface AppHeaderProps {
   className?: string;
@@ -21,6 +22,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
   const [aiGenerating, setAiGenerating] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
+  const profilePicId = getUserProfilePicId(user);
 
   useEffect(() => {
     // Component initialization if needed
@@ -28,16 +30,15 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
 
   useEffect(() => {
     let mounted = true;
-    // Check cached preview first
-    const cached = getCachedProfilePreview(user?.prefs?.profilePicId);
+    const cached = getCachedProfilePreview(profilePicId);
     if (cached !== undefined) {
       setSmallProfileUrl(cached ?? null);
     }
 
     const fetchPreview = async () => {
       try {
-        if (user?.prefs?.profilePicId) {
-          const url = await fetchProfilePreview(user.prefs.profilePicId, 64, 64);
+        if (profilePicId) {
+          const url = await fetchProfilePreview(profilePicId, 64, 64);
           if (mounted) setSmallProfileUrl(url as unknown as string);
         } else {
           if (mounted) setSmallProfileUrl(null);
@@ -49,7 +50,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
     };
     fetchPreview();
     return () => { mounted = false; };
-  }, [user?.prefs?.profilePicId]);
+  }, [profilePicId]);
 
   const handleLogout = () => {
     setIsAccountMenuOpen(false);
