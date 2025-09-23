@@ -5,7 +5,8 @@ import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { shareNoteWithUser, shareNoteWithUserId, getSharedUsers, removeNoteSharing, searchUsers, updateCollaborator, getProfilePicturePreview } from '@/lib/appwrite';
+import { shareNoteWithUser, shareNoteWithUserId, getSharedUsers, removeNoteSharing, searchUsers, updateCollaborator } from '@/lib/appwrite';
+import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 
 interface ShareNoteModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface SharedUser {
   email: string;
   permission: 'read' | 'write' | 'admin';
   collaborationId?: string;
+  profilePicId?: string | null;
 }
 
 interface FoundUser {
@@ -28,8 +30,6 @@ interface FoundUser {
   email?: string;
   avatar?: string | null;
 }
-
-const previewCache = new Map<string, string | null>();
 
 export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: ShareNoteModalProps) {
   const [query, setQuery] = useState('');
@@ -53,65 +53,67 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
 
   const fetchAndCachePreview = useCallback(async (fileId?: string | null) => {
     if (!fileId) return null;
-    if (previewCache.has(fileId)) return previewCache.get(fileId) ?? null;
+    // Return cached value synchronously if available (string | null), otherwise fetch and cache
+    const cached = getCachedProfilePreview(fileId);
+    if (cached !== undefined) return cached;
     try {
-      const url = await getProfilePicturePreview(fileId, 64, 64);
-      const str = url as unknown as string | null;
-      previewCache.set(fileId, str);
-      return str;
+      const url = await fetchProfilePreview(fileId, 64, 64);
+      return url;
     } catch (err) {
-      previewCache.set(fileId, null);
       return null;
     }
   }, []);
 
-  // Load shared users when modal opens
-  const loadSharedUsers = async () => {
-    if (!isOpen) return;
+  const loadSharedUsers = useCallback(async () => {
     setIsLoadingUsers(true);
     try {
       const users = await getSharedUsers(noteId);
       setSharedUsers(users as SharedUser[]);
 
       // Prefetch previews for shared users
-      (users as any[]).forEach(async (u) => {
-        const fileId = (u && (u.profilePicId || null));
-        if (!fileId) return;
+      for (const u of users as SharedUser[]) {
+        const fileId = u?.profilePicId ?? null;
+        if (!fileId) continue;
         try {
           const url = await fetchAndCachePreview(fileId);
           setSharedPreviews(prev => (prev[u.id] === url ? prev : { ...prev, [u.id]: url }));
         } catch {
           // ignore preview errors
         }
-      });
-    } catch (error) {
-      console.error('Failed to load shared users:', error);
+      }
+    } catch (err) {
+      console.error('Failed to load shared users:', err);
     } finally {
       setIsLoadingUsers(false);
     }
-  };
+  }, [noteId, fetchAndCachePreview]);
 
   useEffect(() => {
     if (isOpen) {
       loadSharedUsers();
     }
-  }, [isOpen]);
+  }, [isOpen, loadSharedUsers]);
 
-  const debouncedSearch = useCallback(() => {
+  const debouncedSearch = useCallback(async () => {
     if (!query.trim() || selectedUser) {
       setResults([]);
       return;
     }
     setIsSearching(true);
-    searchUsers(query).then(res => {
-      setResults(res as any);
-    }).catch(() => {
+    try {
+      const res = await searchUsers(query);
+      setResults(res as FoundUser[]);
+    } catch {
       setResults([]);
-    }).finally(() => setIsSearching(false));
+    } finally {
+      setIsSearching(false);
+    }
   }, [query, selectedUser]);
 
   useEffect(() => {
-    const t = setTimeout(() => debouncedSearch(), 300);
+    const t = setTimeout(() => {
+      debouncedSearch();
+    }, 300);
     return () => clearTimeout(t);
   }, [query, debouncedSearch]);
 
@@ -120,7 +122,7 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     let mounted = true;
     const load = async () => {
       for (const user of results) {
-        const fileId = (user as any).avatar || null;
+        const fileId = user.avatar || null;
         if (!fileId) continue;
         // skip if already have a preview for this user
         if (resultPreviews[user.id] !== undefined) continue;
@@ -135,7 +137,7 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     };
     if (results.length) load();
     return () => { mounted = false; };
-  }, [results, fetchAndCachePreview]);
+  }, [results, fetchAndCachePreview, resultPreviews]);
 
   const resetMessages = () => {
     setErrorMsg(null); setSuccessMsg(null);
@@ -196,8 +198,9 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
 
       // Reconcile actual data
       await loadSharedUsers();
-    } catch (e: any) {
-      setErrorMsg(e.message || 'Failed to share note');
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'message' in err ? String((err as any).message) : String(err);
+      setErrorMsg(msg || 'Failed to share note');
       if (optimistic) {
         setSharedUsers(prev => prev.filter(u => u !== optimistic));
       }
@@ -215,8 +218,9 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     try {
       await updateCollaborator(collab.collaborationId, { permission: newPerm });
       setSuccessMsg('Permission updated');
-    } catch (e: any) {
-      setErrorMsg(e.message || 'Failed updating permission');
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'message' in err ? String((err as any).message) : String(err);
+      setErrorMsg(msg || 'Failed updating permission');
       // Revert
       setSharedUsers(prev => prev.map(u => u.id === collab.id ? { ...u, permission: prevPerm } : u));
     } finally {
@@ -232,10 +236,11 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     try {
       await removeNoteSharing(noteId, sharedUserId);
       setSuccessMsg(`Removed sharing with ${userEmail}`);
-    } catch (error: any) {
-      console.error('Failed to remove sharing:', error);
+    } catch (err: unknown) {
+      console.error('Failed to remove sharing:', err);
       setSharedUsers(previous); // revert
-      setErrorMsg(error.message || 'Failed to remove sharing');
+      const msg = err && typeof err === 'object' && 'message' in err ? String((err as any).message) : String(err);
+      setErrorMsg(msg || 'Failed to remove sharing');
     }
   };
 

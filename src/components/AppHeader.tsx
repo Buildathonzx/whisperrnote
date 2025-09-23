@@ -8,7 +8,7 @@ import { TopBarSearch } from '@/components/TopBarSearch';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useOverlay } from '@/components/ui/OverlayContext';
-import { getProfilePicturePreview } from '@/lib/appwrite';
+import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 
 interface AppHeaderProps {
   className?: string;
@@ -28,10 +28,16 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
 
   useEffect(() => {
     let mounted = true;
+    // Check cached preview first
+    const cached = getCachedProfilePreview(user?.prefs?.profilePicId);
+    if (cached !== undefined) {
+      setSmallProfileUrl(cached ?? null);
+    }
+
     const fetchPreview = async () => {
       try {
         if (user?.prefs?.profilePicId) {
-          const url = await getProfilePicturePreview(user.prefs.profilePicId, 64, 64);
+          const url = await fetchProfilePreview(user.prefs.profilePicId, 64, 64);
           if (mounted) setSmallProfileUrl(url as unknown as string);
         } else {
           if (mounted) setSmallProfileUrl(null);

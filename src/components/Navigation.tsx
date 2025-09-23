@@ -20,7 +20,7 @@ import { useSidebar } from '@/components/ui/SidebarContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
 import { useState, useEffect } from 'react';
-import { getProfilePicturePreview } from '@/lib/appwrite';
+import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 
 interface NavigationProps {
   className?: string;
@@ -98,10 +98,13 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
 
   useEffect(() => {
     let mounted = true;
+    const cached = getCachedProfilePreview(user?.prefs?.profilePicId);
+    if (cached !== undefined) setSmallProfileUrl(cached ?? null);
+
     const fetchPreview = async () => {
       try {
         if (user?.prefs?.profilePicId) {
-          const url = await getProfilePicturePreview(user.prefs.profilePicId, 64, 64);
+          const url = await fetchProfilePreview(user.prefs.profilePicId, 64, 64);
           if (mounted) setSmallProfileUrl(url as unknown as string);
         } else {
           if (mounted) setSmallProfileUrl(null);

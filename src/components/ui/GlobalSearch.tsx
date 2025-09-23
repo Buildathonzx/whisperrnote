@@ -30,6 +30,7 @@ import {
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
+import { fetchProfilePreview, getCachedProfilePreview } from '@/lib/profilePreview';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './AuthContext';
 
@@ -97,6 +98,28 @@ export default function GlobalSearch({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const [smallProfileUrl, setSmallProfileUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    // Try synchronous cached read first
+    const cached = getCachedProfilePreview(user?.prefs?.profilePicId);
+    if (cached !== undefined) {
+      setSmallProfileUrl(cached ?? null);
+    }
+
+    const load = async () => {
+      if (!user?.prefs?.profilePicId) return;
+      try {
+        const url = await fetchProfilePreview(user.prefs.profilePicId, 24, 24);
+        if (mounted) setSmallProfileUrl(url);
+      } catch {
+        if (mounted) setSmallProfileUrl(null);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [user?.prefs?.profilePicId]);
 
   useEffect(() => {
     if (query.length > 0) {
@@ -209,28 +232,29 @@ export default function GlobalSearch({
                     <FilterIcon />
                   </IconButton>
                 )}
-                {user && (
-                  <IconButton 
-                    size="small" 
-                    onClick={handleUserMenuOpen}
-                    sx={{ ml: 1 }}
-                  >
-                    {user.name ? (
-                      <Avatar 
-                        sx={{ 
-                          width: 24, 
-                          height: 24, 
-                          fontSize: '0.75rem',
-                          backgroundColor: 'primary.main'
-                        }}
-                      >
-                        {user.name.charAt(0).toUpperCase()}
-                      </Avatar>
-                    ) : (
-                      <AccountIcon />
-                    )}
-                  </IconButton>
-                )}
+                  {user && (
+                    <IconButton 
+                      size="small" 
+                      onClick={handleUserMenuOpen}
+                      sx={{ ml: 1 }}
+                    >
+                      {user.name ? (
+                        <Avatar 
+                          sx={{ 
+                            width: 24, 
+                            height: 24, 
+                            fontSize: '0.75rem',
+                            backgroundColor: 'primary.main'
+                          }}
+                          src={smallProfileUrl ?? undefined}
+                        >
+                          {user.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                      ) : (
+                        <AccountIcon />
+                      )}
+                    </IconButton>
+                  )}
               </InputAdornment>
             ),
           }
