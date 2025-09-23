@@ -35,7 +35,7 @@ export default function NoteEditor({
   };
 
   return (
-    <div className="p-6 bg-white dark:bg-dark-800 rounded-xl shadow-lg">
+    <div className="p-6 bg-card rounded-xl shadow-lg">
       <div className="space-y-4">
         <Input
           type="text"
@@ -52,7 +52,7 @@ export default function NoteEditor({
           onChange={(e) => setContent(e.target.value)}
           disabled={isSaving}
           maxLength={65000}
-          className="w-full min-h-[200px] p-4 border border-light-300 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-sm resize-vertical focus:outline-none focus:ring-2 focus:ring-accent"
+          className="w-full min-h-[200px] p-4 border border-border rounded-xl bg-card text-foreground text-sm resize-vertical focus:outline-none focus:ring-2 focus:ring-accent"
         />
 
         <div className="text-sm text-gray-500 text-right">

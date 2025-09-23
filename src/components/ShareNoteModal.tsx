@@ -195,15 +195,15 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
       className="max-w-md"
     >
       <div className="space-y-4">
-        <p className="text-sm text-light-600 dark:text-dark-400 mb-2">
+        <p className="text-sm text-muted mb-2">
           Share &quot;{noteTitle}&quot; with other users by name search or email.
         </p>
 
-        {(errorMsg || successMsg) && (
-          <div className={`text-xs rounded-md px-3 py-2 border ${errorMsg ? 'border-red-400 text-red-600 bg-red-50 dark:bg-red-950/30' : 'border-green-400 text-green-600 bg-green-50 dark:bg-green-950/30'}`}>
-            {errorMsg || successMsg}
-          </div>
-        )}
+{(errorMsg || successMsg) && (
+            <div className={`text-xs rounded-md px-3 py-2 border ${errorMsg ? 'border-red-400 text-red-600 bg-red-50' : 'border-green-400 text-green-600 bg-green-50'}`}>
+              {errorMsg || successMsg}
+            </div>
+          )}
 
         {/* User Search / Email Input */}
         <div className="space-y-2">
@@ -211,7 +211,6 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
           <Input
             id="share-query"
             type="text"
-            className="dark:text-black"
             placeholder="Search by name or enter email"
             value={query}
             onChange={(e) => { setQuery(e.target.value); setSelectedUser(null); resetMessages(); }}
@@ -223,21 +222,21 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
             }}
           />
           {query && results.length > 0 && !selectedUser && (
-            <div className="border border-light-200 dark:border-dark-700 rounded-md max-h-40 overflow-y-auto divide-y divide-light-100 dark:divide-dark-700">
+            <div className="border border-border rounded-md max-h-40 overflow-y-auto divide-y divide-border">
               {results.map(user => (
                 <button
                   key={user.id}
                   type="button"
                   onClick={() => { setSelectedUser(user); setQuery(user.name || user.email || ''); resetMessages(); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-light-100 dark:hover:bg-dark-700 focus:outline-none text-sm"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-card/80 focus:outline-none text-sm text-foreground"
                 >
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-light-300 dark:bg-dark-600 text-xs font-medium">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-card text-xs font-medium text-foreground">
                     {(user.name || user.email || '?').charAt(0).toUpperCase()}
                   </div>
                   <div className="flex flex-col">
                     <span className="font-medium">{user.name || user.email}</span>
                     {user.email && user.email !== user.name && (
-                      <span className="text-xs text-light-500 dark:text-dark-400">{user.email}</span>
+                      <span className="text-xs text-muted">{user.email}</span>
                     )}
                   </div>
                 </button>
@@ -245,18 +244,18 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
             </div>
           )}
           {query && !isSearching && results.length === 0 && !selectedUser && validEmail === false && (
-            <div className="text-xs text-light-500 dark:text-dark-500">No users found</div>
+            <div className="text-xs text-muted">No users found</div>
           )}
           {selectedUser && (
-            <div className="flex items-center gap-2 text-xs text-light-600 dark:text-dark-400">
-              Selected: <span className="font-medium">{selectedUser.name || selectedUser.email}</span>
+            <div className="flex items-center gap-2 text-xs text-muted">
+              Selected: <span className="font-medium text-foreground">{selectedUser.name || selectedUser.email}</span>
               <button
                 onClick={() => { setSelectedUser(null); setQuery(''); }}
-                className="text-light-500 dark:text-dark-500 hover:text-red-500"
+                className="text-muted hover:text-red-500"
               >Clear</button>
             </div>
           )}
-          {isSearching && <div className="text-xs text-light-500 dark:text-dark-500">Searching...</div>}
+          {isSearching && <div className="text-xs text-muted">Searching...</div>}
         </div>
 
         {/* Permission Level */}
@@ -284,11 +283,11 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
           <div className="space-y-2">
             <Label>Currently Shared With</Label>
             {isLoadingUsers ? (
-              <div className="text-sm text-light-500 dark:text-dark-500">Loading...</div>
+              <div className="text-sm text-muted">Loading...</div>
             ) : (
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {sharedUsers.map((user) => (
-                  <div key={user.id + (user.collaborationId || '')} className="flex items-center justify-between p-2 border border-light-200 dark:border-dark-700 rounded-md">
+                  <div key={user.id + (user.collaborationId || '')} className="flex items-center justify-between p-2 border border-border rounded-md bg-card">
                     <div className="flex items-center gap-2">
                       <span className="text-sm">{user.name ? `${user.name} (${user.email})` : user.email}</span>
                       <div className="flex items-center gap-1">
@@ -303,13 +302,13 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                           <option value="admin">admin</option>
                         </select>
                         {updatingCollab === user.collaborationId && (
-                          <div className="h-3 w-3 animate-spin rounded-full border-2 border-light-300 dark:border-dark-500 border-t-transparent" />
+                          <div className="h-3 w-3 animate-spin rounded-full border-2 border-border border-t-transparent" />
                         )}
                       </div>
                     </div>
                     <button
                       onClick={() => handleRemoveSharing(user.id, user.email)}
-                      className="h-6 w-6 p-0 text-light-500 dark:text-dark-500 hover:text-red-500 text-sm disabled:opacity-50"
+                      className="h-6 w-6 p-0 text-muted hover:text-red-500 text-sm disabled:opacity-50"
                       disabled={user.collaborationId === 'pending'}
                     >
                       ×

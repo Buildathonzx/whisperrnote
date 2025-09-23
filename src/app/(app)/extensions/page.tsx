@@ -199,10 +199,10 @@ export default function ExtensionsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-light-900 dark:text-dark-50 mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Extensions Marketplace
             </h1>
-            <p className="text-light-600 dark:text-dark-400">
+            <p className="text-muted">
               Extend WhisperRNote with powerful plugins and automations
             </p>
           </div>
@@ -228,8 +228,8 @@ export default function ExtensionsPage() {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300'
-                  : 'text-light-600 dark:text-dark-400 hover:text-light-900 dark:hover:text-dark-50'
-              }`}
+                  : 'text-muted hover:text-foreground'
+              }` }
             >
               {tab.label} ({tab.count})
             </button>
@@ -297,12 +297,12 @@ export default function ExtensionsPage() {
         ) && (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">📦</div>
-            <h3 className="text-lg font-medium text-light-700 dark:text-dark-300 mb-2">
+            <h3 className="text-lg font-medium text-muted mb-2">
               {activeTab === 'marketplace' && 'No extensions found'}
               {activeTab === 'installed' && 'No extensions installed'}
               {activeTab === 'templates' && 'No templates available'}
             </h3>
-            <p className="text-light-500 dark:text-dark-500">
+            <p className="text-muted">
               {activeTab === 'marketplace' && 'Try adjusting your search or create a new extension'}
               {activeTab === 'installed' && 'Browse the marketplace to install extensions'}
               {activeTab === 'templates' && 'Check back later for new templates'}
@@ -331,15 +331,15 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
   isOwner: boolean;
 }) {
   return (
-    <div className="bg-light-50 dark:bg-dark-800 rounded-xl p-6 border border-light-200 dark:border-dark-600 hover:shadow-lg transition-shadow">
+    <div className="bg-card rounded-xl p-6 border border-border hover:shadow-lg transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
             <span className="text-white text-lg">📦</span>
           </div>
           <div>
-            <h3 className="font-semibold text-light-900 dark:text-dark-100">{extension.name}</h3>
-            <p className="text-sm text-light-500 dark:text-dark-400">v{extension.version}</p>
+            <h3 className="font-semibold text-foreground">{extension.name}</h3>
+            <p className="text-sm text-muted">v{extension.version}</p>
           </div>
         </div>
         {isOwner && (
@@ -375,15 +375,15 @@ function TemplateCard({ template, onUse }: {
   onUse: () => void;
 }) {
   return (
-    <div className="bg-light-50 dark:bg-dark-800 rounded-xl p-6 border border-light-200 dark:border-dark-600 hover:shadow-lg transition-shadow">
+    <div className="bg-card rounded-xl p-6 border border-border hover:shadow-lg transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
             <span className="text-white text-lg">{template.icon}</span>
           </div>
           <div>
-            <h3 className="font-semibold text-light-900 dark:text-dark-100">{template.name}</h3>
-            <p className="text-sm text-light-500 dark:text-dark-400">{template.category}</p>
+            <h3 className="font-semibold text-foreground">{template.name}</h3>
+            <p className="text-sm text-muted">{template.category}</p>
           </div>
         </div>
         <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-full">
@@ -477,7 +477,7 @@ function CreateExtensionModal({ isOpen, onClose, onSubmit, template }: {
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Describe what your extension does..."
-            className="w-full px-3 py-2 border border-light-300 dark:border-dark-700 rounded-lg bg-white dark:bg-dark-800 text-light-900 dark:text-dark-50"
+            className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground"
             rows={3}
           />
         </div>
@@ -502,7 +502,7 @@ function CreateExtensionModal({ isOpen, onClose, onSubmit, template }: {
             value={formData.settings}
             onChange={(e) => setFormData({ ...formData, settings: e.target.value })}
             placeholder='{"setting1": "value1"}'
-            className="w-full px-3 py-2 border border-light-300 dark:border-dark-700 rounded-lg bg-white dark:bg-dark-800 text-light-900 dark:text-dark-50 font-mono text-sm"
+            className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground font-mono text-sm"
             rows={6}
           />
         </div>

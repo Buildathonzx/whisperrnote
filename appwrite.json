@@ -387,15 +387,6 @@
                     "encrypt": false
                 },
                 {
-                    "key": "nameLower",
-                    "type": "string",
-                    "required": false,
-                    "array": false,
-                    "size": 256,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
                     "key": "notes",
                     "type": "string",
                     "required": false,
@@ -447,6 +438,15 @@
                     "size": 200,
                     "default": null,
                     "encrypt": false
+                },
+                {
+                    "key": "nameLower",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": [
@@ -486,15 +486,6 @@
                 },
                 {
                     "key": "key",
-                    "type": "string",
-                    "required": false,
-                    "array": false,
-                    "size": 256,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
-                    "key": "keyHash",
                     "type": "string",
                     "required": false,
                     "array": false,
@@ -559,6 +550,15 @@
                     "required": false,
                     "array": false,
                     "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "keyHash",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
                     "default": null,
                     "encrypt": false
                 }
@@ -781,6 +781,23 @@
                     "default": null
                 },
                 {
+                    "key": "emoji",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 16,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "createdAt",
+                    "type": "datetime",
+                    "required": true,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
                     "key": "targetId",
                     "type": "string",
                     "required": true,
@@ -797,23 +814,6 @@
                     "size": 64,
                     "default": null,
                     "encrypt": false
-                },
-                {
-                    "key": "emoji",
-                    "type": "string",
-                    "required": true,
-                    "array": false,
-                    "size": 16,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
-                    "key": "createdAt",
-                    "type": "datetime",
-                    "required": true,
-                    "array": false,
-                    "format": "",
-                    "default": null
                 }
             ],
             "indexes": [
@@ -1134,15 +1134,6 @@
                     "encrypt": false
                 },
                 {
-                    "key": "tag",
-                    "type": "string",
-                    "required": false,
-                    "array": false,
-                    "size": 256,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
                     "key": "userId",
                     "type": "string",
                     "required": true,
@@ -1158,22 +1149,18 @@
                     "array": false,
                     "format": "",
                     "default": null
+                },
+                {
+                    "key": "tag",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 256,
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": [
-                {
-                    "key": "idx_note_tags_note_tag",
-                    "type": "unique",
-                    "status": "available",
-                    "attributes": [
-                        "noteId",
-                        "tagId"
-                    ],
-                    "orders": [
-                        "ASC",
-                        "ASC"
-                    ]
-                },
                 {
                     "key": "idx_note_tags_note",
                     "type": "key",
@@ -1204,6 +1191,19 @@
                         "userId"
                     ],
                     "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "idx_note_tags_note_tag",
+                    "type": "unique",
+                    "status": "available",
+                    "attributes": [
+                        "noteId",
+                        "tagId"
+                    ],
+                    "orders": [
+                        "ASC",
                         "ASC"
                     ]
                 }
@@ -1302,12 +1302,27 @@
                     "type": "string",
                     "required": false,
                     "array": false,
-                    "elements": ["manual","ai","collab"],
+                    "elements": [
+                        "manual",
+                        "ai",
+                        "collab"
+                    ],
                     "format": "enum",
                     "default": null
                 }
             ],
             "indexes": [
+                {
+                    "key": "idx_note_revisions_note",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "noteId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
                 {
                     "key": "idx_note_revisions_note_revision",
                     "type": "unique",
@@ -1318,17 +1333,6 @@
                     ],
                     "orders": [
                         "ASC",
-                        "ASC"
-                    ]
-                },
-                {
-                    "key": "idx_note_revisions_note",
-                    "type": "key",
-                    "status": "available",
-                    "attributes": [
-                        "noteId"
-                    ],
-                    "orders": [
                         "ASC"
                     ]
                 }
@@ -1505,30 +1509,26 @@
                     "type": "string",
                     "required": true,
                     "array": false,
-                    "size": 32,
                     "elements": [
                         "free",
                         "pro",
                         "org"
                     ],
                     "format": "enum",
-                    "default": null,
-                    "encrypt": false
+                    "default": null
                 },
                 {
                     "key": "status",
                     "type": "string",
                     "required": false,
                     "array": false,
-                    "size": 32,
                     "elements": [
                         "active",
                         "canceled",
                         "trialing"
                     ],
                     "format": "enum",
-                    "default": null,
-                    "encrypt": false
+                    "default": null
                 },
                 {
                     "key": "currentPeriodStart",
@@ -1600,7 +1600,6 @@
             ]
         }
     ],
-
     "buckets": [
         {
             "$id": "profile_pictures",
@@ -1614,7 +1613,13 @@
             "name": "profile_pictures",
             "enabled": true,
             "maximumFileSize": 5242880,
-            "allowedFileExtensions": ["png","jpg","jpeg","webp","gif"],
+            "allowedFileExtensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp",
+                "gif"
+            ],
             "compression": "none",
             "encryption": true,
             "antivirus": true
@@ -1631,7 +1636,16 @@
             "name": "notes_attachments",
             "enabled": true,
             "maximumFileSize": 20971520,
-            "allowedFileExtensions": ["png","jpg","jpeg","webp","gif","pdf","md","txt"],
+            "allowedFileExtensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp",
+                "gif",
+                "pdf",
+                "md",
+                "txt"
+            ],
             "compression": "none",
             "encryption": true,
             "antivirus": true
@@ -1648,7 +1662,16 @@
             "name": "blog_media",
             "enabled": true,
             "maximumFileSize": 52428800,
-            "allowedFileExtensions": ["png","jpg","jpeg","webp","gif","mp4","webm","svg"],
+            "allowedFileExtensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp",
+                "gif",
+                "mp4",
+                "webm",
+                "svg"
+            ],
             "compression": "none",
             "encryption": true,
             "antivirus": true
@@ -1665,7 +1688,15 @@
             "name": "extension_assets",
             "enabled": true,
             "maximumFileSize": 2097152,
-            "allowedFileExtensions": ["js","json","css","png","jpg","jpeg","svg"],
+            "allowedFileExtensions": [
+                "js",
+                "json",
+                "css",
+                "png",
+                "jpg",
+                "jpeg",
+                "svg"
+            ],
             "compression": "none",
             "encryption": true,
             "antivirus": true
@@ -1682,7 +1713,12 @@
             "name": "backups",
             "enabled": true,
             "maximumFileSize": 524288000,
-            "allowedFileExtensions": ["json","gz","tar","zip"],
+            "allowedFileExtensions": [
+                "json",
+                "gz",
+                "tar",
+                "zip"
+            ],
             "compression": "none",
             "encryption": true,
             "antivirus": true
@@ -1699,7 +1735,16 @@
             "name": "temp_uploads",
             "enabled": true,
             "maximumFileSize": 20971520,
-            "allowedFileExtensions": ["png","jpg","jpeg","webp","gif","pdf","txt","md"],
+            "allowedFileExtensions": [
+                "png",
+                "jpg",
+                "jpeg",
+                "webp",
+                "gif",
+                "pdf",
+                "txt",
+                "md"
+            ],
             "compression": "none",
             "encryption": true,
             "antivirus": true
