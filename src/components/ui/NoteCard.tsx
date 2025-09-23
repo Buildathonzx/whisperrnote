@@ -6,6 +6,7 @@ import { NoteDetailSidebar } from './NoteDetailSidebar';
 import { ShareNoteModal } from '../ShareNoteModal';
 import { toggleNoteVisibility, getShareableUrl, isNotePublic } from '@/lib/appwrite/permissions/notes';
 import type { Notes } from '@/types/appwrite';
+import { Button } from './Button';
 import { 
   PencilIcon, 
   TrashIcon, 
@@ -14,7 +15,8 @@ import {
   GlobeAltIcon,
   LockClosedIcon,
   ClipboardDocumentIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  EllipsisVerticalIcon
 } from '@heroicons/react/24/outline';
 
 interface NoteCardProps {
@@ -158,14 +160,38 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
             <CardTitle className="text-base sm:text-lg font-bold text-foreground line-clamp-2 flex-1">
               {note.title}
             </CardTitle>
-            {noteIsPublic && (
-              <div className="flex-shrink-0">
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400 rounded-full text-xs font-medium">
-                  <GlobeAltIcon className="h-3 w-3" />
-                  Public
-                </span>
-              </div>
-            )}
+
+            <div className="flex items-center gap-2">
+              {noteIsPublic && (
+                <div className="flex-shrink-0">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400 rounded-full text-xs font-medium">
+                    <GlobeAltIcon className="h-3 w-3" />
+                    Public
+                  </span>
+                </div>
+              )}
+
+              {/* Visible menu button to open context menu (useful on mobile) */}
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Open note menu"
+                onClick={(e) => {
+                  // Prevent parent card click which opens the detail sidebar
+                  e.stopPropagation();
+                  // Position menu near the button using its bounding rect
+                  const target = e.currentTarget as HTMLElement;
+                  const rect = target.getBoundingClientRect();
+                  openMenu({
+                    x: Math.round(rect.left + rect.width / 2),
+                    y: Math.round(rect.top + rect.height + 8),
+                    items: contextMenuItems
+                  });
+                }}
+              >
+                <EllipsisVerticalIcon className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col justify-between min-h-0">
