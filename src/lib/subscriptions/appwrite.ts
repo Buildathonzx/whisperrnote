@@ -1,9 +1,16 @@
-import { databases, ID, Query, APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SUBSCRIPTIONS } from '../appwrite';
+  import { databases, ID, Query, APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SUBSCRIPTIONS } from '../appwrite';
+
+// Indicates whether subscription storage is configured
+const SUBSCRIPTIONS_CONFIGURED = Boolean(APPWRITE_DATABASE_ID && APPWRITE_COLLECTION_ID_SUBSCRIPTIONS);
+
 import type { Subscription, SubscriptionPlan, SubscriptionStatus } from '@/types/appwrite';
 import type { SubscriptionProvider, ActivePlan } from './provider';
 import { planPolicies, PlanResource } from './policy';
 
 async function listUserSubscriptions(userId: string) {
+  if (!SUBSCRIPTIONS_CONFIGURED) {
+    return { documents: [], total: 0 } as any;
+  }
   try {
     return await databases.listDocuments(
       APPWRITE_DATABASE_ID,
@@ -17,6 +24,9 @@ async function listUserSubscriptions(userId: string) {
 }
 
 async function getActiveSubscription(userId: string): Promise<Subscription | null> {
+  if (!SUBSCRIPTIONS_CONFIGURED) {
+    return null;
+  }
   try {
     const res = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
@@ -43,6 +53,20 @@ async function getActiveSubscription(userId: string): Promise<Subscription | nul
 }
 
 async function upsertSubscription(userId: string, plan: SubscriptionPlan, patch: Partial<Subscription> = {}) {
+  if (!SUBSCRIPTIONS_CONFIGURED) {
+    // If subscriptions are not configured, return a fake minimal subscription for local/dev safety
+    const nowIso = new Date().toISOString();
+    return {
+      $id: 'local-subscription',
+      userId,
+      plan,
+      status: patch.status || 'active',
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      currentPeriodStart: patch.currentPeriodStart || nowIso,
+      currentPeriodEnd: patch.currentPeriodEnd || null
+    } as unknown as Subscription;
+  }
   try {
     const existing = await listUserSubscriptions(userId);
     const nowIso = new Date().toISOString();
