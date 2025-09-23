@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { SubscriptionTier, UserSubscription } from '@/types/ai';
 import { useAuth } from './AuthContext';
+import { getUserSubscriptionTier, getUserSubscriptionExpiresAt } from '@/lib/utils';
 
 interface SubscriptionContextType {
   subscription: UserSubscription;
@@ -31,13 +32,13 @@ export function SubscriptionProvider({ children }: SubscriptionProviderProps) {
         try {
           // TODO: Replace with actual subscription API call
           // For now, check user preferences or a subscription field
-          const userTier = user.prefs?.subscriptionTier || SubscriptionTier.FREE;
+          const userTier = (getUserSubscriptionTier(user) as SubscriptionTier) || SubscriptionTier.FREE;
           const features = getFeaturesByTier(userTier);
           
           setSubscription({
             tier: userTier,
             features,
-            expiresAt: user.prefs?.subscriptionExpiresAt
+            expiresAt: getUserSubscriptionExpiresAt(user) || undefined
           });
         } catch (error) {
           console.error('Failed to load subscription:', error);
