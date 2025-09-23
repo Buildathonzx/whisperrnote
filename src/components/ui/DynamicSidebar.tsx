@@ -58,7 +58,7 @@ export function DynamicSidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full bg-light-bg dark:bg-dark-bg border-l border-light-border dark:border-dark-border z-50 transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full flex flex-col bg-light-bg dark:bg-dark-bg border-l border-light-border dark:border-dark-border z-50 transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         } w-full sm:w-96 md:w-[28rem] lg:w-[32rem]`}
       >
@@ -78,7 +78,7 @@ export function DynamicSidebar() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {content}
         </div>
       </div>

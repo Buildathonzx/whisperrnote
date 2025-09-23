@@ -138,7 +138,7 @@ export const DesktopSidebar: React.FC<NavigationProps> = ({
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 p-4 space-y-1 overflow-visible">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto min-h-0">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
