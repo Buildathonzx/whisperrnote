@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail } from "@/lib/appwrite";
+import { account, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, deleteProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useAuth } from "@/components/ui/AuthContext";
@@ -37,6 +37,7 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState("");
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
+  const [isRemovingProfilePic, setIsRemovingProfilePic] = useState<boolean>(false);
   const [currentAIMode, setCurrentAIMode] = useState<AIMode>(AIMode.STANDARD);
   const [authMethods, setAuthMethods] = useState<AuthMethods>({
     mfaFactors: null,
@@ -223,13 +224,47 @@ export default function SettingsPage() {
         onClose={closeOverlay}
         onProfileUpdate={async (updatedUser: any, newProfilePic: boolean) => {
           setUser(updatedUser);
-          if (newProfilePic) {
-            const url = await getProfilePicture(updatedUser.prefs.profilePicId);
-            setProfilePicUrl(url as string);
+          if (newProfilePic && updatedUser?.prefs?.profilePicId) {
+            try {
+              const url = await getProfilePicture(updatedUser.prefs.profilePicId);
+              setProfilePicUrl(url as string);
+            } catch (err) {
+              console.error('Failed to fetch new profile picture URL', err);
+            }
           }
         }}
       />
     );
+  };
+
+  // Remove profile picture handler: delete stored file and clear prefs
+  const handleRemoveProfilePicture = async () => {
+    if (!user) return;
+    if (!user.prefs?.profilePicId) return;
+    try {
+      setError('');
+      setSuccess('');
+      const oldId = user.prefs.profilePicId;
+      // Optimistically clear UI
+      setProfilePicUrl(null);
+      // Attempt to delete file then clear prefs
+      try {
+        await deleteProfilePicture(oldId);
+      } catch (delErr) {
+        console.warn('Failed to delete profile picture from storage', delErr);
+      }
+      try {
+        const updated = await account.updatePrefs({ ...user.prefs, profilePicId: null });
+        setUser(updated);
+        setSuccess('Profile picture removed');
+      } catch (prefErr) {
+        setError('Failed to update user preferences');
+        console.error('Failed to clear profilePicId in prefs', prefErr);
+      }
+    } catch (err) {
+      console.error('handleRemoveProfilePicture failed', err);
+      setError('Failed to remove profile picture');
+    }
   };
 
   if (loading) {
@@ -270,7 +305,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="p-8">
-            {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} onEditProfile={handleEditProfile} />}
+            {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} onEditProfile={handleEditProfile} onRemoveProfilePicture={handleRemoveProfilePicture} isRemovingProfilePic={isRemovingProfilePic} />}
              {activeTab === 'settings' && (
                <SettingsTab
                  user={user}
@@ -300,7 +335,7 @@ export default function SettingsPage() {
   );
 }
 
-const ProfileTab = ({ user, profilePicUrl, onEditProfile }: any) => (
+const ProfileTab = ({ user, profilePicUrl, onEditProfile, onRemoveProfilePicture, isRemovingProfilePic }: any) => (
   <div className="space-y-8">
     <h1 className="text-foreground text-3xl font-bold">Profile</h1>
     
@@ -315,7 +350,15 @@ const ProfileTab = ({ user, profilePicUrl, onEditProfile }: any) => (
           <p className="text-foreground/70 text-lg">{user?.email}</p>
           <p className="text-foreground/60 text-base">Joined {new Date(user?.$createdAt).getFullYear()}</p>
         </div>
-        <Button onClick={onEditProfile}>Edit Profile</Button>
+          <div className="flex items-center gap-3">
+            <Button onClick={onEditProfile}>Edit Profile</Button>
+            {user?.prefs?.profilePicId && (
+              <Button variant="secondary" onClick={onRemoveProfilePicture} disabled={isRemovingProfilePic}>
+                {isRemovingProfilePic ? 'Removing...' : 'Remove'}
+              </Button>
+            )}
+          </div>
+
       </div>
       
       <div className="w-full mt-8 md:mt-0">
@@ -883,23 +926,73 @@ const IntegrationsTab = ({ enabledIntegrations }: { enabledIntegrations: Enabled
 const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
   const [name, setName] = useState(user?.name || '');
   const [profilePic, setProfilePic] = useState<File | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleSaveChanges = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    setSaveError(null);
     try {
       let updatedUser = user;
+      // Handle profile picture swap: upload new, update prefs, delete old
       if (profilePic) {
-        const uploadedFile = await uploadProfilePicture(profilePic);
-        const newPrefs = { ...user.prefs, profilePicId: uploadedFile.$id };
-        updatedUser = await account.updatePrefs(newPrefs);
+        const oldId = user?.prefs?.profilePicId;
+        let uploadedFile: any = null;
+        try {
+          uploadedFile = await uploadProfilePicture(profilePic);
+        } catch (uploadErr) {
+          console.error('Failed to upload new profile picture', uploadErr);
+          setSaveError('Failed to upload new profile picture');
+          setIsSaving(false);
+          return;
+        }
+
+        try {
+          const newPrefs = { ...user.prefs, profilePicId: uploadedFile.$id };
+          updatedUser = await account.updatePrefs(newPrefs);
+        } catch (prefErr) {
+          console.error('Failed to update prefs with new profilePicId', prefErr);
+          // Attempt cleanup of newly uploaded file
+          try {
+            if (uploadedFile && uploadedFile.$id) await deleteProfilePicture(uploadedFile.$id);
+          } catch (cleanupErr) {
+            console.warn('Cleanup of uploaded profile picture failed', cleanupErr);
+          }
+          setSaveError('Failed to save profile picture to your account');
+          setIsSaving(false);
+          return;
+        }
+
+        // Successfully updated prefs; delete old file if present and different
+        if (oldId && oldId !== uploadedFile.$id) {
+          try {
+            await deleteProfilePicture(oldId);
+          } catch (delOldErr) {
+            console.warn('Failed to delete previous profile picture', delOldErr);
+          }
+        }
       }
+
+      // Update name separately (Appwrite account.updateName returns the updated user)
       if (name !== user.name) {
-        // Correctly call updateName with the new name string
-        updatedUser = await account.updateName(name);
+        try {
+          updatedUser = await account.updateName(name);
+        } catch (nameErr) {
+          console.error('Failed to update name', nameErr);
+          setSaveError('Failed to update name');
+          setIsSaving(false);
+          return;
+        }
       }
+
       onProfileUpdate(updatedUser, !!profilePic);
       onClose();
     } catch (error) {
       console.error('Failed to save changes:', error);
+      setSaveError('Failed to save changes');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -927,9 +1020,10 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
           />
         </div>
       </div>
-      <div className="flex justify-end gap-4 mt-8">
-        <Button variant="secondary" onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSaveChanges}>Save Changes</Button>
+  <div className="flex justify-end gap-4 mt-8">
+        {saveError && <p className="text-sm text-red-600 mr-auto self-center">{saveError}</p>}
+        <Button variant="secondary" onClick={onClose} disabled={isSaving}>Cancel</Button>
+        <Button onClick={handleSaveChanges} disabled={isSaving}>{isSaving ? 'Saving...' : 'Save Changes'}</Button>
       </div>
     </div>
   );
