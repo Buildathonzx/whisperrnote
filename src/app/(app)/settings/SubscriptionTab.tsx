@@ -81,6 +81,6 @@ export function SubscriptionTab() {
           )}
         </div>
       </CardContent>
-    </-Card>
+    </Card>
   );
 }
