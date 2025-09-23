@@ -124,7 +124,7 @@ export async function createNote(data: Partial<Notes>) {
     const userForLimit = await getCurrentUser();
     if (!userForLimit || !userForLimit.$id) throw new Error("User not authenticated");
     // Lazy import to avoid circular deps during early refactor
-    const { enforcePlanLimit } = await import('./subscriptions');
+    const { enforcePlanLimit } = await import('./subscriptions/index');
     const { countUserNotes } = await import('./appwrite/usage/metrics');
     const currentCount = await countUserNotes(userForLimit.$id);
     const check = await enforcePlanLimit(userForLimit.$id, 'notes', currentCount);
@@ -1080,90 +1080,8 @@ export async function deleteDocument(collectionId: string, documentId: string) {
 }
 
 // --- SUBSCRIPTIONS ---
-
-import type { Subscription, SubscriptionPlan, SubscriptionStatus } from '../types/appwrite';
-
-export async function listUserSubscriptions(userId: string) {
-  try {
-    return await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_SUBSCRIPTIONS,
-      [Query.equal('userId', userId), Query.orderDesc('currentPeriodStart'), Query.limit(20)] as any
-    );
-  } catch (e) {
-    console.error('listUserSubscriptions failed', e);
-    return { documents: [], total: 0 } as any;
-  }
-}
-
-export async function getActiveSubscription(userId: string): Promise<Subscription | null> {
-  try {
-    const res = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_SUBSCRIPTIONS,
-      [
-        Query.equal('userId', userId),
-        Query.limit(5),
-        Query.orderDesc('currentPeriodEnd')
-      ] as any
-    );
-    const subs = res.documents as any[];
-    const now = Date.now();
-    // Active if status active or trialing and periodEnd in future
-    const active = subs.find(s => {
-      const status: SubscriptionStatus | null = (s.status ?? null);
-      const end = s.currentPeriodEnd ? Date.parse(s.currentPeriodEnd) : 0;
-      return (status === 'active' || status === 'trialing') && (!end || end > now);
-    });
-    return active || null;
-  } catch (e) {
-    console.error('getActiveSubscription failed', e);
-    return null;
-  }
-}
-
-export async function upsertSubscription(userId: string, plan: SubscriptionPlan, patch: Partial<Subscription> = {}) {
-  try {
-    const existing = await listUserSubscriptions(userId);
-    const nowIso = new Date().toISOString();
-    const base: any = {
-      userId,
-      plan,
-      updatedAt: nowIso,
-      ...patch,
-    };
-    if (!patch.currentPeriodStart) base.currentPeriodStart = nowIso;
-    if (!patch.status) base.status = 'active';
-    // Try to find latest by plan
-    const byPlan = (existing.documents as any[]).find(d => d.plan === plan);
-    if (byPlan) {
-      await databases.updateDocument(
-        APPWRITE_DATABASE_ID,
-        APPWRITE_COLLECTION_ID_SUBSCRIPTIONS,
-        byPlan.$id,
-        base
-      );
-       return await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SUBSCRIPTIONS, byPlan.$id) as unknown as Subscription;
-    }
-    base.createdAt = nowIso;
-    const created = await databases.createDocument(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_SUBSCRIPTIONS,
-      ID.unique(),
-      base
-    );
-     return created as unknown as Subscription;
-  } catch (e) {
-    console.error('upsertSubscription failed', e);
-    throw e;
-  }
-}
-
-export async function getActivePlan(userId: string): Promise<{ plan: SubscriptionPlan; status: SubscriptionStatus | 'none'; periodEnd: string | null; seats: number | null; subscriptionId: string | null; }> {
-  const sub = await getActiveSubscription(userId);
-  if (!sub) return { plan: 'free', status: 'none', periodEnd: null, seats: null, subscriptionId: null };
-  return { plan: sub.plan, status: (sub.status || 'active') as any, periodEnd: sub.currentPeriodEnd || null, seats: sub.seats || null, subscriptionId: (sub as any).$id || null };
-}
+// All subscription logic is now handled by the modular subscription provider.
+// See src/lib/subscriptions/
 
 // --- ADVANCED/SEARCH ---
 

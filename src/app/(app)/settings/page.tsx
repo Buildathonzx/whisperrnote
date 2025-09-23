@@ -11,8 +11,9 @@ import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
 import { getWalletAvailability, authenticateWithWallet } from "@/lib/appwrite/auth/wallet";
 import { isICPEnabled } from "@/integrations/icp";
+import { SubscriptionTab } from "./SubscriptionTab";
 
-type TabType = 'profile' | 'settings' | 'preferences' | 'integrations';
+type TabType = 'profile' | 'settings' | 'preferences' | 'integrations' | 'subscription';
 
 interface AuthMethods {
   mfaFactors: {
@@ -244,6 +245,7 @@ export default function SettingsPage() {
     { id: 'profile' as TabType, label: 'Profile' },
     { id: 'settings' as TabType, label: 'Settings' },
     { id: 'preferences' as TabType, label: 'Preferences' },
+    { id: 'subscription' as TabType, label: 'Subscription' },
     ...(Object.values(enabledIntegrations).some(enabled => enabled) ? [{ id: 'integrations' as TabType, label: 'Integrations' }] : [])
   ];
 
@@ -271,27 +273,28 @@ export default function SettingsPage() {
 
           <div className="p-8">
             {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} onEditProfile={handleEditProfile} />}
-             {activeTab === 'settings' && (
-               <SettingsTab
-                 user={user}
-                 settings={settings}
-                 isVerified={isVerified}
-                 error={error}
-                 success={success}
-                 onUpdate={handleUpdate}
-                 onSettingChange={handleSettingChange}
-                 router={router}
-                 authMethods={authMethods}
-                 onRemoveAuthMethod={handleRemoveAuthMethod}
-                 showPasswordReset={showPasswordReset}
-                 setShowPasswordReset={setShowPasswordReset}
-                 resetEmailSent={resetEmailSent}
-                 handlePasswordReset={handlePasswordReset}
-                 handleCancelPasswordReset={handleCancelPasswordReset}
-                 onConnectWallet={handleConnectWallet}
-               />
-             )}
+            {activeTab === 'settings' && (
+              <SettingsTab
+                user={user}
+                settings={settings}
+                isVerified={isVerified}
+                error={error}
+                success={success}
+                onUpdate={handleUpdate}
+                onSettingChange={handleSettingChange}
+                router={router}
+                authMethods={authMethods}
+                onRemoveAuthMethod={handleRemoveAuthMethod}
+                showPasswordReset={showPasswordReset}
+                setShowPasswordReset={setShowPasswordReset}
+                resetEmailSent={resetEmailSent}
+                handlePasswordReset={handlePasswordReset}
+                handleCancelPasswordReset={handleCancelPasswordReset}
+                onConnectWallet={handleConnectWallet}
+              />
+            )}
             {activeTab === 'preferences' && <PreferencesTab settings={settings} onSettingChange={handleSettingChange} onUpdate={handleUpdate} error={error} success={success} currentAIMode={currentAIMode} userTier={userTier} onAIModeChange={handleAIModeChange} />}
+            {activeTab === 'subscription' && <SubscriptionTab />}
             {activeTab === 'integrations' && <IntegrationsTab enabledIntegrations={enabledIntegrations} />}
           </div>
         </div>
