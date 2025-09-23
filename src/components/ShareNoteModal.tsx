@@ -29,6 +29,8 @@ interface FoundUser {
   avatar?: string | null;
 }
 
+const previewCache = new Map<string, string | null>();
+
 export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: ShareNoteModalProps) {
   const [query, setQuery] = useState('');
   const [permission, setPermission] = useState<'read' | 'write' | 'admin'>('read');
@@ -42,8 +44,26 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [updatingCollab, setUpdatingCollab] = useState<string | null>(null);
 
+  // Preview maps (userId -> preview URL|null)
+  const [resultPreviews, setResultPreviews] = useState<Record<string, string | null>>({});
+  const [sharedPreviews, setSharedPreviews] = useState<Record<string, string | null>>({});
+
   const emailRegex = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/, []);
   const validEmail = useMemo(() => emailRegex.test(query.trim()), [query, emailRegex]);
+
+  const fetchAndCachePreview = useCallback(async (fileId?: string | null) => {
+    if (!fileId) return null;
+    if (previewCache.has(fileId)) return previewCache.get(fileId) ?? null;
+    try {
+      const url = await getProfilePicturePreview(fileId, 64, 64);
+      const str = url as unknown as string | null;
+      previewCache.set(fileId, str);
+      return str;
+    } catch (err) {
+      previewCache.set(fileId, null);
+      return null;
+    }
+  }, []);
 
   // Load shared users when modal opens
   const loadSharedUsers = async () => {
@@ -51,7 +71,19 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     setIsLoadingUsers(true);
     try {
       const users = await getSharedUsers(noteId);
-      setSharedUsers(users);
+      setSharedUsers(users as SharedUser[]);
+
+      // Prefetch previews for shared users
+      (users as any[]).forEach(async (u) => {
+        const fileId = (u && (u.profilePicId || null));
+        if (!fileId) return;
+        try {
+          const url = await fetchAndCachePreview(fileId);
+          setSharedPreviews(prev => (prev[u.id] === url ? prev : { ...prev, [u.id]: url }));
+        } catch {
+          // ignore preview errors
+        }
+      });
     } catch (error) {
       console.error('Failed to load shared users:', error);
     } finally {
@@ -82,6 +114,28 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
     const t = setTimeout(() => debouncedSearch(), 300);
     return () => clearTimeout(t);
   }, [query, debouncedSearch]);
+
+  // Prefetch previews for search results when they change
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      for (const user of results) {
+        const fileId = (user as any).avatar || null;
+        if (!fileId) continue;
+        // skip if already have a preview for this user
+        if (resultPreviews[user.id] !== undefined) continue;
+        try {
+          const url = await fetchAndCachePreview(fileId);
+          if (!mounted) return;
+          setResultPreviews(prev => (prev[user.id] === url ? prev : { ...prev, [user.id]: url }));
+        } catch {
+          // ignore
+        }
+      }
+    };
+    if (results.length) load();
+    return () => { mounted = false; };
+  }, [results, fetchAndCachePreview]);
 
   const resetMessages = () => {
     setErrorMsg(null); setSuccessMsg(null);
@@ -230,9 +284,13 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                   onClick={() => { setSelectedUser(user); setQuery(user.name || user.email || ''); resetMessages(); }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-card/80 focus:outline-none text-sm text-foreground"
                 >
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-card text-xs font-medium text-foreground">
-                    {(user.name || user.email || '?').charAt(0).toUpperCase()}
-                  </div>
+                  {resultPreviews[user.id] ? (
+                    <img src={resultPreviews[user.id] as string} alt={user.name || user.email || 'User'} className="h-6 w-6 rounded-full object-cover" />
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-card text-xs font-medium text-foreground">
+                      {(user.name || user.email || '?').charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <div className="flex flex-col">
                     <span className="font-medium">{user.name || user.email}</span>
                     {user.email && user.email !== user.name && (
@@ -289,6 +347,13 @@ export function ShareNoteModal({ isOpen, onOpenChange, noteId, noteTitle }: Shar
                 {sharedUsers.map((user) => (
                   <div key={user.id + (user.collaborationId || '')} className="flex items-center justify-between p-2 border border-border rounded-md bg-card">
                     <div className="flex items-center gap-2">
+                      {sharedPreviews[user.id] ? (
+                        <img src={sharedPreviews[user.id] as string} alt={user.name || user.email || 'User'} className="w-8 h-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-8 h-8 bg-card rounded-full flex items-center justify-center font-medium text-sm text-foreground">
+                          {user.name ? user.name.charAt(0).toUpperCase() : user.email ? user.email.charAt(0).toUpperCase() : 'U'}
+                        </div>
+                      )}
                       <span className="text-sm">{user.name ? `${user.name} (${user.email})` : user.email}</span>
                       <div className="flex items-center gap-1">
                         <select
