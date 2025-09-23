@@ -60,7 +60,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
       ...note,
       title,
       content,
-      tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
+      tags: tags.split(',').map((tag: string) => tag.trim()).filter(Boolean),
       updatedAt: new Date().toISOString()
     };
     onUpdate(updatedNote);
@@ -106,7 +106,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
       <div className="space-y-4">
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-light-fg/70 dark:text-dark-fg/70 mb-2">
+          <label className="block text-sm font-medium text-muted mb-2">
             Title
           </label>
           {isEditing ? (
@@ -114,10 +114,10 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
               type="text"
               value={title || ''}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-light-bg dark:bg-dark-bg text-light-fg dark:text-dark-fg"
+              className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground"
             />
           ) : (
-            <h1 className="text-xl font-bold text-light-fg dark:text-dark-fg">
+            <h1 className="text-xl font-bold text-foreground">
               {note.title}
             </h1>
           )}
@@ -125,7 +125,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
 
         {/* Content */}
         <div>
-          <label className="block text-sm font-medium text-light-fg/70 dark:text-dark-fg/70 mb-2">
+          <label className="block text-sm font-medium text-muted mb-2">
             Content
           </label>
           {isEditing ? (
@@ -133,10 +133,10 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
               value={content || ''}
               onChange={(e) => setContent(e.target.value)}
               rows={12}
-              className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-light-bg dark:bg-dark-bg text-light-fg dark:text-dark-fg resize-none"
+              className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground resize-none"
             />
           ) : (
-            <div className="text-light-fg/80 dark:text-dark-fg/80 prose prose-sm max-w-none dark:prose-invert">
+            <div className="text-foreground/80 prose prose-sm max-w-none dark:prose-invert">
               {note.content ? (
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -145,7 +145,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
                   {note.content}
                 </ReactMarkdown>
               ) : (
-                <span className="italic text-light-fg/60 dark:text-dark-fg/60">No content</span>
+                <span className="italic text-muted">No content</span>
               )}
             </div>
           )}
@@ -153,7 +153,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium text-light-fg/70 dark:text-dark-fg/70 mb-2">
+          <label className="block text-sm font-medium text-muted mb-2">
             Tags
           </label>
           {isEditing ? (
@@ -162,11 +162,11 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="Separate tags with commas"
-              className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-light-bg dark:bg-dark-bg text-light-fg dark:text-dark-fg"
+              className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground"
             />
           ) : (
             <div className="flex flex-wrap gap-2">
-              {note.tags?.map((tag, index) => (
+              {note.tags?.map((tag: string, index: number) => (
                 <span
                   key={index}
                   className="px-2 py-1 bg-accent/20 text-accent rounded-full text-xs"
@@ -179,36 +179,36 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
         </div>
 
         {/* Metadata */}
-        <div className="pt-4 border-t border-light-border dark:border-dark-border space-y-2">
-          <div className="text-sm text-light-fg/60 dark:text-dark-fg/60">
+        <div className="pt-4 border-t border-border space-y-2">
+          <div className="text-sm text-muted">
             Created: {formatNoteCreatedDate(note)}
           </div>
-          <div className="text-sm text-light-fg/60 dark:text-dark-fg/60">
+          <div className="text-sm text-muted">
             Updated: {formatNoteUpdatedDate(note)}
           </div>
           
           {/* Sharing Information */}
           {enhancedNote?.isSharedWithUser && enhancedNote?.sharedBy && (
-            <div className="pt-2 border-t border-light-border dark:border-dark-border">
-              <div className="flex items-center gap-2 text-sm text-light-fg/60 dark:text-dark-fg/60">
-                <UserIcon className="h-4 w-4" />
-                <span>
-                  Shared by {enhancedNote.sharedBy.name || enhancedNote.sharedBy.email}
-                </span>
-              </div>
-              {enhancedNote.sharePermission && (
-                <div className="text-xs text-light-fg/50 dark:text-dark-fg/50 mt-1">
-                  Permission: {enhancedNote.sharePermission}
+              <div className="pt-2 border-t border-border">
+                <div className="flex items-center gap-2 text-sm text-muted">
+                  <UserIcon className="h-4 w-4" />
+                  <span>
+                    Shared by {enhancedNote.sharedBy.name || enhancedNote.sharedBy.email}
+                  </span>
                 </div>
-              )}
-            </div>
+                {enhancedNote.sharePermission && (
+                  <div className="text-xs text-muted mt-1">
+                    Permission: {enhancedNote.sharePermission}
+                  </div>
+                )}
+              </div>
           )}
         </div>
       </div>
 
       {/* Edit Actions */}
       {isEditing && (
-        <div className="flex gap-2 pt-4 border-t border-light-border dark:border-dark-border">
+        <div className="flex gap-2 pt-4 border-t border-border">
           <Button onClick={handleSave} className="flex-1">
             Save Changes
           </Button>
@@ -225,7 +225,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
         title="Delete Note"
       >
         <div className="space-y-4">
-          <p className="text-light-fg dark:text-dark-fg">
+          <p className="text-foreground">
             Are you sure you want to delete &quot;{note.title || 'this note'}&quot;? This action cannot be undone.
           </p>
           <div className="flex gap-2">

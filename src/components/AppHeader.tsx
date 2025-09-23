@@ -53,7 +53,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
   }
 
   return (
-    <header className={`fixed top-0 right-0 left-0 z-30 bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-sm border-b border-light-border dark:border-dark-border ${className}`}>
+    <header className={`fixed top-0 right-0 left-0 z-30 bg-background/80 backdrop-blur-sm border-b border-border ${className}`}>
       <div className="flex items-center justify-between px-6 py-3 gap-4">
         {/* Left: WhisperRNote Logo - Always at the edge */}
         <div className="flex items-center gap-3 shrink-0">
@@ -62,7 +62,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
             alt="WhisperRNote Logo" 
             className="w-8 h-8 rounded-lg shadow-lg"
           />
-          <h1 className="hidden sm:block text-xl font-black text-light-fg dark:text-dark-fg bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
+          <h1 className="hidden sm:block text-xl font-black text-foreground bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
             WhisperRNote
           </h1>
         </div>
@@ -129,7 +129,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                 
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors duration-200"
                 >
                   <ArrowRightOnRectangleIcon className="h-4 w-4" />
                   <span className="text-sm font-medium">Logout</span>

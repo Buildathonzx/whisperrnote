@@ -12,7 +12,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { isOpen: isDynamicSidebarOpen } = useDynamicSidebar();
   
   return (
-    <div className="min-h-screen bg-light-bg dark:bg-dark-bg overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Header spans full width */}
       <AppHeader />
       

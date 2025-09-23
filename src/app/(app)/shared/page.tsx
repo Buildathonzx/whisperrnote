@@ -56,11 +56,11 @@ export default function SharedNotesPage() {
   const currentNotes = activeTab === 'private' ? sharedNotes : publicNotes;
 
   return (
-    <div className="relative flex size-full min-h-screen flex-col overflow-x-hidden bg-light-bg dark:bg-dark-bg">
+    <div className="relative flex size-full min-h-screen flex-col overflow-x-hidden bg-background">
       <div className="flex-grow px-4 pt-6 pb-24 sm:px-6 md:px-8 md:pb-8">
         {/* Mobile Header - Hidden on Desktop */}
         <header className="mb-8 flex items-center justify-between md:hidden">
-          <h1 className="text-3xl font-bold text-light-fg dark:text-dark-fg">
+          <h1 className="text-3xl font-bold text-foreground">
             Shared
           </h1>
           <div className="flex items-center gap-3">
@@ -73,10 +73,10 @@ export default function SharedNotesPage() {
         {/* Desktop Header */}
         <header className="hidden md:flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-black text-light-fg dark:text-dark-fg mb-2">
+            <h1 className="text-4xl font-black text-foreground mb-2">
               Shared
             </h1>
-              <p className="text-lg text-light-fg/70 dark:text-dark-fg/70">
+              <p className="text-lg text-muted">
                Notes shared with you and your public notes
              </p>
           </div>
@@ -89,13 +89,13 @@ export default function SharedNotesPage() {
         </header>
 
         {/* Tabs */}
-        <div className="flex mb-6 bg-light-card dark:bg-dark-card rounded-lg p-1">
+        <div className="flex mb-6 bg-card rounded-lg p-1">
           <button
             onClick={() => setActiveTab('private')}
             className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md transition-colors ${
               activeTab === 'private'
-                ? 'bg-light-accent dark:bg-dark-accent text-white'
-                : 'text-light-fg/70 dark:text-dark-fg/70 hover:text-light-fg dark:hover:text-dark-fg'
+                ? 'bg-accent text-white'
+                : 'text-muted hover:text-light-fg dark:hover:text-dark-fg'
             }`}
           >
             <UserIcon className="h-4 w-4" />
@@ -105,8 +105,8 @@ export default function SharedNotesPage() {
             onClick={() => setActiveTab('public')}
             className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md transition-colors ${
               activeTab === 'public'
-                ? 'bg-light-accent dark:bg-dark-accent text-white'
-                : 'text-light-fg/70 dark:text-dark-fg/70 hover:text-light-fg dark:hover:text-dark-fg'
+                ? 'bg-accent text-white'
+                : 'text-muted hover:text-light-fg dark:hover:text-dark-fg'
             }`}
           >
             <GlobeAltIcon className="h-4 w-4" />
@@ -117,21 +117,21 @@ export default function SharedNotesPage() {
         {/* Content */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="text-light-fg/70 dark:text-dark-fg/70">Loading...</div>
+            <div className="text-muted">Loading...</div>
           </div>
         ) : currentNotes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-24 h-24 bg-light-card dark:bg-dark-card rounded-3xl flex items-center justify-center mb-6 shadow-lg">
+            <div className="w-24 h-24 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-lg">
               {activeTab === 'private' ? (
-                <UserIcon className="h-12 w-12 text-light-fg/50 dark:text-dark-fg/50" />
+                <UserIcon className="h-12 w-12 text-muted" />
               ) : (
-                <GlobeAltIcon className="h-12 w-12 text-light-fg/50 dark:text-dark-fg/50" />
+                <GlobeAltIcon className="h-12 w-12 text-muted" />
               )}
             </div>
-            <h3 className="text-2xl font-bold text-light-fg dark:text-dark-fg mb-3">
+            <h3 className="text-2xl font-bold text-foreground mb-3">
               {activeTab === 'private' ? 'No private shared notes yet' : 'No public notes yet'}
             </h3>
-            <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6 max-w-md">
+            <p className="text-muted mb-6 max-w-md">
               {activeTab === 'private' 
                 ? "When others share notes with you, they'll appear here. Start collaborating by sharing your own notes!"
                 : "When you make your notes public, they’ll appear here."
@@ -146,7 +146,7 @@ export default function SharedNotesPage() {
                   <NoteCard note={note} />
                   {/* Show sharing info for private notes */}
                   {activeTab === 'private' && (note as SharedNote).sharedBy && (
-                    <div className="mt-2 text-xs text-light-fg/60 dark:text-dark-fg/60">
+                    <div className="mt-2 text-xs text-muted">
                       Shared by {(note as SharedNote).sharedBy?.name || (note as SharedNote).sharedBy?.email}
                     </div>
                   )}

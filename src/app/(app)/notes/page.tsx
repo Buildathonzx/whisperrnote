@@ -144,7 +144,7 @@ export default function NotesPage() {
       <div className="flex-1 min-h-screen">
         {/* Mobile Header - Hidden on Desktop */}
         <header className="mb-8 flex items-center justify-between md:hidden">
-          <h1 className="text-3xl font-bold text-light-fg dark:text-dark-fg">
+          <h1 className="text-3xl font-bold text-foreground">
             Notes
           </h1>
           <div className="flex items-center gap-3">
@@ -157,10 +157,10 @@ export default function NotesPage() {
         {/* Desktop Header */}
       <header className="hidden md:flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-4xl font-black text-light-fg dark:text-dark-fg mb-2">
+          <h1 className="text-4xl font-black text-foreground mb-2">
             My Notes
           </h1>
-          <p className="text-lg text-light-fg/70 dark:text-dark-fg/70">
+          <p className="text-lg text-muted">
             {allNotes.length < totalNotes && !hasSearchResults ? (
               <>Loaded {allNotes.length} of {totalNotes} notes</>
             ) : (
@@ -222,17 +222,17 @@ export default function NotesPage() {
         <NoteGridSkeleton count={12} />
       ) : paginatedNotes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-24 h-24 bg-light-card dark:bg-dark-card rounded-3xl flex items-center justify-center mb-6 shadow-lg">
+          <div className="w-24 h-24 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-lg">
             {hasSearchResults ? (
-              <MagnifyingGlassIcon className="h-12 w-12 text-light-fg/50 dark:text-dark-fg/50" />
+              <MagnifyingGlassIcon className="h-12 w-12 text-muted" />
             ) : (
-              <PlusCircleIcon className="h-12 w-12 text-light-fg/50 dark:text-dark-fg/50" />
+              <PlusCircleIcon className="h-12 w-12 text-muted" />
             )}
           </div>
-          <h3 className="text-2xl font-bold text-light-fg dark:text-dark-fg mb-3">
+          <h3 className="text-2xl font-bold text-foreground mb-3">
             {hasSearchResults ? 'No notes found' : 'No notes yet'}
           </h3>
-          <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6 max-w-md">
+          <p className="text-muted mb-6 max-w-md">
             {hasSearchResults 
               ? `No notes match "${searchQuery}". Try different keywords or create a new note.`
               : 'Start your knowledge journey by creating your first note. Capture ideas, thoughts, and insights.'

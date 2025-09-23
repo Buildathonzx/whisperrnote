@@ -194,7 +194,7 @@ export default function ExtensionsPage() {
   const installedExtensions = extensions.filter(ext => ext.enabled);
 
   return (
-    <div className="min-h-screen bg-light-50 dark:bg-dark-950 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -227,7 +227,7 @@ export default function ExtensionsPage() {
                onClick={() => setActiveTab(tab.id as 'marketplace' | 'installed' | 'templates')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300'
+                  ? 'bg-accent/10 text-accent'
                   : 'text-muted hover:text-foreground'
               }` }
             >
@@ -343,18 +343,18 @@ function ExtensionCard({ extension, onToggle, isOwner }: {
           </div>
         </div>
         {isOwner && (
-          <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-full">
+          <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-full">
             Owner
           </span>
         )}
       </div>
 
-      <p className="text-light-600 dark:text-dark-300 text-sm mb-4 line-clamp-3">
+      <p className="text-muted text-sm mb-4 line-clamp-3">
         {extension.description}
       </p>
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2 text-sm text-light-500 dark:text-dark-400">
+        <div className="flex items-center space-x-2 text-sm text-muted">
           <span>👤</span>
           <span>Author</span>
         </div>

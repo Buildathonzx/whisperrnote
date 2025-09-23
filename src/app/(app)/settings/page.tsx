@@ -664,7 +664,7 @@ const SettingsTab = ({
                 onChange={(e) => onSettingChange('notifications', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+              <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-card-foreground after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
             </label>
           </div>
 
@@ -758,7 +758,7 @@ const PreferencesTab = ({ settings, onSettingChange, onUpdate, error, success, c
             onModeChangeAction={onAIModeChange}
           />
         </div>
-        <div className="mt-4 p-4 bg-light-bg dark:bg-dark-bg rounded-lg">
+        <div className="mt-4 p-4 bg-card rounded-lg">
           <p className="text-sm font-medium text-foreground mb-2">{getAIModeDisplayName(currentAIMode)}</p>
           <p className="text-xs text-foreground/70">{getAIModeDescription(currentAIMode)}</p>
         </div>
@@ -795,7 +795,7 @@ const PreferencesTab = ({ settings, onSettingChange, onUpdate, error, success, c
               onChange={(e) => onSettingChange('autoSave', e.target.checked)}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+            <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-card-foreground after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
           </label>
         </div>
 
@@ -811,7 +811,7 @@ const PreferencesTab = ({ settings, onSettingChange, onUpdate, error, success, c
               onChange={(e) => onSettingChange('showPreviews', e.target.checked)}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+            <div className="w-11 h-6 bg-border peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-card-foreground after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
           </label>
         </div>
 
@@ -923,7 +923,7 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
             type="file"
             accept="image/*"
             onChange={(e) => setProfilePic(e.target.files ? e.target.files[0] : null)}
-            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-accent file:text-light-bg hover:file:bg-accent-dark"
+            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-accent file:text-card-foreground hover:file:bg-accent-dark"
           />
         </div>
       </div>
