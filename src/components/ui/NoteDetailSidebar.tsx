@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useToast } from './Toast';
 import { Notes } from '@/types/appwrite';
-import { PencilIcon, TrashIcon, UserIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, UserIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
 import { Modal } from './modal';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
@@ -136,16 +137,38 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
               className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground resize-none"
             />
           ) : (
-            <div className="text-foreground/80 prose prose-sm max-w-none dark:prose-invert">
-              {note.content ? (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeSanitize]}
-                >
-                  {note.content}
-                </ReactMarkdown>
-              ) : (
-                <span className="italic text-muted">No content</span>
+            <div>
+              <div className="text-foreground/80 prose prose-sm max-w-none dark:prose-invert">
+                {note.content ? (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeSanitize]}
+                  >
+                    {note.content}
+                  </ReactMarkdown>
+                ) : (
+                  <span className="italic text-muted">No content</span>
+                )}
+              </div>
+
+              {/* Copy Markdown Button */}
+              {note.content && (
+                <div className="pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(note.content || '');
+                        // show success toast
+                      } catch (err) {
+                        // show error toast
+                      }
+                    }}
+                  >
+                    Copy
+                  </Button>
+                </div>
               )}
             </div>
           )}
