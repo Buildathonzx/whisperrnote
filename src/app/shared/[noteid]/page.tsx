@@ -6,6 +6,7 @@ import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
+import { preProcessMarkdown } from '@/lib/markdown';
 import {
   ClockIcon,
   EyeIcon,
@@ -185,7 +186,7 @@ n                <ArrowRightIcon className="h-4 w-4 ml-2" />
           <div className="p-8">
             <div className="prose prose-lg max-w-none dark:prose-invert text-light-fg dark:text-dark-fg leading-relaxed">
               {note.content ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>{note.content}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>{preProcessMarkdown(note.content)}</ReactMarkdown>
               ) : (
                 <div className="text-light-fg/60 dark:text-dark-fg/60 italic">This note is empty.</div>
               )}

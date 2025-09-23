@@ -11,6 +11,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
 import { useToast } from './Toast';
+import { preProcessMarkdown } from '@/lib/markdown';
 
 interface NoteDetailSidebarProps {
   note: Notes;
@@ -140,7 +141,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeSanitize]}
                   >
-                    {note.content}
+                    {preProcessMarkdown(note.content)}
                   </ReactMarkdown>
                 ) : (
                   <span className="italic text-muted">No content</span>
