@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail } from "@/lib/appwrite";
+import { account, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, deleteProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useAuth } from "@/components/ui/AuthContext";
@@ -238,6 +238,7 @@ export default function SettingsPage() {
   const handleRemoveProfilePicture = async () => {
     if (!user) return;
     if (!user.prefs?.profilePicId) return;
+    setIsRemovingProfilePic(true);
     try {
       setError('');
       setSuccess('');
@@ -261,6 +262,8 @@ export default function SettingsPage() {
     } catch (err) {
       console.error('handleRemoveProfilePicture failed', err);
       setError('Failed to remove profile picture');
+    } finally {
+      setIsRemovingProfilePic(false);
     }
   };
 
@@ -303,7 +306,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="p-8">
-            {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} onEditProfile={handleEditProfile} />}
+            {activeTab === 'profile' && <ProfileTab user={user} profilePicUrl={profilePicUrl} onEditProfile={handleEditProfile} onRemoveProfilePicture={handleRemoveProfilePicture} isRemovingProfilePic={isRemovingProfilePic} />}
              {activeTab === 'settings' && (
                <SettingsTab
                  user={user}
