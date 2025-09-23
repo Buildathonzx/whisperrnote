@@ -1,4 +1,4 @@
-import { getActivePlan } from './appwrite';
+import { getActivePlan } from '.';
 import type { SubscriptionPlan } from '@/types/appwrite';
 
 // Centralized plan policy definitions (soft limits). Adjust as product evolves.
