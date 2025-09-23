@@ -12,6 +12,7 @@ import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
 import { getWalletAvailability, authenticateWithWallet, getWalletStatus } from "@/lib/appwrite/auth/wallet";
 import { isICPEnabled } from "@/integrations/icp";
 import { SubscriptionTab } from "./SubscriptionTab";
+import { getUserProfilePicId, getUserAuthMethod, getUserWalletAddress, getUserField } from '@/lib/utils';
 
 type TabType = 'profile' | 'settings' | 'preferences' | 'integrations' | 'subscription';
 
@@ -62,8 +63,8 @@ export default function SettingsPage() {
         setUser(u);
         setIsVerified(!!u.emailVerification);
 
-        // Prefer top-level profilePicId, fallback to legacy prefs.profilePicId
-        const picId = (u as any).profilePicId || u.prefs?.profilePicId;
+        // Prefer helper-based profilePicId resolution
+        const picId = getUserProfilePicId(u as any); // unified profilePicId resolution
         if (picId) {
           const url = await getProfilePicture(picId);
           setProfilePicUrl(url as string);
@@ -255,12 +256,12 @@ export default function SettingsPage() {
   // Remove profile picture handler: delete stored file and clear prefs
   const handleRemoveProfilePicture = async () => {
     if (!user) return;
-    if (!user.prefs?.profilePicId && !user.profilePicId) return;
+    if (!getUserProfilePicId(user)) return;
     setIsRemovingProfilePic(true);
     try {
       setError('');
       setSuccess('');
-      const oldId = user.prefs?.profilePicId || user.profilePicId;
+      const oldId = getUserProfilePicId(user);
       // Optimistically clear UI
       setProfilePicUrl(null);
       // Attempt to delete file then clear prefs
@@ -422,7 +423,7 @@ const ProfileTab = ({ user, profilePicUrl, onEditProfile, onRemoveProfilePicture
           </div>
             <div className="flex items-center gap-3">
               <Button onClick={onEditProfile}>Edit Profile</Button>
-              {user?.prefs?.profilePicId && (
+              {getUserProfilePicId(user) && (
                 <Button variant="secondary" onClick={onRemoveProfilePicture} disabled={isRemovingProfilePic}>
                   {isRemovingProfilePic ? 'Removing...' : 'Remove'}
                 </Button>
@@ -544,15 +545,15 @@ const SettingsTab = ({
            <div className="flex items-center justify-between mb-2">
              <div>
                <p className="text-foreground text-sm">
-                 Current method: <span className="font-medium">{user?.prefs?.authMethod || 'Email'}</span>
+                 Current method: <span className="font-medium">{getUserAuthMethod(user) || 'Email'}</span>
                </p>
-               {user?.prefs?.authMethod === 'wallet' && user?.prefs?.walletAddress && (
+               {getUserAuthMethod(user) === 'wallet' && getUserWalletAddress(user) && (
                  <p className="text-foreground/70 text-xs">
-                   Wallet: {user.prefs.walletAddress.slice(0, 6)}...{user.prefs.walletAddress.slice(-4)}
+                   Wallet: {getUserWalletAddress(user)?.slice(0, 6)}...{getUserWalletAddress(user)?.slice(-4)}
                  </p>
                )}
              </div>
-             {user?.prefs?.authMethod !== 'wallet' && authMethods.walletAvailable && (
+             {getUserAuthMethod(user) !== 'wallet' && authMethods.walletAvailable && (
                <Button
                  variant="secondary"
                  size="sm"
@@ -799,7 +800,7 @@ const SettingsTab = ({
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={!!user?.prefs?.publicProfile}
+                checked={!!getUserField(user, 'publicProfile')}
                 onChange={(e) => onPublicProfileToggle && onPublicProfileToggle(e.target.checked)}
                 className="sr-only peer"
               />
@@ -1034,7 +1035,7 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
       // Handle profile picture swap: upload new, update prefs, delete old
       let uploadedFile: any = null;
       if (profilePic) {
-        const oldId = (user as any).profilePicId || user?.prefs?.profilePicId;
+        const oldId = getUserProfilePicId(user);
         try {
           uploadedFile = await uploadProfilePicture(profilePic);
         } catch (uploadErr) {
@@ -1061,7 +1062,7 @@ const EditProfileForm = ({ user, onClose, onProfileUpdate }: any) => {
         }
 
         // Successfully updated prefs; delete old file if present and different
-        const oldIdAfter = (user as any).profilePicId || user?.prefs?.profilePicId;
+        const oldIdAfter = getUserProfilePicId(user);
         if (oldIdAfter && uploadedFile && oldIdAfter !== uploadedFile.$id) {
           try {
             await deleteProfilePicture(oldIdAfter);
