@@ -13,8 +13,10 @@ import {
   TagIcon,
   ExclamationTriangleIcon,
   ArrowRightIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  UserCircleIcon
 } from '@heroicons/react/24/outline';
+import { getCurrentUser } from '@/lib/appwrite/auth';
 
 // Helper: strip simple markdown to plain text for metadata
 function stripMarkdown(md?: string) {
@@ -99,20 +101,51 @@ export async function generateMetadata({ params }: { params: { noteid: string } 
 }
 
 export default async function SharedNotePage({ params }: { params: { noteid: string } }) {
-  const note = await validatePublicNoteAccess(params.noteid);
+  const [note, user] = await Promise.all([
+    validatePublicNoteAccess(params.noteid),
+    getCurrentUser()
+  ]);
 
   // Base layout elements (server-rendered so crawlers see content)
   if (!note) {
     return (
       <div className="min-h-screen bg-light-bg dark:bg-dark-bg">
         <header className="border-b border-light-border dark:border-dark-border bg-white/50 dark:bg-black/50 backdrop-blur-sm">
-          <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Image src="/logo/whisperrnote.png" alt="WhisperRNote" width={32} height={32} className="rounded-lg" />
               <h1 className="text-xl font-bold text-light-fg dark:text-dark-fg">WhisperRNote</h1>
             </div>
+            <div className="hidden sm:flex items-center gap-3">
+              {user ? (
+                <a href="/" className="flex items-center gap-2 group">
+                  <div className="h-9 w-9 rounded-full bg-accent/10 flex items-center justify-center text-accent font-semibold">
+                    {user.name?.charAt(0)?.toUpperCase() || <UserCircleIcon className="h-6 w-6" />}
+                  </div>
+                  <span className="hidden md:inline text-sm font-medium text-light-fg dark:text-dark-fg group-hover:underline">
+                    {user.name?.split(' ')[0] || 'Account'}
+                  </span>
+                </a>
+              ) : (
+                <>
+                  <a href="/" className="rounded-xl px-3 py-2 text-sm font-medium bg-accent/10">Home</a>
+                  <a href="/" className="rounded-xl px-3 py-2 text-sm font-medium bg-accent text-white">Join</a>
+                </>
+              )}
+            </div>
           </div>
         </header>
+
+        {!user && (
+          <section className="border-b border-light-border dark:border-dark-border bg-gradient-to-r from-accent/10 via-transparent to-accent/10">
+            <div className="max-w-4xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-light-fg/70 dark:text-dark-fg/70">Organize unlimited notes, AI insights & secure sharing.</p>
+              <a href="/" className="inline-flex items-center rounded-lg px-4 py-2 bg-accent text-white text-sm font-medium">
+                Get Started Free <ArrowRightIcon className="h-4 w-4 ml-1" />
+              </a>
+            </div>
+          </section>
+        )}
 
         <main className="max-w-4xl mx-auto px-6 py-16">
           <div className="text-center space-y-8">
@@ -131,7 +164,7 @@ export default async function SharedNotePage({ params }: { params: { noteid: str
               <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6">Join WhisperRNote to create, organize, and share your own notes with the world.</p>
               <a href="/" className="inline-flex items-center justify-center w-full rounded-xl px-4 py-3 bg-accent text-white font-semibold">
                 Get Started Free
-n                <ArrowRightIcon className="h-4 w-4 ml-2" />
+                <ArrowRightIcon className="h-4 w-4 ml-2" />
               </a>
             </div>
           </div>
@@ -149,11 +182,39 @@ n                <ArrowRightIcon className="h-4 w-4 ml-2" />
             <h1 className="text-xl font-bold text-light-fg dark:text-dark-fg">WhisperRNote</h1>
           </div>
           <div className="hidden sm:flex items-center gap-3">
-            <a href="/" className="rounded-xl px-3 py-2 text-sm font-medium bg-accent/10">Home</a>
-            <a href="/" className="rounded-xl px-3 py-2 text-sm font-medium bg-accent text-white">Join</a>
+            {user ? (
+              <a href="/" className="flex items-center gap-2 group">
+                <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-semibold">
+                  {user.name?.charAt(0)?.toUpperCase() || <UserCircleIcon className="h-6 w-6" />}
+                </div>
+                <span className="hidden md:inline text-sm font-medium text-light-fg dark:text-dark-fg group-hover:underline">
+                  {user.name?.split(' ')[0] || 'Account'}
+                </span>
+              </a>
+            ) : (
+              <>
+                <a href="/" className="rounded-xl px-3 py-2 text-sm font-medium bg-accent/10">Home</a>
+                <a href="/" className="rounded-xl px-3 py-2 text-sm font-medium bg-accent text-white">Join</a>
+              </>
+            )}
           </div>
         </div>
       </header>
+
+      {!user && (
+        <section className="border-b border-light-border dark:border-dark-border bg-gradient-to-r from-accent/10 via-transparent to-accent/10">
+          <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-light-fg/70 dark:text-dark-fg/70 flex items-center gap-2">
+              <ChartBarIcon className="h-4 w-4 text-accent" /> AI summaries, tags & collaboration included.
+            </p>
+            <div className="flex items-center gap-3">
+              <a href="/" className="inline-flex items-center rounded-lg px-4 py-2 bg-accent text-white text-sm font-medium shadow-sm">
+                Get Started Free <ArrowRightIcon className="h-4 w-4 ml-1" />
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <article className="bg-light-card dark:bg-dark-card rounded-3xl border-2 border-light-border dark:border-dark-border overflow-hidden">
@@ -207,7 +268,7 @@ n                <ArrowRightIcon className="h-4 w-4 ml-2" />
             <p className="text-light-fg/70 dark:text-dark-fg/70 mb-6 max-w-lg mx-auto">Join thousands of users who trust WhisperRNote to capture, organize, and share their thoughts.</p>
             <a href="/" className="inline-flex items-center justify-center rounded-xl px-6 py-3 bg-accent text-white font-semibold">
               Start Writing for Free
-n              <ArrowRightIcon className="h-5 w-5 ml-3" />
+              <ArrowRightIcon className="h-5 w-5 ml-3" />
             </a>
           </div>
         </div>
