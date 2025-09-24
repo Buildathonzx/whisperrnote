@@ -1405,6 +1405,7 @@ export async function deleteProfilePicture(fileId: string) {
 
 // --- NOTES ATTACHMENTS HELPERS ---
 
+// Basic upload wrapper (raw file upload only)
 export async function uploadNoteAttachment(file: File) {
   return uploadFile(APPWRITE_BUCKET_NOTES_ATTACHMENTS, file);
 }
@@ -1415,6 +1416,115 @@ export async function getNoteAttachment(fileId: string) {
 
 export async function deleteNoteAttachment(fileId: string) {
   return deleteFile(APPWRITE_BUCKET_NOTES_ATTACHMENTS, fileId);
+}
+
+// Attachment metadata shape (lightweight, embedded in note.attachments array as JSON string)
+// We avoid schema change for now; each entry: { id: fileId, name, size, mime, createdAt }
+interface EmbeddedAttachmentMeta {
+  id: string;
+  name: string;
+  size: number;
+  mime: string | null;
+  createdAt: string;
+}
+
+function serializeAttachmentMeta(meta: EmbeddedAttachmentMeta): string {
+  return JSON.stringify(meta);
+}
+
+function parseAttachmentMeta(raw: any): EmbeddedAttachmentMeta | null {
+  if (!raw) return null;
+  try {
+    if (typeof raw === 'string') return JSON.parse(raw);
+    if (typeof raw === 'object' && raw.id) return raw as EmbeddedAttachmentMeta;
+  } catch {}
+  return null;
+}
+
+function normalizeNoteAttachmentsField(note: any): EmbeddedAttachmentMeta[] {
+  const arr: any[] = Array.isArray(note.attachments) ? note.attachments : [];
+  const metas: EmbeddedAttachmentMeta[] = [];
+  for (const entry of arr) {
+    const meta = parseAttachmentMeta(entry);
+    if (meta && meta.id) metas.push(meta);
+  }
+  return metas;
+}
+
+async function enforceAttachmentPlanLimit(userId: string, currentCount: number) {
+  try {
+    const { enforcePlanLimit } = await import('./subscriptions/index');
+    const check = await enforcePlanLimit(userId, 'attachments', currentCount);
+    if (!check.allowed) {
+      const err: any = new Error('Plan limit reached for attachments');
+      err.code = 'PLAN_LIMIT_REACHED';
+      err.resource = 'attachments';
+      err.limit = check.limit;
+      err.plan = check.plan;
+      throw err;
+    }
+  } catch (e: any) {
+    if (e?.code === 'PLAN_LIMIT_REACHED') throw e;
+  }
+}
+
+// Public helpers to manage attachment association to a note
+export async function addAttachmentToNote(noteId: string, file: File) {
+  const user = await getCurrentUser();
+  if (!user?.$id) throw new Error('User not authenticated');
+  // Get existing note + attachments
+  const note = await getNote(noteId) as any;
+  if (note.userId !== user.$id) throw new Error('Only owner can add attachments currently');
+
+  // Normalize current attachments (embedded metadata)
+  const existingMetas = normalizeNoteAttachmentsField(note);
+  await enforceAttachmentPlanLimit(user.$id, existingMetas.length);
+
+  // Enforce per-file size limit (2MB base; could vary by plan later)
+  const maxBytes = 2 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    const err: any = new Error('Attachment exceeds 2MB size limit');
+    err.code = 'ATTACHMENT_SIZE_LIMIT';
+    throw err;
+  }
+
+  // Upload file
+  const uploaded: any = await uploadNoteAttachment(file);
+
+  // Build metadata
+  const meta: EmbeddedAttachmentMeta = {
+    id: uploaded.$id || uploaded.id,
+    name: (file as any).name || uploaded.name || 'attachment',
+    size: uploaded.sizeOriginal || (file as any).size || 0,
+    mime: uploaded.mimeType || (file as any).type || null,
+    createdAt: new Date().toISOString(),
+  };
+
+  const updatedMetas = [...existingMetas, meta];
+  const serialized = updatedMetas.map(serializeAttachmentMeta);
+
+  // Persist to note
+  await updateNote(noteId, { attachments: serialized } as any);
+  return meta;
+}
+
+export async function listNoteAttachments(noteId: string): Promise<EmbeddedAttachmentMeta[]> {
+  const note = await getNote(noteId) as any;
+  return normalizeNoteAttachmentsField(note);
+}
+
+export async function removeAttachmentFromNote(noteId: string, attachmentId: string) {
+  const user = await getCurrentUser();
+  if (!user?.$id) throw new Error('User not authenticated');
+  const note = await getNote(noteId) as any;
+  if (note.userId !== user.$id) throw new Error('Only owner can remove attachments currently');
+  const existingMetas = normalizeNoteAttachmentsField(note);
+  const remaining = existingMetas.filter(a => a.id !== attachmentId);
+  if (remaining.length === existingMetas.length) return { removed: false };
+  const serialized = remaining.map(serializeAttachmentMeta);
+  await updateNote(noteId, { attachments: serialized } as any);
+  try { await deleteNoteAttachment(attachmentId); } catch (e) { /* non-fatal */ }
+  return { removed: true };
 }
 
 // ...add similar helpers for other buckets as needed...
