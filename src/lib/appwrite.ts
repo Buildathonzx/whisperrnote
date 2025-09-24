@@ -1451,20 +1451,23 @@ function normalizeNoteAttachmentsField(note: any): EmbeddedAttachmentMeta[] {
   return metas;
 }
 
-async function enforceAttachmentPlanLimit(userId: string, currentCount: number) {
+async function enforceAttachmentPlanLimit(userId: string, _currentCount: number, fileSizeBytes?: number) {
   try {
-    const { enforcePlanLimit } = await import('./subscriptions/index');
-    const check = await enforcePlanLimit(userId, 'attachments', currentCount);
-    if (!check.allowed) {
-      const err: any = new Error('Plan limit reached for attachments');
-      err.code = 'PLAN_LIMIT_REACHED';
-      err.resource = 'attachments';
-      err.limit = check.limit;
-      err.plan = check.plan;
-      throw err;
+    const { getActivePlan } = await import('./subscriptions/index');
+    const { plan } = await getActivePlan(userId);
+    const { planPolicies } = await import('./subscriptions/policy');
+    const policy: any = (planPolicies as any)[plan];
+    if (fileSizeBytes) {
+      const perFileLimitMB: number = policy.attachmentSizeMB;
+      if (fileSizeBytes > perFileLimitMB * 1024 * 1024) {
+        const err: any = new Error(`Attachment exceeds plan per-file limit (${perFileLimitMB}MB)`);
+        err.code = 'ATTACHMENT_SIZE_LIMIT';
+        err.limitMB = perFileLimitMB;
+        throw err;
+      }
     }
   } catch (e: any) {
-    if (e?.code === 'PLAN_LIMIT_REACHED') throw e;
+    if (e?.code === 'ATTACHMENT_SIZE_LIMIT') throw e;
   }
 }
 
