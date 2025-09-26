@@ -2,6 +2,38 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import AttachmentsManager from '@/components/AttachmentsManager';
+import { formatFileSize } from '@/lib/utils';
+
+interface AttachmentMeta { id: string; name: string; size: number; mime: string | null; }
+
+const AttachmentChips: React.FC<{ noteId: string }> = ({ noteId }) => {
+  const [attachments, setAttachments] = React.useState<AttachmentMeta[]>([]);
+  const [loaded, setLoaded] = React.useState(false);
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/notes/${noteId}/attachments`);
+        if (!res.ok) return;
+        const j = await res.json();
+        if (!cancelled) setAttachments(Array.isArray(j.attachments)? j.attachments: []);
+      } catch {}
+      finally { if (!cancelled) setLoaded(true); }
+    })();
+    return () => { cancelled = true; };
+  }, [noteId]);
+  if (!loaded || attachments.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-2 mt-4">
+      {attachments.map(a => (
+        <a key={a.id} href={`/notes/${noteId}/${a.id}`} className="flex items-center gap-1 px-2 py-1 rounded-full bg-accent/10 text-accent text-[11px] hover:bg-accent/20 transition" title={`${a.name} • ${formatFileSize(a.size)}${a.mime? ' • '+a.mime:''}`}>{truncate(a.name,18)}</a>
+      ))}
+    </div>
+  );
+};
+
+function truncate(s: string, n: number){ return s.length>n? s.slice(0,n-1)+'…': s; }
+
 
 interface NoteEditorProps {
   initialContent?: string;
@@ -67,6 +99,7 @@ export default function NoteEditor({
         <div>
           {/* Replace 'temp-note-id' with actual note id when available */}
           <AttachmentsManager noteId={(globalThis as any).currentNoteId || 'temp-note-id'} />
+          <AttachmentChips noteId={(globalThis as any).currentNoteId || 'temp-note-id'} />
         </div>
 
         <div className="flex justify-end">
