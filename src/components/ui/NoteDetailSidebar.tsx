@@ -12,6 +12,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
 import { useToast } from './Toast';
 import { preProcessMarkdown } from '@/lib/markdown';
+import { formatFileSize } from '@/lib/utils';
 
 interface NoteDetailSidebarProps {
   note: Notes;
@@ -26,6 +27,7 @@ interface EnhancedNote extends Notes {
 }
 
 export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSidebarProps) {
+  
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [title, setTitle] = useState(note.title);
@@ -199,6 +201,30 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
             </div>
           )}
         </div>
+
+        {/* Attachments */}
+        {note.attachments && note.attachments.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-muted mb-2">Attachments</label>
+            <ul className="space-y-1 max-h-40 overflow-auto pr-1">
+              {note.attachments.map((a: any) => (
+                <li key={a.id} className="flex items-center justify-between gap-2 text-xs bg-accent/10 rounded px-2 py-1">
+                  <div className="flex flex-col min-w-0">
+                    <a href={`/notes/${note.$id}/${a.id}`} className="truncate font-medium text-accent hover:underline" title={a.name}>{a.name}</a>
+                    <span className="text-[10px] text-muted-foreground">{formatFileSize(a.size)}{a.mime?` • ${a.mime}`:''}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <a
+                      href={`/notes/${note.$id}/${a.id}`}
+                      className="text-accent hover:underline"
+                      title="Open attachment"
+                    >Open</a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Metadata */}
         <div className="pt-4 border-t border-border space-y-2">
