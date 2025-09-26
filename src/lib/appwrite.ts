@@ -1384,7 +1384,7 @@ export async function deleteProfilePicture(fileId: string) {
   return deleteFile(APPWRITE_BUCKET_PROFILE_PICTURES, fileId);
 }
 
-// --- NOTES ATTACHMENTS HELPERS ---
+// --- NOTES ATTACHMENTS HELPERS (Legacy embedded + new collection) ---
 
 // Basic upload wrapper (raw file upload only)
 export async function uploadNoteAttachment(file: File) {
@@ -1489,6 +1489,19 @@ export async function addAttachmentToNote(noteId: string, file: File) {
 
   // Persist to note
   await updateNote(noteId, { attachments: serialized } as any);
+  // Dual-write to attachments collection if enabled (best-effort)
+  try {
+    await createAttachmentRecord({
+      noteId,
+      ownerId: user.$id,
+      fileId: meta.id,
+      filename: meta.name,
+      mimetype: meta.mime,
+      sizeBytes: meta.size,
+    });
+  } catch (e) {
+    console.error('dual-write attachment record failed', e);
+  }
   return meta;
 }
 
@@ -1512,6 +1525,94 @@ export async function removeAttachmentFromNote(noteId: string, attachmentId: str
 }
 
 // ...add similar helpers for other buckets as needed...
+
+// --- NEW ATTACHMENTS COLLECTION MODEL ---
+// Progressive enhancement: supports richer metadata beyond embedded JSON strings.
+// If NEXT_PUBLIC_APPWRITE_COLLECTION_ID_ATTACHMENTS is set, we will dual-write to that collection.
+
+export const APPWRITE_COLLECTION_ID_ATTACHMENTS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_ATTACHMENTS || undefined;
+
+export interface AttachmentRecord {
+  id: string;
+  noteId: string;
+  ownerId: string;
+  fileId: string; // underlying storage file id
+  filename: string;
+  mimetype: string | null;
+  sizeBytes: number;
+  createdAt: string;
+  metadata?: any;
+}
+
+async function createAttachmentRecord(meta: { noteId: string; ownerId: string; fileId: string; filename: string; mimetype: string | null; sizeBytes: number; }): Promise<AttachmentRecord | null> {
+  if (!APPWRITE_COLLECTION_ID_ATTACHMENTS) return null;
+  try {
+    const now = new Date().toISOString();
+    const doc: any = await databases.createDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_ID_ATTACHMENTS,
+      ID.unique(),
+      {
+        noteId: meta.noteId,
+        ownerId: meta.ownerId,
+        fileId: meta.fileId,
+        filename: meta.filename,
+        mimetype: meta.mimetype,
+        sizeBytes: meta.sizeBytes,
+        createdAt: now,
+        id: null,
+      }
+    );
+    await databases.updateDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_ID_ATTACHMENTS,
+      doc.$id,
+      { id: doc.$id }
+    );
+    return {
+      id: doc.$id,
+      noteId: meta.noteId,
+      ownerId: meta.ownerId,
+      fileId: meta.fileId,
+      filename: meta.filename,
+      mimetype: meta.mimetype,
+      sizeBytes: meta.sizeBytes,
+      createdAt: now,
+    };
+  } catch (e) {
+    console.error('createAttachmentRecord failed', e);
+    return null;
+  }
+}
+
+export async function listAttachmentsForNote(noteId: string): Promise<AttachmentRecord[]> {
+  if (!APPWRITE_COLLECTION_ID_ATTACHMENTS) return [];
+  try {
+    const res: any = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_ID_ATTACHMENTS,
+      [Query.equal('noteId', noteId), Query.limit(200), Query.orderDesc('$createdAt')] as any
+    );
+    return res.documents as AttachmentRecord[];
+  } catch (e) {
+    console.error('listAttachmentsForNote failed', e);
+    return [];
+  }
+}
+
+export async function deleteAttachmentRecord(attachmentId: string) {
+  if (!APPWRITE_COLLECTION_ID_ATTACHMENTS) return;
+  try {
+    await databases.deleteDocument(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_COLLECTION_ID_ATTACHMENTS,
+      attachmentId
+    );
+  } catch (e) {
+    console.error('deleteAttachmentRecord failed', e);
+  }
+}
+
 
 // --- NOTE REVISIONS UTILITIES ---
 export async function listNoteRevisions(noteId: string, limit: number = 50) {
