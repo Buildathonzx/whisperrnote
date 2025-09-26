@@ -20,7 +20,7 @@ export async function GET(_req: Request, { params }: { params: { noteId: string 
         return NextResponse.json({ error: 'Not found' }, { status: 404 });
       }
     }
-    const attachments = await listNoteAttachments(params.noteId);
+    const attachments = await listNoteAttachments(params.noteId, user.$id);
     return NextResponse.json({ attachments });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Failed to list attachments' }, { status: 500 });

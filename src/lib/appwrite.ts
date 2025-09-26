@@ -1563,7 +1563,28 @@ export async function addAttachmentToNote(noteId: string, file: File) {
   return meta;
 }
 
-export async function listNoteAttachments(noteId: string): Promise<EmbeddedAttachmentMeta[]> {
+export async function listNoteAttachments(noteId: string, currentUserId?: string): Promise<EmbeddedAttachmentMeta[]> {
+  // Optional access guard: if currentUserId provided, ensure user is owner or collaborator.
+  try {
+    if (currentUserId) {
+      const note = await getNote(noteId) as any;
+      if (note.userId !== currentUserId) {
+        try {
+          const collabRes: any = await databases.listDocuments(
+            APPWRITE_DATABASE_ID,
+            APPWRITE_COLLECTION_ID_COLLABORATORS,
+            [Query.equal('noteId', noteId), Query.equal('userId', currentUserId)] as any
+          );
+          const isCollab = Array.isArray(collabRes?.documents) && collabRes.documents.length > 0;
+          if (!isCollab) return [];
+        } catch {
+          return [];
+        }
+      }
+    }
+  } catch (authErr) {
+    return [];
+  }
   const note = await getNote(noteId) as any;
   const embedded = normalizeNoteAttachmentsField(note);
   // If collection enabled, merge records (favor collection metadata if conflicts by fileId)

@@ -22,7 +22,7 @@ export async function GET(_req: Request, { params }: { params: { noteId: string;
     }
 
     // Validate attachment exists in embedded metadata
-    const attachments = await listNoteAttachments(params.noteId);
+    const attachments = await listNoteAttachments(params.noteId, user.$id);
     const embedded = attachments.find(a => a.id === params.attachmentId);
     if (!embedded) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 

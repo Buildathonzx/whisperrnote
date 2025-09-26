@@ -44,7 +44,7 @@ export async function GET(req: Request) {
     }
 
     // Ensure attachment belongs to the note
-    const attachments = await listNoteAttachments(noteId);
+    const attachments = await listNoteAttachments(noteId, user.$id);
     const meta = attachments.find(a => a.id === fileId);
     if (!meta) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
