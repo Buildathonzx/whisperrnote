@@ -1724,6 +1724,19 @@ export function generateSignedAttachmentURL(noteId: string, ownerId: string, fil
   };
 }
 
+export function verifySignedAttachmentURL(params: { noteId: string; ownerId: string; fileId: string; exp: number | string; sig: string; }): { valid: boolean; reason?: string } {
+  if (!ATTACHMENT_URL_SIGNING_SECRET) return { valid: false, reason: 'signing_disabled' };
+  const { noteId, ownerId, fileId } = params;
+  let expNum = typeof params.exp === 'string' ? parseInt(params.exp, 10) : params.exp;
+  if (!expNum || isNaN(expNum)) return { valid: false, reason: 'invalid_exp' };
+  const now = Math.floor(Date.now() / 1000);
+  if (expNum < now) return { valid: false, reason: 'expired' };
+  const expected = generateAttachmentSignature(noteId, ownerId, fileId, expNum);
+  if (!expected) return { valid: false, reason: 'signature_unavailable' };
+  if (expected !== params.sig) return { valid: false, reason: 'invalid_signature' };
+  return { valid: true };
+}
+
 
 // --- NOTE REVISIONS UTILITIES ---
 export async function listNoteRevisions(noteId: string, limit: number = 50) {
@@ -2123,4 +2136,6 @@ export default {
     deleteUser,
     listUsers,
     searchUsers,
+    generateSignedAttachmentURL,
+    verifySignedAttachmentURL,
 };
