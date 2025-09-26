@@ -16,27 +16,36 @@ export async function GET(req: NextRequest, { params }: { params: { noteId: stri
     const meta = attachments.find(a => a.id === params.attachmentId);
     if (!meta) return NextResponse.json({ error: 'Attachment not found' }, { status: 404 });
 
-    const url = req.nextUrl;
-    const raw = url.searchParams.get('raw');
-    if (raw) {
-      // For raw file serve a signed URL redirect if available
+    const urlObj = req.nextUrl;
+    const raw = urlObj.searchParams.get('raw');
+
+    // If not raw, provide metadata plus (if enabled) a short-lived signed URL to download
+    if (!raw) {
+      let signed: any = null;
       try {
-        const signed = await generateSignedAttachmentURL(params.attachmentId, { noteId: params.noteId });
-        if (signed?.url) {
-          return NextResponse.redirect(signed.url);
-        }
-      } catch {/* fallback below */}
-      try {
-        const file: any = await getNoteAttachment(params.attachmentId);
-        // We cannot stream via SDK easily here without extra fetch; return meta if streaming not implemented
-        return NextResponse.json({ file, meta });
-      } catch (e: any) {
-        return NextResponse.json({ error: e?.message || 'File retrieval failed' }, { status: 500 });
+        const ownerId = note.userId;
+        signed = generateSignedAttachmentURL(params.noteId, ownerId, params.attachmentId);
+      } catch (e) {
+        signed = null;
       }
+      console.log('[attachments.api] GET single done', { noteId: params.noteId, attachmentId: params.attachmentId, t: Date.now(), signed: !!signed });
+      return NextResponse.json({ attachment: meta, url: signed?.url || null, expiresAt: signed?.expiresAt || null });
     }
 
-    console.log('[attachments.api] GET single done', { noteId: params.noteId, attachmentId: params.attachmentId, t: Date.now() });
-    return NextResponse.json({ attachment: meta });
+    // raw download request: redirect to signed URL if available else fallback JSON (legacy)
+    try {
+      const ownerId = note.userId;
+      const signed = generateSignedAttachmentURL(params.noteId, ownerId, params.attachmentId);
+      if (signed?.url) {
+        return NextResponse.redirect(signed.url);
+      }
+    } catch {/* ignore */}
+    try {
+      const file: any = await getNoteAttachment(params.attachmentId);
+      return NextResponse.json({ file, meta });
+    } catch (e: any) {
+      return NextResponse.json({ error: e?.message || 'File retrieval failed' }, { status: 500 });
+    }
   } catch (e: any) {
     console.error('attachment.get.error', { noteId: params.noteId, attachmentId: params.attachmentId, err: e?.message || String(e) });
     return NextResponse.json({ error: e?.message || 'Server error' }, { status: 500 });
