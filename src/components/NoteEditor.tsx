@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
+import AttachmentsManager from '@/components/AttachmentsManager';
 
 interface NoteEditorProps {
   initialContent?: string;
@@ -59,10 +60,13 @@ export default function NoteEditor({
           {content.length}/65000 characters
         </div>
 
-        {/* Attachments Section (simplified placeholder until note persistence integrated) */}
-        <div className="border border-dashed border-border rounded-xl p-4 bg-muted/30">
-          <p className="text-sm font-medium mb-2">Attachments (Coming Soon)</p>
-          <p className="text-xs text-muted-foreground">Upload and manage files after note save integration.</p>
+        {/* Attachments Manager */}
+        {/** Expect parent to provide a saved noteId in future; using placeholder logic for now */}
+        {/* If note ID availability is required, this component can be rendered conditionally. */}
+        {/* @ts-ignore - placeholder noteId until integrated with actual note persistence flow */}
+        <div>
+          {/* Replace 'temp-note-id' with actual note id when available */}
+          <AttachmentsManager noteId={(globalThis as any).currentNoteId || 'temp-note-id'} />
         </div>
 
         <div className="flex justify-end">
