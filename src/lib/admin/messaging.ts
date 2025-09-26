@@ -1,4 +1,4 @@
-import { Client, Users, Databases, Teams, Messaging } from 'node-appwrite';
+import { Client, Users, Messaging } from 'node-appwrite';
 
 interface SendAdminEmailOptions {
   subject: string;
@@ -9,6 +9,8 @@ interface SendAdminEmailOptions {
   allUsers?: boolean; // broadcast
   bcc?: string[];
   topic?: string; // optional topic label
+  dryRun?: boolean; // if true, do not send, just return summary
+  maxRecipients?: number; // override default cap
 }
 
 function getServerClient() {
@@ -21,14 +23,16 @@ function getServerClient() {
 }
 
 export async function sendAdminEmail(opts: SendAdminEmailOptions) {
-  const { subject, bodyHtml, bodyText, userIds = [], emails = [], allUsers = false, bcc = [], topic } = opts;
+  const { subject, bodyHtml, bodyText, userIds = [], emails = [], allUsers = false, bcc = [], topic, dryRun = false, maxRecipients } = opts;
   if (!subject) throw new Error('Subject required');
   if (!bodyHtml && !bodyText) throw new Error('Body required');
+  if (subject.length > 200) throw new Error('Subject too long (200 char max)');
+  const html = bodyHtml || '';
+  if (html.length > 100_000) throw new Error('Body too large (100k char max)');
+
   const client = getServerClient();
   const messaging = new Messaging(client);
 
-  // Build recipients: Appwrite supports IDs for users / teams / topics (depending on version). We'll send individual user IDs or emails.
-  // Fallback behavior: if allUsers, we attempt to fetch a limited batch of users (pagination not implemented here for brevity).
   let targetUserIds: string[] = [...userIds];
   let targetEmails: string[] = [...emails];
 
@@ -43,10 +47,16 @@ export async function sendAdminEmail(opts: SendAdminEmailOptions) {
     }
   }
 
+  // Normalize & dedupe
+  targetUserIds = Array.from(new Set(targetUserIds.filter(Boolean)));
+  targetEmails = Array.from(new Set(targetEmails.filter(Boolean)));
+
   if (!targetUserIds.length && !targetEmails.length) throw new Error('No recipients specified');
 
-  // Create an email message per current Messaging API (adjust if API changes)
-  // We send a single message with multiple recipients when possible.
+  const cap = typeof maxRecipients === 'number' && maxRecipients > 0 ? maxRecipients : 5000;
+  const totalIntended = targetUserIds.length + targetEmails.length + bcc.length;
+  if (totalIntended > cap) throw new Error(`Recipient count ${totalIntended} exceeds cap ${cap}`);
+
   const recipients: any[] = [];
   for (const id of targetUserIds) recipients.push({ userId: id });
   for (const em of targetEmails) recipients.push({ email: em });
@@ -54,11 +64,22 @@ export async function sendAdminEmail(opts: SendAdminEmailOptions) {
     for (const b of bcc) recipients.push({ email: b, type: 'bcc' });
   }
 
+  if (dryRun) {
+    return {
+      success: true,
+      dryRun: true,
+      recipients: recipients.length,
+      preview: {
+        subject,
+        snippet: (html.replace(/<[^>]+>/g, '').slice(0, 140))
+      }
+    };
+  }
+
   const payload: any = {
     subject,
-    content: bodyHtml || bodyText,
+    content: html || bodyText,
     addresses: recipients,
-    // metadata for future filtering
     data: { topic: topic || null }
   };
 

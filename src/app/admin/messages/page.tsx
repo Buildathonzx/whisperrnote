@@ -12,8 +12,13 @@ export default function AdminMessages() {
   const [allUsers, setAllUsers] = useState(false);
   const [topic, setTopic] = useState('');
   const [state, setState] = useState<SendState>({ status: 'idle' });
+  const [dryRun, setDryRun] = useState(true);
+  const [preview, setPreview] = useState<any>(null);
 
   const send = async () => {
+    if (dryRun) return; // guard: prevent accidental send when dryRun enabled
+    if (!subject.trim() || !body.trim()) { setState({ status: 'error', message: 'Subject & body required'}); return; }
+    if (subject.length > 200) { setState({ status: 'error', message: 'Subject too long'}); return; }
     setState({ status: 'sending' });
     try {
       const res = await fetch('/api/admin/messages', {
@@ -26,9 +31,10 @@ export default function AdminMessages() {
           emails: emails.split(',').map(s=>s.trim()).filter(Boolean),
           bcc: bcc.split(',').map(s=>s.trim()).filter(Boolean),
           allUsers,
-          topic: topic || undefined
+          topic: topic || undefined,
+          dryRun: false
         })
-      });
+      }); // end fetch
       const j = await res.json().catch(()=>({}));
       if (!res.ok) throw new Error(j.error || 'Send failed');
       setState({ status: 'success', message: `Sent to ${j.recipients || 'n/a'} recipients` });
@@ -77,9 +83,52 @@ export default function AdminMessages() {
           <input id="allUsers" type="checkbox" checked={allUsers} onChange={e=>setAllUsers(e.target.checked)} />
           <label htmlFor="allUsers">Broadcast to all users (overrides User IDs/Emails)</label>
         </div>
-        <button onClick={send} disabled={state.status==='sending'} className="px-4 py-2 rounded bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50">
-          {state.status==='sending' ? 'Sending...' : 'Send Message'}
-        </button>
+        <div className="flex items-center gap-4 text-xs">
+          <input id="dryRun" type="checkbox" checked={dryRun} onChange={e=>setDryRun(e.target.checked)} />
+          <label htmlFor="dryRun">Dry Run (preview only)</label>
+        </div>
+        <div className="flex gap-3">
+          <button onClick={async ()=>{
+            setState({ status: 'sending' });
+            setPreview(null);
+            try {
+              const res = await fetch('/api/admin/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  subject,
+                  bodyHtml: body,
+                  userIds: userIds.split(',').map(s=>s.trim()).filter(Boolean),
+                  emails: emails.split(',').map(s=>s.trim()).filter(Boolean),
+                  bcc: bcc.split(',').map(s=>s.trim()).filter(Boolean),
+                  allUsers,
+                  topic: topic || undefined,
+                  dryRun: true
+                })
+              });
+              const j = await res.json().catch(()=>({}));
+              if (!res.ok) throw new Error(j.error || 'Preview failed');
+              setPreview(j);
+              setState({ status: 'idle', message: `Preview: ${j.recipients} recipients` });
+            } catch (e: any) {
+              setState({ status: 'error', message: e.message || 'Error' });
+            }
+          }} disabled={state.status==='sending'} className="px-4 py-2 rounded bg-secondary text-secondary-foreground hover:opacity-90 disabled:opacity-50">
+            {state.status==='sending' ? 'Working...' : 'Generate Preview'}
+          </button>
+          <button onClick={send} disabled={state.status==='sending' || dryRun} className="px-4 py-2 rounded bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50">
+            {state.status==='sending' ? 'Sending...' : 'Send Message'}
+          </button>
+        </div>
+        {dryRun && <div className="text-[10px] text-muted-foreground">Disable Dry Run to enable final send after preview.</div>}
+        {preview && (
+          <div className="border rounded p-3 bg-muted/30 text-xs space-y-1">
+            <div className="font-semibold">Preview</div>
+            <div>Recipients: {preview.recipients}</div>
+            <div>Subject: {preview.preview?.subject}</div>
+            <div>Snippet: {preview.preview?.snippet}</div>
+          </div>
+        )}
         {state.status==='error' && <div className="text-xs text-destructive">{state.message}</div>}
         {state.status==='success' && <div className="text-xs text-green-600">{state.message}</div>}
       </div>
