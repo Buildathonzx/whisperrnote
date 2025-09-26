@@ -32,6 +32,8 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
   const [isPublic, setIsPublic] = useState(false);
   const [status, setStatus] = useState<AppwriteTypes.Status>(AppwriteTypes.Status.DRAFT);
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
   const { closeOverlay } = useOverlay();
 
   const handleAddTag = () => {
@@ -184,6 +186,43 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Pending Attachments (pre-create) */}
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-light-fg dark:text-dark-fg flex items-center gap-2">
+              Attach Files (optional)
+            </label>
+            <div className="flex flex-col gap-3">
+              <input
+                id="pending-files-input"
+                type="file"
+                multiple
+                onChange={(e) => {
+                  if (e.target.files) {
+                    setPendingFiles(prev => [...prev, ...Array.from(e.target.files!)].slice(0, 10));
+                    e.target.value = '';
+                  }
+                }}
+                className="block w-full text-xs text-light-fg dark:text-dark-fg file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-accent file:text-white file:text-xs file:font-medium hover:file:bg-accent/90 cursor-pointer"
+              />
+              {pendingFiles.length > 0 && (
+                <ul className="space-y-1 max-h-28 overflow-y-auto text-xs rounded-lg border border-light-border dark:border-dark-border p-2 bg-light-bg dark:bg-dark-bg">
+                  {pendingFiles.map((f, i) => (
+                    <li key={i} className="flex items-center justify-between gap-2">
+                      <span className="truncate flex-1" title={f.name}>{f.name}</span>
+                      <span className="opacity-60 text-[10px]">{(f.size/1024).toFixed(1)} KB</span>
+                      <button
+                        type="button"
+                        onClick={() => setPendingFiles(pendingFiles.filter((_, idx) => idx !== i))}
+                        className="text-destructive hover:underline"
+                      >Remove</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {pendingFiles.length > 0 && <p className="text-[10px] text-light-fg/60 dark:text-dark-fg/60">Files upload after note creation. Max 10.</p>}
+            </div>
           </div>
 
           {/* Settings Row */}
