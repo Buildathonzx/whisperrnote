@@ -31,6 +31,12 @@ export interface Note {
   created_at?: string;
   updated_at?: string;
   ai_metadata?: AIMetadata;
+  // Ephemeral / expiration fields
+  ephemeral?: boolean;
+  expiresAt?: string | null;
+  hardDestroy?: boolean;
+  oneView?: boolean;
+  expired?: boolean;
   analytics?: Analytics;
 }
 
