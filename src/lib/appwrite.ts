@@ -1398,7 +1398,22 @@ export async function deleteProfilePicture(fileId: string) {
 
 // Basic upload wrapper (raw file upload only)
 export async function uploadNoteAttachment(file: File) {
-  return uploadFile(APPWRITE_BUCKET_NOTES_ATTACHMENTS, file);
+  const bucketId = APPWRITE_BUCKET_NOTES_ATTACHMENTS;
+  const startedAt = Date.now();
+  if (!bucketId) {
+    const err: any = new Error('Missing notes attachments bucket id');
+    err.code = 'MISSING_BUCKET_ID';
+    console.error('[attachments] uploadNoteAttachment:config_error');
+    throw err;
+  }
+  try {
+    const res: any = await uploadFile(bucketId, file);
+    console.log('[attachments] uploadNoteAttachment:success', { bucketId, fileId: res.$id || res.id, durationMs: Date.now() - startedAt });
+    return res;
+  } catch (e: any) {
+    console.error('[attachments] uploadNoteAttachment:error', { bucketId, error: e?.message || String(e) });
+    throw e;
+  }
 }
 
 export async function getNoteAttachment(fileId: string) {
