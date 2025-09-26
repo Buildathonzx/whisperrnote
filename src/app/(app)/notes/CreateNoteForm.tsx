@@ -227,50 +227,112 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
             )}
           </div>
 
-          {/* Pending Attachments (pre-create) */}
+          {/* File Upload Section - Enhanced UX */}
           <div className="space-y-3">
             <label className="text-sm font-semibold text-light-fg dark:text-dark-fg flex items-center gap-2">
+              <DocumentTextIcon className="h-4 w-4" />
               Attach Files (optional)
             </label>
+            
             <div className="flex flex-col gap-3">
-              <input
-                id="pending-files-input"
-                type="file"
-                multiple
-                onChange={(e) => {
-                  if (e.target.files) {
-                    setPendingFiles(prev => [...prev, ...Array.from(e.target.files!)].slice(0, 10));
-                    e.target.value = '';
-                  }
-                }}
-                className="block w-full text-xs text-light-fg dark:text-dark-fg file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-accent file:text-white file:text-xs file:font-medium hover:file:bg-accent/90 cursor-pointer"
-              />
+              {/* Drop zone style file input */}
+              <label
+                htmlFor="pending-files-input" 
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-light-border dark:border-dark-border rounded-2xl cursor-pointer bg-light-bg/50 dark:bg-dark-bg/50 hover:bg-light-bg dark:hover:bg-dark-bg transition-all duration-200"
+              >
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <PlusIcon className="h-8 w-8 text-light-fg/50 dark:text-dark-fg/50 mb-2" />
+                  <p className="text-sm text-light-fg dark:text-dark-fg font-medium">Click to select files</p>
+                  <p className="text-xs text-light-fg/60 dark:text-dark-fg/60">Images, PDFs, Text files • Max 10 files • 20MB each</p>
+                </div>
+                <input
+                  id="pending-files-input"
+                  type="file"
+                  multiple
+                  accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.md,.txt"
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      setPendingFiles(prev => [...prev, ...Array.from(e.target.files!)].slice(0, 10));
+                      e.target.value = '';
+                    }
+                  }}
+                  className="hidden"
+                />
+              </label>
+              
+              {/* File list */}
               {pendingFiles.length > 0 && (
-                <ul className="space-y-1 max-h-28 overflow-y-auto text-xs rounded-lg border border-light-border dark:border-dark-border p-2 bg-light-bg dark:bg-dark-bg">
-                  {pendingFiles.map((f, i) => (
-                    <li key={i} className="flex items-center justify-between gap-2">
-                      <span className="truncate flex-1" title={f.name}>{f.name}</span>
-                      <span className="opacity-60 text-[10px]">{(f.size/1024).toFixed(1)} KB</span>
-                      <button
-                        type="button"
-                        onClick={() => setPendingFiles(pendingFiles.filter((_, idx) => idx !== i))}
-                        className="text-destructive hover:underline"
-                      >Remove</button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {pendingFiles.length > 0 && <p className="text-[10px] text-light-fg/60 dark:text-dark-fg/60">Files upload after note creation. Max 10.</p>}
-              {uploading && (
-                <div className="mt-2 text-[10px] text-accent">
-                  Uploading {uploadProgress.uploaded}/{uploadProgress.total}...
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-light-fg/70 dark:text-dark-fg/70 font-medium">
+                      {pendingFiles.length} file{pendingFiles.length !== 1 ? 's' : ''} selected
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setPendingFiles([])}
+                      className="text-xs text-destructive hover:underline"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                  <div className="max-h-24 overflow-y-auto rounded-xl border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg">
+                    {pendingFiles.map((file, i) => (
+                      <div key={i} className="flex items-center justify-between gap-3 p-3 hover:bg-light-border/50 dark:hover:bg-dark-border/50 transition-colors">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <DocumentTextIcon className="h-4 w-4 text-accent" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-light-fg dark:text-dark-fg font-medium truncate" title={file.name}>
+                              {file.name}
+                            </p>
+                            <p className="text-xs text-light-fg/60 dark:text-dark-fg/60">
+                              {(file.size / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setPendingFiles(pendingFiles.filter((_, idx) => idx !== i))}
+                          className="p-1 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+                        >
+                          <XMarkIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
+              
+              {/* Upload progress */}
+              {uploading && uploadProgress.total > 0 && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-accent">Uploading files...</span>
+                    <span className="text-light-fg/60 dark:text-dark-fg/60">
+                      {uploadProgress.uploaded}/{uploadProgress.total}
+                    </span>
+                  </div>
+                  <div className="w-full bg-light-border dark:bg-dark-border rounded-full h-2">
+                    <div 
+                      className="bg-accent h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(uploadProgress.uploaded / uploadProgress.total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Upload errors */}
               {uploadErrors.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {uploadErrors.map((err,i)=>(
-                    <div key={i} className="text-[10px] text-destructive bg-destructive/10 rounded px-2 py-1">{err}</div>
-                  ))}
+                <div className="space-y-2">
+                  <p className="text-xs text-destructive font-medium">Upload Errors:</p>
+                  <div className="space-y-1">
+                    {uploadErrors.map((err, i) => (
+                      <div key={i} className="text-xs text-destructive bg-destructive/10 rounded-lg px-3 py-2 border border-destructive/20">
+                        {err}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

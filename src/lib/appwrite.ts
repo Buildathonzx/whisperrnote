@@ -1478,13 +1478,16 @@ async function enforceAttachmentPlanLimit(userId: string, _currentCount: number,
 }
 
 // Public helpers to manage attachment association to a note
-// Basic security: allow-list MIME types (prefixes + exact types)
-const ATTACHMENT_ALLOWED_MIME_PREFIXES = ['image/', 'text/'];
+// Basic security: allow-list MIME types that align with bucket extension allowlist
+// notes_attachments bucket allows: png, jpg, jpeg, webp, gif, pdf, md, txt
+const ATTACHMENT_ALLOWED_MIME_PREFIXES = ['image/'];
 const ATTACHMENT_ALLOWED_MIME_TYPES = [
   'application/pdf',
-  'application/json',
+  'text/plain',
   'text/markdown',
-  // Allow generic octet-stream as fallback; will rely on extension for safety
+  // Common variants for text files
+  'text/x-markdown',
+  // Allow generic octet-stream as fallback for text files; will rely on extension for safety
   'application/octet-stream'
 ];
 
