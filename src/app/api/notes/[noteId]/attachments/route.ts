@@ -35,6 +35,7 @@ export async function POST(req: Request, { params }: { params: { noteId: string 
   } catch (e: any) {
     if (e?.code === 'PLAN_LIMIT_REACHED') return NextResponse.json({ error: e.message, code: e.code, limit: e.limit, plan: e.plan }, { status: 429 });
     if (e?.code === 'ATTACHMENT_SIZE_LIMIT') return NextResponse.json({ error: e.message, code: e.code }, { status: 413 });
+    if (e?.code === 'UNSUPPORTED_MIME_TYPE') return NextResponse.json({ error: e.message, code: e.code, allowed: e.allowed }, { status: 415 });
     if (e?.message === 'Only owner can add attachments currently') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     return NextResponse.json({ error: e?.message || 'Upload failed' }, { status: 500 });
   }

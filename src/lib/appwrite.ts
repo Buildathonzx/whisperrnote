@@ -1453,6 +1453,49 @@ async function enforceAttachmentPlanLimit(userId: string, _currentCount: number,
 }
 
 // Public helpers to manage attachment association to a note
+// Basic security: allow-list MIME types (prefixes + exact types)
+const ATTACHMENT_ALLOWED_MIME_PREFIXES = ['image/', 'text/'];
+const ATTACHMENT_ALLOWED_MIME_TYPES = [
+  'application/pdf',
+  'application/json'
+];
+
+function sanitizeAttachmentFilename(name: string): string {
+  try {
+    if (!name) return 'attachment';
+    // Strip path components (just in case)
+    name = name.split('\\').pop()!.split('/').pop()!;
+    // Replace spaces with underscores
+    name = name.replace(/\s+/g, '_');
+    // Remove disallowed chars (allow alnum, dash, underscore, dot)
+    name = name.replace(/[^A-Za-z0-9._-]/g, '');
+    // Enforce length bounds
+    if (!name || name.length < 1) name = 'attachment';
+    if (name.length > 120) name = name.slice(0, 120);
+    // Ensure has an extension (best-effort) for common images if missing
+    if (!name.includes('.')) name = name + '.bin';
+    return name;
+  } catch {
+    return 'attachment';
+  }
+}
+
+function validateAttachmentMime(mime: string | null | undefined) {
+  if (!mime) {
+    const err: any = new Error('Missing or unknown MIME type');
+    err.code = 'UNSUPPORTED_MIME_TYPE';
+    err.allowed = { prefixes: ATTACHMENT_ALLOWED_MIME_PREFIXES, types: ATTACHMENT_ALLOWED_MIME_TYPES };
+    throw err;
+  }
+  const ok = ATTACHMENT_ALLOWED_MIME_PREFIXES.some(p => mime.startsWith(p)) || ATTACHMENT_ALLOWED_MIME_TYPES.includes(mime);
+  if (!ok) {
+    const err: any = new Error(`Unsupported MIME type: ${mime}`);
+    err.code = 'UNSUPPORTED_MIME_TYPE';
+    err.allowed = { prefixes: ATTACHMENT_ALLOWED_MIME_PREFIXES, types: ATTACHMENT_ALLOWED_MIME_TYPES };
+    throw err;
+  }
+}
+
 export async function addAttachmentToNote(noteId: string, file: File) {
   const user = await getCurrentUser();
   if (!user?.$id) throw new Error('User not authenticated');
@@ -1471,13 +1514,21 @@ export async function addAttachmentToNote(noteId: string, file: File) {
     if (e?.code === 'ATTACHMENT_SIZE_LIMIT') throw e;
   }
 
+  // MIME validation + filename sanitization
+  try {
+    validateAttachmentMime((file as any).type);
+  } catch (mimeErr: any) {
+    throw mimeErr; // bubble with code UNSUPPORTED_MIME_TYPE
+  }
+  const sanitizedName = sanitizeAttachmentFilename((file as any).name || 'attachment');
+
   // Upload file
   const uploaded: any = await uploadNoteAttachment(file);
 
   // Build metadata
   const meta: EmbeddedAttachmentMeta = {
     id: uploaded.$id || uploaded.id,
-    name: (file as any).name || uploaded.name || 'attachment',
+    name: sanitizedName || uploaded.name || 'attachment',
     size: uploaded.sizeOriginal || (file as any).size || 0,
     mime: uploaded.mimeType || (file as any).type || null,
     createdAt: new Date().toISOString(),
