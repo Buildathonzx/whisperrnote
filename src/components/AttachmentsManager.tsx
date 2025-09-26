@@ -51,55 +51,53 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
   }, [noteId]);
 
   useEffect(() => {
-    if (noteId) fetchAttachments();
+    if (noteId) {
+      fetchAttachments();
+      // Reset transient uploading state when note changes
+      setUploading([]);
+      setError(null);
+    }
   }, [noteId, fetchAttachments]);
 
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files || !files.length) return;
-    const toUpload: UploadingFile[] = []; 
-    for (const f of Array.from(files)) {
-       toUpload.push({ tempId: `${Date.now()}-${Math.random()}`, file: f, progress: 0, status: 'uploading' });
-       // Surface immediate client-side mime validation hint
-       if (!(f.type && (f.type.startsWith('image/') || f.type.startsWith('text/') || ['application/pdf','application/json','text/markdown','application/octet-stream'].includes(f.type)))) {
-         console.warn('[attachments] potential unsupported mime pre-check', f.type);
-       }
-    }
-    setUploading(prev => [...prev, ...toUpload]);
+    const batch: UploadingFile[] = Array.from(files).map(f => ({
+      tempId: `${Date.now()}-${Math.random()}`,
+      file: f,
+      progress: 0,
+      status: 'uploading'
+    }));
+    // Pre-add batch immutably
+    setUploading(prev => [...prev, ...batch]);
 
-    for (const item of toUpload) {
+    for (const temp of batch) {
+      // Update progress immutably
+      setUploading(cur => cur.map(u => u.tempId === temp.tempId ? { ...u, progress: 10 } : u));
       const form = new FormData();
-      form.append('file', item.file);
+      form.append('file', temp.file);
       try {
-        // Use fetch without progress first (Next.js route doesn't stream). Simulate progress.
-        item.progress = 10; setUploading(cur => [...cur]);
         const res = await fetch(`/api/notes/${noteId}/attachments`, { method: 'POST', body: form });
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
-          if (j.code === 'ATTACHMENT_SIZE_LIMIT') {
-            throw new Error(j.error || 'File exceeds plan size limit');
-          }
-          if (j.code === 'PLAN_LIMIT_REACHED') {
-            throw new Error(j.error || 'Plan limit reached');
-          }
-            if (j.code === 'UNSUPPORTED_MIME_TYPE') {
-            throw new Error('Unsupported file type');
-          }
+          if (j.code === 'ATTACHMENT_SIZE_LIMIT') throw new Error(j.error || 'File exceeds plan size limit');
+          if (j.code === 'PLAN_LIMIT_REACHED') throw new Error(j.error || 'Plan limit reached');
+          if (j.code === 'UNSUPPORTED_MIME_TYPE') throw new Error('Unsupported file type');
           throw new Error(j.error || `Upload failed (${res.status})`);
         }
-        item.progress = 100;
-        item.status = 'done';
-        setUploading(cur => [...cur]);
+        setUploading(cur => cur.map(u => u.tempId === temp.tempId ? { ...u, progress: 100, status: 'done' } : u));
         await fetchAttachments();
       } catch (e: any) {
-        item.status = 'error';
-        item.error = e.message || 'Upload failed';
-        setUploading(cur => [...cur]);
+        setUploading(cur => cur.map(u => u.tempId === temp.tempId ? { ...u, progress: 100, status: 'error', error: e.message || 'Upload failed' } : u));
       }
     }
-    // Clean finished successful uploads after short delay
+    // After all done, prune successful; keep errors for retry for a bit then remove
     setTimeout(() => {
-      setUploading(cur => cur.filter(u => u.status !== 'done'));
+      setUploading(cur => cur.filter(u => u.status === 'error'));
     }, 1200);
+    // Remove errors after longer delay (user saw them)
+    setTimeout(() => {
+      setUploading(cur => cur.filter(u => u.status !== 'error'));
+    }, 8000);
   }, [noteId, fetchAttachments]);
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,11 +149,25 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
           {uploading.map(u => (
             <div key={u.tempId} className="flex items-center justify-between rounded-lg bg-muted px-3 py-2 text-xs">
               <div className="truncate max-w-[50%]">{u.file.name}</div>
-               <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <div className="w-32 h-1 bg-border rounded overflow-hidden">
                   <div className={cn('h-full bg-accent transition-all', u.status === 'error' && 'bg-destructive')} style={{ width: `${u.progress}%` }} />
                 </div>
-                <span>{u.status === 'error' ? (u.error ? 'Err' : 'Error') : `${u.progress}%`}</span>
+                <span>
+                  {u.status === 'error' ? 'Error' : (u.progress === 100 ? (u.status === 'done' ? 'Done' : 'Fin') : `${u.progress}%`)}
+                </span>
+                {u.status === 'error' && (
+                  <button
+                    onClick={() => {
+                      // Retry single file
+                      const fileList = { 0: u.file, length: 1, item: (i: number) => (i === 0 ? u.file : null) } as any as FileList;
+                      // Remove before retry
+                      setUploading(cur => cur.filter(x => x.tempId !== u.tempId));
+                      handleFiles(fileList);
+                    }}
+                    className="text-accent hover:underline"
+                  >Retry</button>
+                )}
               </div>
             </div>
           ))}
