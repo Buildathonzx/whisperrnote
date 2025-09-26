@@ -75,6 +75,15 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
         const res = await fetch(`/api/notes/${noteId}/attachments`, { method: 'POST', body: form });
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
+          if (j.code === 'ATTACHMENT_SIZE_LIMIT') {
+            throw new Error(j.error || 'File exceeds plan size limit');
+          }
+          if (j.code === 'PLAN_LIMIT_REACHED') {
+            throw new Error(j.error || 'Plan limit reached');
+          }
+            if (j.code === 'UNSUPPORTED_MIME_TYPE') {
+            throw new Error('Unsupported file type');
+          }
           throw new Error(j.error || `Upload failed (${res.status})`);
         }
         item.progress = 100;
@@ -142,11 +151,11 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
           {uploading.map(u => (
             <div key={u.tempId} className="flex items-center justify-between rounded-lg bg-muted px-3 py-2 text-xs">
               <div className="truncate max-w-[50%]">{u.file.name}</div>
-              <div className="flex items-center gap-2">
+               <div className="flex items-center gap-2">
                 <div className="w-32 h-1 bg-border rounded overflow-hidden">
                   <div className={cn('h-full bg-accent transition-all', u.status === 'error' && 'bg-destructive')} style={{ width: `${u.progress}%` }} />
                 </div>
-                <span>{u.status === 'error' ? 'Error' : `${u.progress}%`}</span>
+                <span>{u.status === 'error' ? (u.error ? 'Err' : 'Error') : `${u.progress}%`}</span>
               </div>
             </div>
           ))}
