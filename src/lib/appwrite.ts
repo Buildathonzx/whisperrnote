@@ -247,6 +247,9 @@ export async function getNote(noteId: string): Promise<Notes> {
   } catch (e) {
     // Non-fatal
   }
+  if (!(doc as any).attachments || !Array.isArray((doc as any).attachments)) {
+    (doc as any).attachments = [];
+  }
   return doc as Notes;
 }
 
@@ -489,6 +492,9 @@ export async function listNotes(queries: any[] = [], limit: number = 100) {
           const id = n.$id || n.id;
           if (id && tagMap[id] && tagMap[id].size) {
             n.tags = Array.from(tagMap[id]);
+          }
+          if (!(n as any).attachments || !Array.isArray((n as any).attachments)) {
+            (n as any).attachments = [];
           }
         }
       }
@@ -1978,6 +1984,9 @@ export async function listNotesPaginated(options: ListNotesPaginatedOptions = {}
           const id = n.$id || n.id;
           if (id && tagMap[id] && tagMap[id].size) {
             n.tags = Array.from(tagMap[id]);
+          }
+          if (!(n as any).attachments || !Array.isArray((n as any).attachments)) {
+            (n as any).attachments = [];
           }
         }
       }
