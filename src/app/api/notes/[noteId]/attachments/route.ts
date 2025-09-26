@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getNote, updateNote, getCurrentUser, uploadNoteAttachment } from '@/lib/appwrite';
+import { getNote, updateNote, getCurrentUser, getCurrentUserFromRequest, uploadNoteAttachment } from '@/lib/appwrite';
 
 // GET: list attachments (embedded in note.attachments array as JSON strings)
 export async function GET(_req: NextRequest, { params }: { params: { noteId: string } }) {
   try {
-    const user = await getCurrentUser();
+    let user = await getCurrentUser();
+    if (!user) user = await getCurrentUserFromRequest(_req as any);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const trace = { op: 'list', noteId: params.noteId, userId: user.$id, t: Date.now() };
+    console.log('[attachments.api] GET start', trace);
 
     const note = await getNote(params.noteId);
     if (!note) return NextResponse.json({ error: 'Note not found' }, { status: 404 });
@@ -15,9 +19,10 @@ export async function GET(_req: NextRequest, { params }: { params: { noteId: str
       try { return JSON.parse(a); } catch { return null; }
     }).filter(Boolean) : [];
 
+    console.log('[attachments.api] GET done', { noteId: params.noteId, count: attachments.length, t: Date.now() });
     return NextResponse.json({ attachments });
   } catch (e: any) {
-    console.error('attachments.list.error', e);
+    console.error('attachments.list.error', { noteId: params.noteId, err: e?.message || String(e) });
     return NextResponse.json({ error: e?.message || 'Server error' }, { status: 500 });
   }
 }
@@ -25,8 +30,12 @@ export async function GET(_req: NextRequest, { params }: { params: { noteId: str
 // POST: upload new attachment (single file per request)
 export async function POST(req: NextRequest, { params }: { params: { noteId: string } }) {
   try {
-    const user = await getCurrentUser();
+    let user = await getCurrentUser();
+    if (!user) user = await getCurrentUserFromRequest(req as any);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const trace = { op: 'upload', noteId: params.noteId, userId: user.$id, t: Date.now() };
+    console.log('[attachments.api] POST start', trace);
 
     const note = await getNote(params.noteId);
     if (!note) return NextResponse.json({ error: 'Note not found' }, { status: 404 });
@@ -55,9 +64,10 @@ export async function POST(req: NextRequest, { params }: { params: { noteId: str
 
     await updateNote(params.noteId, { attachments: updated });
 
+    console.log('[attachments.api] POST done', { noteId: params.noteId, attachmentId: meta.id, t: Date.now() });
     return NextResponse.json({ attachment: meta });
   } catch (e: any) {
-    console.error('attachments.upload.error', e);
+    console.error('attachments.upload.error', { noteId: params.noteId, err: e?.message || String(e) });
     return NextResponse.json({ error: e?.message || 'Upload failed' }, { status: 500 });
   }
 }

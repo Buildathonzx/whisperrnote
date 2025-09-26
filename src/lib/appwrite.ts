@@ -24,8 +24,8 @@ import {
 // Named re-exports for user profile helpers
 export { createUser, getUser, updateUser, deleteUser, listUsers, searchUsers };
 
-const APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT ?? 'https://fra.cloud.appwrite.io/v1';
-const APPWRITE_PROJECT_ID = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID ?? '67fe9627001d97e37ef3';
+export const APPWRITE_ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT ?? 'https://fra.cloud.appwrite.io/v1';
+export const APPWRITE_PROJECT_ID = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID ?? '67fe9627001d97e37ef3';
 const client = new Client()
   .setEndpoint(APPWRITE_ENDPOINT)
   .setProject(APPWRITE_PROJECT_ID);
@@ -83,6 +83,33 @@ export async function getCurrentUser(): Promise<Users | null> {
   try {
     return await account.get() as unknown as Users;
   } catch {
+    return null;
+  }
+}
+
+// Per-request user fetch using incoming Cookie header (fallback when global client session missing)
+// Accepts a minimal object with headers.get('cookie') capability (e.g., NextRequest)
+export async function getCurrentUserFromRequest(req: { headers: { get(k: string): string | null } } | null | undefined): Promise<Users | null> {
+  try {
+    if (!req) return null;
+    const cookieHeader = req.headers.get('cookie') || req.headers.get('Cookie');
+    if (!cookieHeader) return null;
+    const res = await fetch(`${APPWRITE_ENDPOINT}/account`, {
+      method: 'GET',
+      headers: {
+        'X-Appwrite-Project': APPWRITE_PROJECT_ID,
+        'Cookie': cookieHeader,
+        'Accept': 'application/json'
+      },
+      cache: 'no-store'
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    // Basic shape check
+    if (!data || typeof data !== 'object' || !data.$id) return null;
+    return data as Users;
+  } catch (e) {
+    console.error('getCurrentUserFromRequest error', e);
     return null;
   }
 }
