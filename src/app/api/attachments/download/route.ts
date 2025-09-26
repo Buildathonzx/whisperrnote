@@ -11,7 +11,7 @@ function verifySignature(noteId: string, ownerId: string, fileId: string, exp: n
   const h = crypto.createHmac('sha256', ATTACHMENT_URL_SIGNING_SECRET);
   h.update(`${noteId}.${ownerId}.${fileId}.${exp}`);
   const expected = h.digest('hex');
-  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sig));
+  try { return crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(sig, 'hex')); } catch { return false; }
 }
 
 export async function GET(req: Request) {
