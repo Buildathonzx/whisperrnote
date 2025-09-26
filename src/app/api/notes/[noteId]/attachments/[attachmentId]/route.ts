@@ -14,13 +14,13 @@ export async function GET(_req: Request, { params }: { params: { noteId: string;
     // Validate attachment exists in embedded metadata
     const attachments = await listNoteAttachments(params.noteId);
     const embedded = attachments.find(a => a.id === params.attachmentId);
-    if (!embedded) return NextResponse.json({ error: 'Attachment not found' }, { status: 404 });
+    if (!embedded) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     // Generate signed short-lived URL (fallback null if disabled)
     const signed = generateSignedAttachmentURL(params.noteId, note.userId, embedded.id);
     return NextResponse.json({ attachment: embedded, url: signed?.url || null, expiresAt: signed?.expiresAt || null, ttl: signed?.ttl || null });
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || 'Failed to fetch attachment' }, { status: 500 });
+    return NextResponse.json({ error: e?.message || 'Failed to fetch attachment metadata' }, { status: 500 });
   }
 }
 
@@ -36,7 +36,7 @@ export async function DELETE(_req: Request, { params }: { params: { noteId: stri
     if (APPWRITE_COLLECTION_ID_ATTACHMENTS) {
       try { await deleteAttachmentRecord(params.attachmentId); } catch {}
     }
-    if (!result.removed) return NextResponse.json({ error: 'Attachment not found' }, { status: 404 });
+    if (!result.removed) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json({ removed: true });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Failed to delete attachment' }, { status: 500 });

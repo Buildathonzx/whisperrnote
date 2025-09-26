@@ -24,14 +24,14 @@ export async function GET(req: Request) {
     const sig = url.searchParams.get('sig') || '';
 
     if (!noteId || !ownerId || !fileId || !expStr || !sig) {
-      return NextResponse.json({ error: 'Missing params' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
     }
     const exp = parseInt(expStr, 10);
     if (!exp || exp < Math.floor(Date.now()/1000)) {
-      return NextResponse.json({ error: 'Expired' }, { status: 410 });
+      return NextResponse.json({ error: 'URL expired' }, { status: 410 });
     }
     if (!verifySignature(noteId, ownerId, fileId, exp, sig)) {
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden (invalid signature)' }, { status: 403 });
     }
 
     // Ensure current user is the owner (or in future: collaborator)
