@@ -128,7 +128,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-light-card dark:bg-dark-card rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] border-2 border-light-border dark:border-dark-border overflow-hidden max-h-[calc(100vh-4rem)]">
+    <div className="w-full max-w-2xl mx-auto bg-light-card dark:bg-dark-card rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] border-2 border-light-border dark:border-dark-border overflow-hidden max-h-[calc(100vh-4rem)] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-light-border dark:border-dark-border bg-gradient-to-r from-accent/5 to-accent/10">
         <div className="flex items-center gap-3">
@@ -149,8 +149,8 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
       </div>
 
       {/* Form Content - Scrollable */}
-      <div className="max-h-[calc(100vh-12rem)] overflow-y-auto">
-        <div className="p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 pb-4 space-y-6">
           {/* Title Input */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Title</label>
@@ -338,7 +338,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
       </div>
 
       {/* Footer Actions - Always visible at bottom */}
-      <div className="flex justify-end gap-3 p-6 border-t border-light-border dark:border-dark-border bg-light-bg/50 dark:bg-dark-bg/50 sticky bottom-0 z-10">
+      <div className="flex justify-end gap-3 p-6 border-t border-light-border dark:border-dark-border bg-light-bg/50 dark:bg-dark-bg/50 flex-shrink-0">
         <Button 
           variant="secondary" 
           onClick={closeOverlay}
