@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
-import { databases, APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, Query, getCurrentUser } from '@/lib/appwrite';
+import { listNotesPaginated } from '@/lib/appwrite';
 import type { Notes } from '@/types/appwrite.d';
 import { useAuth } from '@/components/ui/AuthContext';
 
@@ -55,54 +55,24 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const user = await getCurrentUser();
-      if (!user || !user.$id) {
-        setNotes([]);
-        setTotalNotes(0);
-        setHasMore(false);
-        setIsLoading(false);
-        return;
-      }
+      const res = await listNotesPaginated({
+        limit: PAGE_SIZE,
+        cursor: reset ? null : (cursorRef.current || null),
+      });
 
-      const queries: any[] = [
-        Query.equal('userId', user.$id),
-        Query.limit(PAGE_SIZE),
-        Query.orderDesc('$createdAt')
-      ];
-
-      // Only add cursorAfter for subsequent (non-reset) loads
-      const activeCursor = cursorRef.current;
-      if (!reset && activeCursor) {
-        queries.push(Query.cursorAfter(activeCursor));
-      }
-
-      const res = await databases.listDocuments(
-        APPWRITE_DATABASE_ID,
-        APPWRITE_COLLECTION_ID_NOTES,
-        queries
-      );
-
-      const batch = res.documents as unknown as Notes[];
+      const batch = res.documents as Notes[];
 
       setNotes(prev => {
         if (reset) return batch;
-        // Append only new notes (avoid duplicates when cursor logic races)
         const existingIds = new Set(prev.map(n => n.$id));
         const newOnes = batch.filter(n => !existingIds.has(n.$id));
         return [...prev, ...newOnes];
       });
 
-      // Capture total from response (no extra request)
-      if (typeof (res as any).total === 'number') {
-        setTotalNotes((res as any).total);
-      }
-
-      // Determine if more pages likely exist
-      setHasMore(batch.length === PAGE_SIZE);
-
-      if (batch.length) {
-        const lastId = batch[batch.length - 1].$id || null;
-        setCursor(lastId);
+      setTotalNotes(res.total || 0);
+      setHasMore(!!res.hasMore);
+      if (res.nextCursor) {
+        setCursor(res.nextCursor);
       } else if (reset) {
         setCursor(null);
       }
@@ -117,7 +87,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       isFetchingRef.current = false;
       setIsLoading(false);
     }
-  }, [isAuthenticated]); // intentionally exclude cursor & notes to prevent infinite loop
+  }, [isAuthenticated, PAGE_SIZE]); // intentionally exclude cursor & notes to prevent infinite loop
 
   const loadMore = useCallback(async () => {
     if (!hasMore || isFetchingRef.current) return;

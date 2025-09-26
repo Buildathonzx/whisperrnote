@@ -1713,6 +1713,100 @@ export async function auditNoteTagPivots(userId?: string) {
 }
 
 // --- EXPORT DEFAULTS ---
+/**
+ * --- PAGINATED NOTES LISTING ---
+ * Cursor-based pagination for notes with optional tag hydration.
+ * Returns: { documents, total, nextCursor, hasMore }
+ *
+ * Example:
+ *   const page1 = await listNotesPaginated({ limit: 50 });
+ *   if (page1.hasMore) {
+ *     const page2 = await listNotesPaginated({ limit: 50, cursor: page1.nextCursor });
+ *   }
+ *
+ * Provide custom queries to override default user filter or a specific userId.
+ * Set hydrateTags=false to skip tag pivot hydration for performance sensitive paths.
+ */
+export interface ListNotesPaginatedOptions {
+  limit?: number;
+  cursor?: string | null;
+  userId?: string; // override current user (admin/future use)
+  queries?: any[]; // additional custom queries (overrides userId logic if provided)
+  hydrateTags?: boolean; // default true
+}
+
+export async function listNotesPaginated(options: ListNotesPaginatedOptions = {}) {
+  const {
+    limit = 50,
+    cursor = null,
+    userId,
+    queries,
+    hydrateTags = true,
+  } = options;
+
+  let baseQueries: any[] = [];
+  if (Array.isArray(queries) && queries.length) {
+    baseQueries = [...queries];
+  } else {
+    const user = userId ? { $id: userId } as any : await getCurrentUser();
+    if (!user?.$id) {
+      return { documents: [], total: 0, nextCursor: null, hasMore: false };
+    }
+    baseQueries = [Query.equal('userId', user.$id)];
+  }
+
+  const finalQueries: any[] = [
+    ...baseQueries,
+    Query.limit(limit),
+    Query.orderDesc('$createdAt'),
+  ];
+  if (cursor) finalQueries.push(Query.cursorAfter(cursor));
+
+  const res: any = await databases.listDocuments(
+    APPWRITE_DATABASE_ID,
+    APPWRITE_COLLECTION_ID_NOTES,
+    finalQueries
+  );
+  const notes = res.documents as unknown as Notes[];
+
+  if (hydrateTags && notes.length) {
+    try {
+      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+      const noteIds = notes.map((n: any) => n.$id || (n as any).id).filter(Boolean);
+      if (noteIds.length) {
+        const pivotRes = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          noteTagsCollection,
+          [Query.equal('noteId', noteIds), Query.limit(Math.min(1000, noteIds.length * 10))] as any
+        );
+        const tagMap: Record<string, Set<string>> = {};
+        for (const p of pivotRes.documents as any[]) {
+          if (!p.noteId || !p.tag) continue;
+          if (!tagMap[p.noteId]) tagMap[p.noteId] = new Set();
+          tagMap[p.noteId].add(p.tag);
+        }
+        for (const n of notes as any[]) {
+          const id = n.$id || n.id;
+          if (id && tagMap[id] && tagMap[id].size) {
+            n.tags = Array.from(tagMap[id]);
+          }
+        }
+      }
+    } catch {/* non-fatal */}
+  }
+
+  const batchLength = notes.length;
+  const hasMore = batchLength === limit; // heuristic
+  const nextCursor = hasMore && batchLength ? (notes[batchLength - 1] as any).$id || null : null;
+
+  return {
+    documents: notes,
+    total: typeof res.total === 'number' ? res.total : notes.length,
+    nextCursor,
+    hasMore,
+  };
+}
+
 export default {
   client,
   account,
@@ -1750,8 +1844,9 @@ export default {
   getNote,
   updateNote,
   deleteNote,
-  listNotes,
-  getAllNotes,
+   listNotes,
+   listNotesPaginated,
+   getAllNotes,
   createTag,
   getTag,
   updateTag,
