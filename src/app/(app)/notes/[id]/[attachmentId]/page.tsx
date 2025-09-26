@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeftIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { formatFileSize } from '@/lib/utils';
 
 interface AttachmentMeta {
   id: string;
@@ -96,7 +97,7 @@ export default function AttachmentPage() {
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
                 <p className="text-muted-foreground">Size</p>
-                <p className="font-medium">{formatSize(meta.size)}</p>
+                <p className="font-medium">{formatFileSize(meta.size)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Type</p>
@@ -164,9 +165,4 @@ export default function AttachmentPage() {
   );
 }
 
-function formatSize(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  const kb = bytes / 1024;
-  if (kb < 1024) return `${kb.toFixed(1)} KB`;
-  const mb = kb / 1024; return `${mb.toFixed(2)} MB`;
-}
+
