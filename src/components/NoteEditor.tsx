@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import AttachmentsManager from '@/components/AttachmentsManager';
 import { formatFileSize } from '@/lib/utils';
+import { createNote, updateNote, getNote } from '@/lib/appwrite';
 
 interface AttachmentMeta { id: string; name: string; size: number; mime: string | null; }
 
@@ -12,6 +13,7 @@ const AttachmentChips: React.FC<{ noteId: string }> = ({ noteId }) => {
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (!noteId) return;
       try {
         const res = await fetch(`/api/notes/${noteId}/attachments`);
         if (!res.ok) return;
@@ -22,6 +24,7 @@ const AttachmentChips: React.FC<{ noteId: string }> = ({ noteId }) => {
     })();
     return () => { cancelled = true; };
   }, [noteId]);
+  if (!noteId) return null;
   if (!loaded) {
     return (
       <div className="flex flex-wrap gap-2 mt-4" aria-hidden>
@@ -43,34 +46,62 @@ const AttachmentChips: React.FC<{ noteId: string }> = ({ noteId }) => {
 
 function truncate(s: string, n: number){ return s.length>n? s.slice(0,n-1)+'…': s; }
 
-
 interface NoteEditorProps {
   initialContent?: string;
   initialTitle?: string;
-  onSave?: () => void;
+  noteId?: string; // existing note id if editing
+  onSave?: (note: any) => void; // called after create or update
+  onNoteCreated?: (note: any) => void; // called only on first creation
 }
 
 export default function NoteEditor({ 
   initialContent = '', 
   initialTitle = '',
-  onSave 
+  noteId: externalNoteId,
+  onSave,
+  onNoteCreated
 }: NoteEditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [internalNoteId, setInternalNoteId] = useState<string | undefined>(externalNoteId);
+  const effectiveNoteId = internalNoteId || externalNoteId;
+
+  // If external noteId changes (parent supplies), sync
+  useEffect(() => {
+    if (externalNoteId && externalNoteId !== internalNoteId) {
+      setInternalNoteId(externalNoteId);
+      // Optionally fetch latest content
+      (async () => {
+        try {
+          const n = await getNote(externalNoteId);
+          if (n) {
+            setTitle(n.title || '');
+            setContent(n.content || '');
+          }
+        } catch {}
+      })();
+    }
+  }, [externalNoteId]);
 
   const handleSave = async () => {
+    if (!title.trim() && !content.trim()) return;
     try {
       setIsSaving(true);
-      
-      // Note: Actual save logic would go here
-      // For now, just simulate saving
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      onSave?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save note');
+      setError(null);
+      let saved: any;
+      if (effectiveNoteId) {
+        // update existing
+        saved = await updateNote(effectiveNoteId, { title: title.trim(), content: content.trim() });
+      } else {
+        saved = await createNote({ title: title.trim(), content: content.trim(), tags: [] });
+        setInternalNoteId(saved?.$id || saved?.id);
+        onNoteCreated?.(saved);
+      }
+      onSave?.(saved);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to save note');
     } finally {
       setIsSaving(false);
     }
@@ -101,22 +132,26 @@ export default function NoteEditor({
           {content.length}/65000 characters
         </div>
 
-        {/* Attachments Manager */}
-        {/** Expect parent to provide a saved noteId in future; using placeholder logic for now */}
-        {/* If note ID availability is required, this component can be rendered conditionally. */}
-        {/* @ts-ignore - placeholder noteId until integrated with actual note persistence flow */}
-        <div>
-          {/* Replace 'temp-note-id' with actual note id when available */}
-          <AttachmentsManager noteId={(globalThis as any).currentNoteId || 'temp-note-id'} />
-          <AttachmentChips noteId={(globalThis as any).currentNoteId || 'temp-note-id'} />
-        </div>
+        {/* Attachments only when we have a real note id */}
+        {effectiveNoteId && (
+          <div>
+            <AttachmentsManager noteId={effectiveNoteId} />
+            <AttachmentChips noteId={effectiveNoteId} />
+          </div>
+        )}
+
+        {!effectiveNoteId && (
+          <div className="text-xs text-muted-foreground">
+            Save the note to enable attachments.
+          </div>
+        )}
 
         <div className="flex justify-end">
           <Button
             onClick={handleSave}
-            disabled={isSaving || !title || !content}
+            disabled={isSaving || !title.trim()}
           >
-            {isSaving ? 'Saving...' : 'Save Note'}
+            {isSaving ? 'Saving...' : (effectiveNoteId ? 'Update Note' : 'Save & Enable Attachments')}
           </Button>
         </div>
 
