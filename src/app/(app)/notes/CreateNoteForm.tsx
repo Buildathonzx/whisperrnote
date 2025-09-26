@@ -35,6 +35,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ uploaded: number; total: number }>({ uploaded: 0, total: 0 });
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const { closeOverlay } = useOverlay();
 
   const handleAddTag = () => {
@@ -84,6 +85,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
         if (pendingFiles.length) {
           setUploading(true);
           setUploadProgress({ uploaded: 0, total: pendingFiles.length });
+          let hadErrors = false;
           for (let i = 0; i < pendingFiles.length; i++) {
             const file = pendingFiles[i];
             try {
@@ -95,18 +97,23 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
               });
               if (!res.ok) {
                 let errorPayload: any = null;
-                try {
-                  errorPayload = await res.json();
-                } catch {
-                  try { errorPayload = { raw: await res.text() }; } catch { errorPayload = {}; }
-                }
+                try { errorPayload = await res.json(); } catch { try { errorPayload = { raw: await res.text() }; } catch { errorPayload = {}; } }
+                const msg = errorPayload?.error || `Upload failed (${res.status})`;
+                setUploadErrors(prev => [...prev, `${file.name}: ${msg}`].slice(-8));
+                hadErrors = true;
                 console.error('Attachment upload failed', { status: res.status, statusText: res.statusText, error: errorPayload });
               }
-            } catch (e) {
+            } catch (e: any) {
+              hadErrors = true;
+              setUploadErrors(prev => [...prev, `${file.name}: ${e?.message || 'Upload error'}`].slice(-8));
               console.error('Attachment upload error', e);
             } finally {
               setUploadProgress(prev => ({ uploaded: prev.uploaded + 1, total: prev.total }));
             }
+          }
+          if (hadErrors) {
+            // Do not close overlay; allow user to see errors
+            return;
           }
         }
       }
@@ -254,6 +261,18 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
                 </ul>
               )}
               {pendingFiles.length > 0 && <p className="text-[10px] text-light-fg/60 dark:text-dark-fg/60">Files upload after note creation. Max 10.</p>}
+              {uploading && (
+                <div className="mt-2 text-[10px] text-accent">
+                  Uploading {uploadProgress.uploaded}/{uploadProgress.total}...
+                </div>
+              )}
+              {uploadErrors.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {uploadErrors.map((err,i)=>(
+                    <div key={i} className="text-[10px] text-destructive bg-destructive/10 rounded px-2 py-1">{err}</div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
