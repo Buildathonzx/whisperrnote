@@ -75,7 +75,12 @@ export async function listAttachments(noteId: string, currentUserId: string) {
 export async function createAttachment(noteId: string, file: File) {
   const user = await getCurrentUser();
   if (!user?.$id) throw new AttachmentError('UNAUTHENTICATED', 'User not authenticated');
-  await ensureCanModify(noteId, user.$id);
+  try {
+    await ensureCanModify(noteId, user.$id);
+  } catch (e: any) {
+    console.warn('[attachments:create] permission denied', { noteId, userId: user.$id, err: e?.code || e?.message });
+    throw e;
+  }
   const meta: any = await addAttachmentToNote(noteId, file);
   return {
     id: meta.id,

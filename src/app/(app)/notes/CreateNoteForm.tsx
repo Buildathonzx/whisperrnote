@@ -94,7 +94,13 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
                 body: formData
               });
               if (!res.ok) {
-                console.error('Attachment upload failed', await res.json().catch(() => ({})));
+                let errorPayload: any = null;
+                try {
+                  errorPayload = await res.json();
+                } catch {
+                  try { errorPayload = { raw: await res.text() }; } catch { errorPayload = {}; }
+                }
+                console.error('Attachment upload failed', { status: res.status, statusText: res.statusText, error: errorPayload });
               }
             } catch (e) {
               console.error('Attachment upload error', e);
