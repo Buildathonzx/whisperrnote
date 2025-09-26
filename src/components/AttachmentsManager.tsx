@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { formatFileSize } from '@/lib/utils';
 // Simple className join helper (local)
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(' ');
@@ -115,12 +116,7 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
     }
   };
 
-  const formatSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    const kb = bytes / 1024;
-    if (kb < 1024) return `${kb.toFixed(1)} KB`;
-    const mb = kb / 1024; return `${mb.toFixed(2)} MB`;
-  };
+
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -166,7 +162,7 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
               <div className="flex flex-col min-w-0">
                 <span className="truncate font-medium">{a.name}</span>
                 <a href={`/notes/${noteId}/${a.id}`} className="text-[10px] text-accent hover:underline">Open</a>
-                <span className="text-[10px] text-muted-foreground">{formatSize(a.size)} • {a.mime || 'unknown'}</span>
+                <span className="text-[10px] text-muted-foreground">{formatFileSize(a.size)} • {a.mime || 'unknown'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
