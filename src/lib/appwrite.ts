@@ -1467,7 +1467,10 @@ async function enforceAttachmentPlanLimit(userId: string, _currentCount: number,
 const ATTACHMENT_ALLOWED_MIME_PREFIXES = ['image/', 'text/'];
 const ATTACHMENT_ALLOWED_MIME_TYPES = [
   'application/pdf',
-  'application/json'
+  'application/json',
+  'text/markdown',
+  // Allow generic octet-stream as fallback; will rely on extension for safety
+  'application/octet-stream'
 ];
 
 function sanitizeAttachmentFilename(name: string): string {
@@ -1491,12 +1494,7 @@ function sanitizeAttachmentFilename(name: string): string {
 }
 
 function validateAttachmentMime(mime: string | null | undefined) {
-  if (!mime) {
-    const err: any = new Error('Missing or unknown MIME type');
-    err.code = 'UNSUPPORTED_MIME_TYPE';
-    err.allowed = { prefixes: ATTACHMENT_ALLOWED_MIME_PREFIXES, types: ATTACHMENT_ALLOWED_MIME_TYPES };
-    throw err;
-  }
+  if (!mime) return; // Allow unknown mime (treated as application/octet-stream)
   const ok = ATTACHMENT_ALLOWED_MIME_PREFIXES.some(p => mime.startsWith(p)) || ATTACHMENT_ALLOWED_MIME_TYPES.includes(mime);
   if (!ok) {
     const err: any = new Error(`Unsupported MIME type: ${mime}`);

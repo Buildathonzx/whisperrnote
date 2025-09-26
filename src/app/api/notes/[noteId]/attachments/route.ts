@@ -30,13 +30,18 @@ export async function POST(req: Request, { params }: { params: { noteId: string 
     if (!(file instanceof File)) {
       return NextResponse.json({ error: 'Missing file' }, { status: 400 });
     }
+    // Basic instrumentation for debugging attachment issues
+    console.log('[attachments:upload] start', { noteId: params.noteId, name: file.name, size: file.size, type: (file as any).type });
     const meta = await addAttachmentToNote(params.noteId, file);
+    console.log('[attachments:upload] success', { noteId: params.noteId, meta });
     return NextResponse.json({ attachment: meta });
   } catch (e: any) {
     if (e?.code === 'PLAN_LIMIT_REACHED') return NextResponse.json({ error: e.message, code: e.code, limit: e.limit, plan: e.plan }, { status: 429 });
     if (e?.code === 'ATTACHMENT_SIZE_LIMIT') return NextResponse.json({ error: e.message, code: e.code }, { status: 413 });
     if (e?.code === 'UNSUPPORTED_MIME_TYPE') return NextResponse.json({ error: e.message, code: e.code, allowed: e.allowed }, { status: 415 });
-    if (e?.message === 'Only owner can add attachments currently') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+     if (e?.message === 'Only owner can add attachments currently') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+     console.error('[attachments:upload] error', e);
+     // Fallback serialization for structured codes already handled above
     return NextResponse.json({ error: e?.message || 'Upload failed' }, { status: 500 });
   }
 }

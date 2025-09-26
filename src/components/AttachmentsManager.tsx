@@ -58,7 +58,11 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
     if (!files || !files.length) return;
     const toUpload: UploadingFile[] = []; 
     for (const f of Array.from(files)) {
-      toUpload.push({ tempId: `${Date.now()}-${Math.random()}`, file: f, progress: 0, status: 'uploading' });
+       toUpload.push({ tempId: `${Date.now()}-${Math.random()}`, file: f, progress: 0, status: 'uploading' });
+       // Surface immediate client-side mime validation hint
+       if (!(f.type && (f.type.startsWith('image/') || f.type.startsWith('text/') || ['application/pdf','application/json','text/markdown','application/octet-stream'].includes(f.type)))) {
+         console.warn('[attachments] potential unsupported mime pre-check', f.type);
+       }
     }
     setUploading(prev => [...prev, ...toUpload]);
 
