@@ -37,3 +37,15 @@ export function getUserSubscriptionTier(user: any): string {
 export function getUserSubscriptionExpiresAt(user: any): string | null {
   return getUserField<string>(user, 'subscriptionExpiresAt');
 }
+
+// Format bytes into human readable size (B, KB, MB, GB)
+export function formatFileSize(bytes: number | null | undefined): string {
+  const b = typeof bytes === 'number' && bytes >= 0 ? bytes : 0;
+  if (b < 1024) return b + 'B';
+  const kb = b / 1024;
+  if (kb < 1024) return kb.toFixed(kb < 10 ? 2 : 1) + 'KB';
+  const mb = kb / 1024;
+  if (mb < 1024) return mb.toFixed(mb < 10 ? 2 : 1) + 'MB';
+  const gb = mb / 1024;
+  return gb.toFixed(gb < 10 ? 2 : 1) + 'GB';
+}

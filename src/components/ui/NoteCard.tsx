@@ -172,7 +172,16 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
               {note.title}
             </CardTitle>
 
-            <div className="flex items-center gap-2">
+             <div className="flex items-center gap-2">
+              {note.attachments && note.attachments.length > 0 && (
+                <div title={`${note.attachments.length} attachment${note.attachments.length>1?'s':''}`}
+                  className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                    <path d="M21.44 11.05 12.97 19.5a5 5 0 0 1-7.07-7.07l8.47-8.46a3 3 0 0 1 4.24 4.24l-8.48 8.47a1 1 0 0 1-1.42-1.42l7.78-7.78" />
+                  </svg>
+                  {note.attachments.length}
+                </div>
+              )}
               {noteIsPublic && (
                 <div className="flex-shrink-0">
                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400 rounded-full text-xs font-medium">
