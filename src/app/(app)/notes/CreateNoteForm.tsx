@@ -34,6 +34,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
   const [isLoading, setIsLoading] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ uploaded: number; total: number }>({ uploaded: 0, total: 0 });
   const { closeOverlay } = useOverlay();
 
   const handleAddTag = () => {
@@ -55,7 +56,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
   };
 
   const handleCreateNote = async () => {
-    if (!title.trim()) return;
+    if (!title.trim() || isLoading || uploading) return;
 
     setIsLoading(true);
     const newNoteData = {
@@ -79,12 +80,37 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
       const newNote = await appwriteCreateNote(newNoteData);
       if (newNote) {
         onNoteCreated(newNote);
+        // Upload pending files sequentially (simple approach for now)
+        if (pendingFiles.length) {
+          setUploading(true);
+          setUploadProgress({ uploaded: 0, total: pendingFiles.length });
+          for (let i = 0; i < pendingFiles.length; i++) {
+            const file = pendingFiles[i];
+            try {
+              const formData = new FormData();
+              formData.append('file', file);
+              const res = await fetch(`/api/notes/${newNote.$id || (newNote as any).id}/attachments`, {
+                method: 'POST',
+                body: formData
+              });
+              if (!res.ok) {
+                console.error('Attachment upload failed', await res.json().catch(() => ({})));
+              }
+            } catch (e) {
+              console.error('Attachment upload error', e);
+            } finally {
+              setUploadProgress(prev => ({ uploaded: prev.uploaded + 1, total: prev.total }));
+            }
+          }
+        }
       }
       closeOverlay();
     } catch (error) {
       console.error('Failed to create note:', error);
     } finally {
       setIsLoading(false);
+      setUploading(false);
+      setPendingFiles([]);
     }
   };
 
@@ -298,18 +324,18 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
         </Button>
         <Button 
           onClick={handleCreateNote}
-          disabled={!title.trim() || isLoading}
+          disabled={!title.trim() || isLoading || uploading}
           className="px-6 gap-2"
         >
-          {isLoading ? (
+          {(isLoading || uploading) ? (
             <>
               <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              Creating...
+              {uploading && uploadProgress.total > 0 ? `Uploading ${uploadProgress.uploaded}/${uploadProgress.total}` : 'Creating...'}
             </>
           ) : (
             <>
               <DocumentTextIcon className="h-4 w-4" />
-              Create Note
+              {pendingFiles.length ? `Create & Upload (${pendingFiles.length})` : 'Create Note'}
             </>
           )}
         </Button>
