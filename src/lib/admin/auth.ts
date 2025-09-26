@@ -1,16 +1,14 @@
 import { getCurrentUser } from '@/lib/appwrite';
 
-// Determines if current user is a founder based on user labels (Appwrite Account labels or custom prefs)
+// Determines if current user is an admin based on Appwrite user preference 'admin' == 'true' (string) or boolean true fallback
 export async function requireFounder(): Promise<{ allowed: boolean; reason?: string; user?: any; }> {
   try {
     const user: any = await getCurrentUser();
     if (!user || !user.$id) return { allowed: false, reason: 'unauthenticated' };
-    // Appwrite user objects may include labels array
-    const labels: string[] = Array.isArray((user as any).labels) ? (user as any).labels : [];
-    // Also allow a prefs flag fallback
+    // Use user preferences for admin gating. Appwrite stores preferences in user.prefs
     const prefs = (user as any).prefs || {};
-    const isFounder = labels.includes('founder') || labels.includes('Founder') || prefs.founder === true;
-    if (!isFounder) return { allowed: false, reason: 'forbidden', user };
+    const adminPref = (prefs.admin === true) || (prefs.admin === 'true');
+    if (!adminPref) return { allowed: false, reason: 'forbidden', user };
     return { allowed: true, user };
   } catch (e: any) {
     return { allowed: false, reason: 'error:' + (e?.message || 'unknown') };

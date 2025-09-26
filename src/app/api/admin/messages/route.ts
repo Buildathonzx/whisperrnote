@@ -1,11 +1,11 @@
 'use server';
 import { NextResponse } from 'next/server';
-import { requireFounder } from '@/lib/admin/auth';
+import { requireFounder as requireAdmin } from '@/lib/admin/auth'; // preference-based admin gate
 import { sendAdminEmail } from '@/lib/admin/messaging';
 
 export async function POST(req: Request) {
   try {
-    const gate = await requireFounder();
+    const gate = await requireAdmin();
     if (!gate.allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const body = await req.json();
     const { subject, bodyHtml, bodyText, userIds, emails, bcc, allUsers, topic, dryRun, maxRecipients } = body || {};
