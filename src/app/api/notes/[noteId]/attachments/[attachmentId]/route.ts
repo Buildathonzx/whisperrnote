@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getNote, updateNote, getCurrentUser, getCurrentUserFromRequest, getNoteAttachment, deleteNoteAttachment, generateSignedAttachmentURL, verifySignedAttachmentURL } from '@/lib/appwrite';
+import { getNote, updateNote, resolveCurrentUser, getNoteAttachment, deleteNoteAttachment, generateSignedAttachmentURL, verifySignedAttachmentURL } from '@/lib/appwrite';
 
 // GET single attachment metadata or raw file (?raw=1)
 export async function GET(req: NextRequest, { params }: { params: { noteId: string, attachmentId: string } }) {
   try {
-    let user = await getCurrentUser();
-    if (!user) user = await getCurrentUserFromRequest(req as any);
+    const user = await resolveCurrentUser(req as any);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     console.log('[attachments.api] GET single start', { noteId: params.noteId, attachmentId: params.attachmentId, userId: user.$id, t: Date.now() });
     const note = await getNote(params.noteId);
@@ -55,8 +54,7 @@ export async function GET(req: NextRequest, { params }: { params: { noteId: stri
 // DELETE attachment
 export async function DELETE(_req: NextRequest, { params }: { params: { noteId: string, attachmentId: string } }) {
   try {
-    let user = await getCurrentUser();
-    if (!user) user = await getCurrentUserFromRequest(_req as any);
+    const user = await resolveCurrentUser(_req as any);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     console.log('[attachments.api] DELETE start', { noteId: params.noteId, attachmentId: params.attachmentId, userId: user.$id, t: Date.now() });
     const note = await getNote(params.noteId);

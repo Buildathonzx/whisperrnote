@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getNote, updateNote, getCurrentUser, getCurrentUserFromRequest, uploadNoteAttachment } from '@/lib/appwrite';
+import { getNote, updateNote, resolveCurrentUser, uploadNoteAttachment } from '@/lib/appwrite';
 
 // GET: list attachments (embedded in note.attachments array as JSON strings)
 export async function GET(_req: NextRequest, { params }: { params: { noteId: string } }) {
   try {
-    let user = await getCurrentUser();
-    if (!user) user = await getCurrentUserFromRequest(_req as any);
+    const user = await resolveCurrentUser(_req as any);
     if (!user) {
       const cookieHeader = _req.headers.get('cookie') || _req.headers.get('Cookie');
       console.warn('[attachments.api] GET auth_failed', { noteId: params.noteId, hasCookie: !!cookieHeader, cookieLength: cookieHeader?.length || 0 });
@@ -35,8 +34,7 @@ export async function GET(_req: NextRequest, { params }: { params: { noteId: str
 // POST: upload new attachment (single file per request)
 export async function POST(req: NextRequest, { params }: { params: { noteId: string } }) {
   try {
-    let user = await getCurrentUser();
-    if (!user) user = await getCurrentUserFromRequest(req as any);
+    const user = await resolveCurrentUser(req as any);
     if (!user) {
       const cookieHeader = req.headers.get('cookie') || req.headers.get('Cookie');
       console.warn('[attachments.api] POST auth_failed', { noteId: params.noteId, hasCookie: !!cookieHeader, cookieLength: cookieHeader?.length || 0 });

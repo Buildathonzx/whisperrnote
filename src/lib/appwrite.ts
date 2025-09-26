@@ -87,6 +87,17 @@ export async function getCurrentUser(): Promise<Users | null> {
   }
 }
 
+// Unified resolver: attempts global session then cookie-based fallback
+export async function resolveCurrentUser(req?: { headers: { get(k: string): string | null } } | null): Promise<Users | null> {
+  const direct = await getCurrentUser();
+  if (direct && direct.$id) return direct;
+  if (req) {
+    const fallback = await getCurrentUserFromRequest(req as any);
+    if (fallback && (fallback as any).$id) return fallback;
+  }
+  return null;
+}
+
 // Per-request user fetch using incoming Cookie header (fallback when global client session missing)
 // Accepts a minimal object with headers.get('cookie') capability (e.g., NextRequest)
 export async function getCurrentUserFromRequest(req: { headers: { get(k: string): string | null } } | null | undefined): Promise<Users | null> {
