@@ -9,7 +9,17 @@ export async function GET(_req: Request, { params }: { params: { noteId: string;
     const user = await getCurrentUser();
     if (!user?.$id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const note = await getNote(params.noteId);
-    if (!note || (note.userId !== user.$id)) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (!note) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (note.userId !== user.$id) {
+      try {
+        const { listCollaborators } = await import('@/lib/appwrite');
+        const collabs: any = await listCollaborators(params.noteId);
+        const allowed = Array.isArray(collabs?.documents) && collabs.documents.some((c: any) => c.userId === user.$id);
+        if (!allowed) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      } catch {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      }
+    }
 
     // Validate attachment exists in embedded metadata
     const attachments = await listNoteAttachments(params.noteId);
