@@ -47,27 +47,27 @@ export async function POST(req: NextRequest, { params }: { params: { noteId: str
       return NextResponse.json({ error: 'Missing file' }, { status: 400 });
     }
 
-    // Upload raw file to storage
-    const uploaded: any = await uploadNoteAttachment(file);
-
-    // Build metadata entry
-    const meta = {
-      id: uploaded.$id || uploaded.id,
-      name: (file as any).name,
-      size: (file as any).size,
-      mime: (file as any).type,
-      createdAt: new Date().toISOString()
-    };
-
-    const existing = Array.isArray(note.attachments) ? note.attachments : [];
-    const updated = [...existing, JSON.stringify(meta)];
-
-    await updateNote(params.noteId, { attachments: updated });
-
-    console.log('[attachments.api] POST done', { noteId: params.noteId, attachmentId: meta.id, t: Date.now() });
-    return NextResponse.json({ attachment: meta });
+    try {
+      const meta = await (await import('@/lib/appwrite')).addAttachmentToNote(params.noteId, file);
+      console.log('[attachments.api] POST done', { noteId: params.noteId, attachmentId: meta.id, t: Date.now() });
+      return NextResponse.json({ attachment: meta });
+    } catch (e: any) {
+      // Map known error codes from helper
+      const code = e?.code;
+      if (code === 'ATTACHMENT_SIZE_LIMIT') {
+        return NextResponse.json({ error: e.message, code }, { status: 400 });
+      }
+      if (code === 'UNSUPPORTED_MIME_TYPE') {
+        return NextResponse.json({ error: e.message, code }, { status: 400 });
+      }
+      if (code === 'PLAN_LIMIT_REACHED') {
+        return NextResponse.json({ error: e.message, code }, { status: 400 });
+      }
+      console.error('attachments.upload.error', { noteId: params.noteId, err: e?.message || String(e), code: e?.code });
+      return NextResponse.json({ error: e?.message || 'Upload failed' }, { status: 500 });
+    }
   } catch (e: any) {
-    console.error('attachments.upload.error', { noteId: params.noteId, err: e?.message || String(e) });
+    console.error('attachments.upload.unhandled', { noteId: params.noteId, err: e?.message || String(e) });
     return NextResponse.json({ error: e?.message || 'Upload failed' }, { status: 500 });
   }
 }
