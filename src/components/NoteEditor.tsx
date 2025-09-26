@@ -22,7 +22,16 @@ const AttachmentChips: React.FC<{ noteId: string }> = ({ noteId }) => {
     })();
     return () => { cancelled = true; };
   }, [noteId]);
-  if (!loaded || attachments.length === 0) return null;
+  if (!loaded) {
+    return (
+      <div className="flex flex-wrap gap-2 mt-4" aria-hidden>
+        {Array.from({length:3}).map((_,i)=>(
+          <div key={i} className="h-5 w-20 rounded-full bg-muted animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+  if (attachments.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-2 mt-4">
       {attachments.map(a => (
