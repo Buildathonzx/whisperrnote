@@ -1505,6 +1505,8 @@ function validateAttachmentMime(mime: string | null | undefined) {
 }
 
 export async function addAttachmentToNote(noteId: string, file: File) {
+  const startTs = Date.now();
+  console.log('[attachments] addAttachmentToNote:start', { noteId, name: (file as any)?.name, size: (file as any)?.size, type: (file as any)?.type });
   const user = await getCurrentUser();
   if (!user?.$id) throw new Error('User not authenticated');
   // Get existing note + attachments
@@ -1560,6 +1562,7 @@ export async function addAttachmentToNote(noteId: string, file: File) {
   } catch (e) {
     console.error('dual-write attachment record failed', e);
   }
+  console.log('[attachments] addAttachmentToNote:done', { noteId, attachmentId: meta.id, durationMs: Date.now() - startTs });
   return meta;
 }
 
