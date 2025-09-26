@@ -165,12 +165,25 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
                 <span className="text-[10px] text-muted-foreground">{formatSize(a.size)} • {a.mime || 'unknown'}</span>
               </div>
               <div className="flex items-center gap-2">
-                <a
-                  href={`/api/notes/${noteId}/attachments/${a.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`/api/notes/${noteId}/attachments/${a.id}`);
+                      if (!res.ok) throw new Error('Failed to get attachment URL');
+                      const data = await res.json();
+                      const url = data?.url;
+                      if (url) {
+                        window.open(url, '_blank', 'noopener,noreferrer');
+                      } else {
+                        // Fallback: if no signed URL (disabled), attempt direct legacy route (will likely 404 if not implemented)
+                        window.open(`/api/notes/${noteId}/attachments/${a.id}?raw=1`, '_blank', 'noopener,noreferrer');
+                      }
+                    } catch (err) {
+                      setError((err as any)?.message || 'Failed to open attachment');
+                    }
+                  }}
                   className="text-accent hover:underline"
-                >View</a>
+                >View</button>
                 <button
                   onClick={() => deleteAttachment(a.id)}
                   className="px-2 py-1 rounded bg-destructive/10 text-destructive hover:bg-destructive/20"

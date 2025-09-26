@@ -1688,6 +1688,34 @@ export async function deleteAttachmentRecord(attachmentId: string) {
   }
 }
 
+// --- SIGNED ATTACHMENT URL HELPERS ---
+// Short-lived HMAC signed URLs that point to a proxy download route.
+// These are generated server-side only. If secret missing, returns null (feature disabled).
+import crypto from 'crypto';
+const ATTACHMENT_URL_SIGNING_SECRET = process.env.ATTACHMENT_URL_SIGNING_SECRET || '';
+const ATTACHMENT_URL_TTL_SECONDS = parseInt(process.env.ATTACHMENT_URL_TTL_SECONDS || '300', 10);
+
+function generateAttachmentSignature(noteId: string, ownerId: string, fileId: string, exp: number) {
+  if (!ATTACHMENT_URL_SIGNING_SECRET) return null;
+  const h = crypto.createHmac('sha256', ATTACHMENT_URL_SIGNING_SECRET);
+  h.update(`${noteId}.${ownerId}.${fileId}.${exp}`);
+  return h.digest('hex');
+}
+
+export function generateSignedAttachmentURL(noteId: string, ownerId: string, fileId: string, ttlSeconds?: number) {
+  if (!ATTACHMENT_URL_SIGNING_SECRET) return null;
+  const ttl = typeof ttlSeconds === 'number' && ttlSeconds > 0 ? ttlSeconds : ATTACHMENT_URL_TTL_SECONDS;
+  const now = Math.floor(Date.now() / 1000);
+  const exp = now + ttl;
+  const sig = generateAttachmentSignature(noteId, ownerId, fileId, exp);
+  if (!sig) return null;
+  return {
+    url: `/api/attachments/download?noteId=${encodeURIComponent(noteId)}&ownerId=${encodeURIComponent(ownerId)}&fileId=${encodeURIComponent(fileId)}&exp=${exp}&sig=${sig}`,
+    expiresAt: exp * 1000,
+    ttl,
+  };
+}
+
 
 // --- NOTE REVISIONS UTILITIES ---
 export async function listNoteRevisions(noteId: string, limit: number = 50) {

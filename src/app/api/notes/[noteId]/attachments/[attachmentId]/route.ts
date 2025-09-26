@@ -1,7 +1,7 @@
 'use server';
 
 import { NextResponse } from 'next/server';
-import { getCurrentUser, getNote, listNoteAttachments, removeAttachmentFromNote, getNoteAttachment, APPWRITE_BUCKET_NOTES_ATTACHMENTS, storage, deleteAttachmentRecord, APPWRITE_COLLECTION_ID_ATTACHMENTS } from '@/lib/appwrite';
+import { getCurrentUser, getNote, listNoteAttachments, removeAttachmentFromNote, deleteAttachmentRecord, APPWRITE_COLLECTION_ID_ATTACHMENTS, generateSignedAttachmentURL } from '@/lib/appwrite';
 
 // GET -> return a signed/temporary URL (fallback to direct file view) metadata
 export async function GET(_req: Request, { params }: { params: { noteId: string; attachmentId: string } }) {
@@ -16,15 +16,9 @@ export async function GET(_req: Request, { params }: { params: { noteId: string;
     const embedded = attachments.find(a => a.id === params.attachmentId);
     if (!embedded) return NextResponse.json({ error: 'Attachment not found' }, { status: 404 });
 
-    // For now return direct file preview URL (Appwrite SDK method). In future sign URLs.
-    let url: string | null = null;
-    try {
-      // getFileView returns a Response/URL depending on environment; we build a standard endpoint for client to fetch again
-      // Provide the file id so client can build /storage/v1/buckets/... path via SDK
-      url = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${APPWRITE_BUCKET_NOTES_ATTACHMENTS}/files/${embedded.id}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
-    } catch {}
-
-    return NextResponse.json({ attachment: embedded, url });
+    // Generate signed short-lived URL (fallback null if disabled)
+    const signed = generateSignedAttachmentURL(params.noteId, note.userId, embedded.id);
+    return NextResponse.json({ attachment: embedded, url: signed?.url || null, expiresAt: signed?.expiresAt || null, ttl: signed?.ttl || null });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Failed to fetch attachment' }, { status: 500 });
   }

@@ -1,5 +1,19 @@
 TODO: Attachments (File support for Notes)
 
+Progress (inline status markers)
+- [x] Basic backend routes: list/upload/delete (multipart POST implemented; signed URL init/finalize deferred)
+- [x] Plan-based per-file size enforcement (policy-driven)
+- [x] Attachments collection dual-write & merge logic
+- [x] Frontend UI: picker + drag/drop + list + delete + basic progress
+- [ ] Signed URL generation helper (short-lived)
+- [ ] Download proxy or redirect refinement (currently direct constructed view URL)
+- [ ] MIME type whitelist & filename sanitization
+- [ ] Quota (aggregate storage) enforcement
+- [ ] Backfill script to populate attachments collection from embedded metadata if missing
+- [ ] Feature flag / conditional enablement in production
+- [ ] Tests (pending framework decision)
+
+
 Goal
 - Add support for attaching files to notes. Attachments should be available to all users.
 - Default size limit for attached files: 2 MB (enforced/controlled from the frontend for free/base plans). Server-side checks and policy should be in place as a safeguard.
