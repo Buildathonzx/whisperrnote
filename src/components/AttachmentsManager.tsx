@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { cn } from '@/lib/utils';
+// Simple className join helper (local)
+function cn(...classes: (string | undefined | null | false)[]) {
+  return classes.filter(Boolean).join(' ');
+}
 
 interface AttachmentMeta {
   id: string;
@@ -162,6 +165,7 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
             <li key={a.id} className="flex items-center justify-between gap-3 px-3 py-2 text-xs hover:bg-muted/40">
               <div className="flex flex-col min-w-0">
                 <span className="truncate font-medium">{a.name}</span>
+                <a href={`/notes/${noteId}/${a.id}`} className="text-[10px] text-accent hover:underline">Open</a>
                 <span className="text-[10px] text-muted-foreground">{formatSize(a.size)} • {a.mime || 'unknown'}</span>
               </div>
               <div className="flex items-center gap-2">
