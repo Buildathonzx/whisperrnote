@@ -1567,6 +1567,7 @@ export async function addAttachmentToNote(noteId: string, file: File) {
 }
 
 export async function listNoteAttachments(noteId: string, currentUserId?: string): Promise<EmbeddedAttachmentMeta[]> {
+  const startTs = Date.now();
   // Optional access guard: if currentUserId provided, ensure user is owner or collaborator.
   try {
     if (currentUserId) {
@@ -1614,10 +1615,14 @@ export async function listNoteAttachments(noteId: string, currentUserId?: string
       console.error('listNoteAttachments merge failed', e);
     }
   }
+  const durationMs = Date.now() - startTs;
+  console.log('[attachments] list:done', { noteId, count: embedded.length, durationMs });
   return embedded;
 }
 
 export async function removeAttachmentFromNote(noteId: string, attachmentId: string) {
+  const startTs = Date.now();
+  console.log('[attachments] removeAttachment:start', { noteId, attachmentId });
   const user = await getCurrentUser();
   if (!user?.$id) throw new Error('User not authenticated');
   const note = await getNote(noteId) as any;
@@ -1628,6 +1633,8 @@ export async function removeAttachmentFromNote(noteId: string, attachmentId: str
   const serialized = remaining.map(serializeAttachmentMeta);
   await updateNote(noteId, { attachments: serialized } as any);
   try { await deleteNoteAttachment(attachmentId); } catch (e) { /* non-fatal */ }
+  const durationMs = Date.now() - startTs;
+  console.log('[attachments] removeAttachment:done', { noteId, attachmentId, durationMs, remaining: remaining.length });
   return { removed: true };
 }
 
