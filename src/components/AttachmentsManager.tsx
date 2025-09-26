@@ -39,7 +39,7 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/notes/${noteId}/attachments`);
+      const res = await fetch(`/api/notes/${noteId}/attachments`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to load attachments');
       const data = await res.json();
       setAttachments(Array.isArray(data.attachments) ? data.attachments : []);
@@ -76,7 +76,7 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
       const form = new FormData();
       form.append('file', temp.file);
       try {
-        const res = await fetch(`/api/notes/${noteId}/attachments`, { method: 'POST', body: form });
+        const res = await fetch(`/api/notes/${noteId}/attachments`, { method: 'POST', body: form, credentials: 'include' });
         if (!res.ok) {
           const j = await res.json().catch(() => ({}));
           if (j.code === 'ATTACHMENT_SIZE_LIMIT') throw new Error(j.error || 'File exceeds plan size limit');
@@ -119,7 +119,7 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
   const deleteAttachment = async (id: string) => {
     if (!confirm('Delete this attachment?')) return;
     try {
-      const res = await fetch(`/api/notes/${noteId}/attachments/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/notes/${noteId}/attachments/${id}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) throw new Error('Delete failed');
       await fetchAttachments();
     } catch (e: any) {
@@ -193,7 +193,7 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
                 <button
                   onClick={async () => {
                     try {
-                      const res = await fetch(`/api/notes/${noteId}/attachments/${a.id}`);
+                      const res = await fetch(`/api/notes/${noteId}/attachments/${a.id}`, { credentials: 'include' });
                       if (!res.ok) throw new Error('Failed to get attachment URL');
                       const data = await res.json();
                       const url = data?.url;
