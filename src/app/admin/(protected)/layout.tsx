@@ -20,7 +20,7 @@ async function getAdminUser() {
 export default async function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getAdminUser();
   if (!user) {
-    redirect('/');
+    redirect('/admin/unauthorized');
   }
   return (
     <div className="min-h-screen">
