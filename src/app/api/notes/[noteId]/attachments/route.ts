@@ -6,9 +6,14 @@ export async function GET(_req: NextRequest, { params }: { params: { noteId: str
   try {
     let user = await getCurrentUser();
     if (!user) user = await getCurrentUserFromRequest(_req as any);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) {
+      const cookieHeader = _req.headers.get('cookie') || _req.headers.get('Cookie');
+      console.warn('[attachments.api] GET auth_failed', { noteId: params.noteId, hasCookie: !!cookieHeader, cookieLength: cookieHeader?.length || 0 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const trace = { op: 'list', noteId: params.noteId, userId: user.$id, t: Date.now() };
+    const cookieHeader = _req.headers.get('cookie') || _req.headers.get('Cookie');
+    const trace = { op: 'list', noteId: params.noteId, userId: user.$id, t: Date.now(), hasCookie: !!cookieHeader, cookieLength: cookieHeader?.length || 0 };
     console.log('[attachments.api] GET start', trace);
 
     const note = await getNote(params.noteId);
@@ -32,9 +37,14 @@ export async function POST(req: NextRequest, { params }: { params: { noteId: str
   try {
     let user = await getCurrentUser();
     if (!user) user = await getCurrentUserFromRequest(req as any);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) {
+      const cookieHeader = req.headers.get('cookie') || req.headers.get('Cookie');
+      console.warn('[attachments.api] POST auth_failed', { noteId: params.noteId, hasCookie: !!cookieHeader, cookieLength: cookieHeader?.length || 0 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const trace = { op: 'upload', noteId: params.noteId, userId: user.$id, t: Date.now() };
+    const cookieHeader = req.headers.get('cookie') || req.headers.get('Cookie');
+    const trace = { op: 'upload', noteId: params.noteId, userId: user.$id, t: Date.now(), hasCookie: !!cookieHeader, cookieLength: cookieHeader?.length || 0 };
     console.log('[attachments.api] POST start', trace);
 
     const note = await getNote(params.noteId);
