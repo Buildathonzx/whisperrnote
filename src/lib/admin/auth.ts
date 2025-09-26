@@ -32,7 +32,9 @@ export async function requireAdminFromRequest(req: Request): Promise<{ allowed: 
 
 
 // Determines if current user is an admin based on Appwrite user preference 'admin' == 'true' (string) or boolean true fallback
-export async function requireFounder(): Promise<{ allowed: boolean; reason?: string; user?: any; prefValue?: any; }> {
+// Deprecated legacy function name retained temporarily for backward compatibility.
+// TODO: Remove requireFounder occurrences after confirming no external dependencies rely on it.
+export async function requireFounder(): Promise<{ allowed: boolean; reason?: string; user?: any; }> {
   try {
     // Try auth-layer enriched user first, fallback to raw Appwrite
     let user: any = await getAuthUser();
@@ -44,8 +46,8 @@ export async function requireFounder(): Promise<{ allowed: boolean; reason?: str
     const labels: string[] = Array.isArray(user.labels) ? user.labels : [];
     const labelAdmin = labels.includes('admin') || labels.includes('Admin');
     const allowed = adminPref || labelAdmin;
-    if (!allowed) return { allowed: false, reason: 'forbidden', user, prefValue: prefs.admin, labels } as any; // expose for debugging
-    return { allowed: true, user, prefValue: prefs.admin } as any;
+    if (!allowed) return { allowed: false, reason: 'forbidden' } as any;
+    return { allowed: true, user } as any;
   } catch (e: any) {
     return { allowed: false, reason: 'error:' + (e?.message || 'unknown') };
   }

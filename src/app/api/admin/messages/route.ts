@@ -1,6 +1,6 @@
 'use server';
 import { NextResponse } from 'next/server';
-import { requireFounder as requireAdmin, requireAdminFromRequest } from '@/lib/admin/auth'; // preference-based admin gate
+import { requireAdminFromRequest } from '@/lib/admin/auth';
 import { sendAdminEmail } from '@/lib/admin/messaging';
 
 export async function POST(req: Request) {
