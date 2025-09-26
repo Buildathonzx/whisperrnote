@@ -1464,12 +1464,11 @@ export async function addAttachmentToNote(noteId: string, file: File) {
   const existingMetas = normalizeNoteAttachmentsField(note);
   await enforceAttachmentPlanLimit(user.$id, existingMetas.length);
 
-  // Enforce per-file size limit (2MB base; could vary by plan later)
-  const maxBytes = 2 * 1024 * 1024;
-  if (file.size > maxBytes) {
-    const err: any = new Error('Attachment exceeds 2MB size limit');
-    err.code = 'ATTACHMENT_SIZE_LIMIT';
-    throw err;
+  // Enforce per-file size limit via plan policy
+  try {
+    await enforceAttachmentPlanLimit(user.$id, existingMetas.length, file.size);
+  } catch (e: any) {
+    if (e?.code === 'ATTACHMENT_SIZE_LIMIT') throw e;
   }
 
   // Upload file
@@ -1507,7 +1506,32 @@ export async function addAttachmentToNote(noteId: string, file: File) {
 
 export async function listNoteAttachments(noteId: string): Promise<EmbeddedAttachmentMeta[]> {
   const note = await getNote(noteId) as any;
-  return normalizeNoteAttachmentsField(note);
+  const embedded = normalizeNoteAttachmentsField(note);
+  // If collection enabled, merge records (favor collection metadata if conflicts by fileId)
+  if (APPWRITE_COLLECTION_ID_ATTACHMENTS) {
+    try {
+      const collectionRecords = await listAttachmentsForNote(noteId);
+      if (collectionRecords.length) {
+        const byId: Record<string, EmbeddedAttachmentMeta> = {};
+        for (const m of embedded) byId[m.id] = m;
+        for (const rec of collectionRecords) {
+          const existing = byId[rec.fileId];
+          const merged: EmbeddedAttachmentMeta = {
+            id: rec.fileId,
+            name: rec.filename || existing?.name || 'attachment',
+            size: rec.sizeBytes || existing?.size || 0,
+            mime: rec.mimetype || existing?.mime || null,
+            createdAt: existing?.createdAt || rec.createdAt || new Date().toISOString(),
+          };
+          byId[rec.fileId] = merged;
+        }
+        return Object.values(byId).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      }
+    } catch (e) {
+      console.error('listNoteAttachments merge failed', e);
+    }
+  }
+  return embedded;
 }
 
 export async function removeAttachmentFromNote(noteId: string, attachmentId: string) {
