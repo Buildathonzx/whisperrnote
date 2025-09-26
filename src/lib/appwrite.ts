@@ -1284,6 +1284,10 @@ export async function getSharedNotes(): Promise<{ documents: Notes[], total: num
           // Add sharing info to note
           (note as any).sharedPermission = collab.permission;
           (note as any).sharedAt = collab.invitedAt;
+          // Ensure attachments is always an array for UI consistency
+          if (!(note as any).attachments || !Array.isArray((note as any).attachments)) {
+            (note as any).attachments = [];
+          }
           
           return note;
         } catch (error) {
