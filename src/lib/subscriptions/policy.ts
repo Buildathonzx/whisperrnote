@@ -11,7 +11,7 @@ export const planPolicies: Record<SubscriptionPlan, {
   attachmentSizeMB: number;      // max single attachment size
 }> = {
   free: {
-    notes: 100,
+    notes: null, // unlimited free tier now
     storageMB: 250,
     apiKeys: 2,
     collaboratorsPerNote: 5,
@@ -19,7 +19,7 @@ export const planPolicies: Record<SubscriptionPlan, {
     attachmentSizeMB: 10,
   },
   pro: {
-    notes: 2000,
+    notes: null, // unlimited pro tier now
     storageMB: 10240, // 10 GB
     apiKeys: 10,
     collaboratorsPerNote: 25,

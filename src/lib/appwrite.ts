@@ -119,27 +119,8 @@ export async function completePasswordReset(userId: string, secret: string, pass
 // --- NOTES CRUD ---
 
 export async function createNote(data: Partial<Notes>) {
-  // Plan limit enforcement (notes)
-  try {
-    const userForLimit = await getCurrentUser();
-    if (!userForLimit || !userForLimit.$id) throw new Error("User not authenticated");
-    // Lazy import to avoid circular deps during early refactor
-    const { enforcePlanLimit } = await import('./subscriptions/index');
-    const { countUserNotes } = await import('./appwrite/usage/metrics');
-    const currentCount = await countUserNotes(userForLimit.$id);
-    const check = await enforcePlanLimit(userForLimit.$id, 'notes', currentCount);
-    if (!check.allowed) {
-      const err: any = new Error('Plan limit reached for notes');
-      err.code = 'PLAN_LIMIT_REACHED';
-      err.resource = 'notes';
-      err.limit = check.limit;
-      err.plan = check.plan;
-      throw err;
-    }
-  } catch (limitErr: any) {
-    // Rethrow structured plan limit errors; otherwise continue (soft-fail) until full refactor done
-    if (limitErr?.code === 'PLAN_LIMIT_REACHED') throw limitErr;
-  }
+  // Plan limit enforcement removed: notes are now unlimited across all plans.
+  // (Previous enforcement block retained in git history for reference.)
   const user = await getCurrentUser();
   if (!user || !user.$id) throw new Error("User not authenticated");
   const now = new Date().toISOString();
