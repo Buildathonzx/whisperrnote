@@ -1,4 +1,5 @@
 'use client';
+import { Client, Account } from 'appwrite';
 import React, { useState } from 'react';
 
 interface SendState { status: 'idle'|'sending'|'success'|'error'; message?: string; }
@@ -15,15 +16,25 @@ export default function AdminMessages() {
   const [dryRun, setDryRun] = useState(true);
   const [preview, setPreview] = useState<any>(null);
 
+  const getJwt = async () => {
+    const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT as string;
+    const project = process.env.NEXT_PUBLIC_APPWRITE_PROJECT as string;
+    const client = new Client().setEndpoint(endpoint).setProject(project);
+    const account = new Account(client);
+    const jwt = await account.createJWT();
+    return jwt?.jwt;
+  };
+
   const send = async () => {
     if (dryRun) return; // guard: prevent accidental send when dryRun enabled
     if (!subject.trim() || !body.trim()) { setState({ status: 'error', message: 'Subject & body required'}); return; }
     if (subject.length > 200) { setState({ status: 'error', message: 'Subject too long'}); return; }
     setState({ status: 'sending' });
     try {
+      const token = await getJwt();
       const res = await fetch('/api/admin/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           subject,
           bodyHtml: body,
@@ -92,9 +103,10 @@ export default function AdminMessages() {
             setState({ status: 'sending' });
             setPreview(null);
             try {
-              const res = await fetch('/api/admin/messages', {
+      const token = await getJwt();
+      const res = await fetch('/api/admin/messages', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
                   subject,
                   bodyHtml: body,

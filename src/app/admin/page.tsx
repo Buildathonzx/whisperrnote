@@ -1,4 +1,5 @@
 'use client';
+import { Client, Account } from 'appwrite';
 import React, { useState, useEffect } from 'react';
 
 export default function AdminLanding() {
@@ -6,6 +7,31 @@ export default function AdminLanding() {
   const [error, setError] = useState<string|null>(null);
 
   const continueHandler = async () => {
+    try {
+      // create a short-lived JWT and send Authorization header
+      const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT as string;
+      const project = process.env.NEXT_PUBLIC_APPWRITE_PROJECT as string;
+      const client = new Client().setEndpoint(endpoint).setProject(project);
+      const account = new Account(client);
+      const jwt = await account.createJWT();
+      const token = jwt?.jwt;
+      if (!token) throw new Error('No token');
+
+      setStatus('checking');
+      const res = await fetch('/api/admin/check', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) {
+        setStatus('denied');
+        const j = await res.json().catch(()=>({}));
+        setError(j.error || 'Access denied');
+        return;
+      }
+      // success redirect
+      window.location.href = '/admin/dashboard';
+    } catch (e: any) {
+      setStatus('denied');
+      setError(e.message || 'Failed');
+    }
+    return;
     setStatus('checking');
     setError(null);
     try {
