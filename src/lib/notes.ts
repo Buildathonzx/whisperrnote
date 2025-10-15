@@ -17,6 +17,16 @@ function castDocuments<T>(docs: any[]): T[] {
   return docs as unknown as T[];
 }
 
+// Expiration helper
+function isNoteExpired(note: any, now: number = Date.now()): boolean {
+  if (!note) return false;
+  if (!note.ephemeral) return false;
+  if (!note.expiresAt) return false;
+  const ts = Date.parse(note.expiresAt);
+  if (Number.isNaN(ts)) return false;
+  return ts <= now + 1500; // small grace window
+}
+
 // Note Operations
 export async function createNote(note: Omit<Note, '_id' | 'created_at' | 'updated_at'>) {
   try {
@@ -30,7 +40,7 @@ export async function createNote(note: Omit<Note, '_id' | 'created_at' | 'update
       DATABASE_ID,
       NOTES_COLLECTION_ID,
       ID.unique(),
-      noteData
+      noteData as any
     );
     
     // Track analytics
@@ -72,7 +82,7 @@ export async function updateNote(noteId: string, data: Partial<Note>) {
       DATABASE_ID,
       NOTES_COLLECTION_ID,
       noteId,
-      updateData
+      updateData as any
     );
     
     // Track edit analytics
