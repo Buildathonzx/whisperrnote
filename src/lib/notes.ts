@@ -2,11 +2,11 @@ import { databases, ID } from './appwrite';
 import { Note, Notebook, ToDo, Sharing, Analytics, AIMetadata } from '../types/notes';
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
-const NOTES_COLLECTION_ID = process.env.NEXT_PUBLIC_NOTES_COLLECTION_ID!;
-const NOTEBOOKS_COLLECTION_ID = process.env.NEXT_PUBLIC_NOTEBOOKS_COLLECTION_ID!;
-const TODOS_COLLECTION_ID = process.env.NEXT_PUBLIC_TODOS_COLLECTION_ID!;
-const SHARING_COLLECTION_ID = process.env.NEXT_PUBLIC_SHARING_COLLECTION_ID!;
-const ANALYTICS_COLLECTION_ID = process.env.NEXT_PUBLIC_ANALYTICS_COLLECTION_ID!;
+const NOTES_TABLE_ID = process.env.NEXT_PUBLIC_NOTES_TABLE_ID!;
+const NOTEBOOKS_TABLE_ID = process.env.NEXT_PUBLIC_NOTEBOOKS_TABLE_ID!;
+const TODOS_TABLE_ID = process.env.NEXT_PUBLIC_TODOS_TABLE_ID!;
+const SHARING_TABLE_ID = process.env.NEXT_PUBLIC_SHARING_TABLE_ID!;
+const ANALYTICS_TABLE_ID = process.env.NEXT_PUBLIC_ANALYTICS_TABLE_ID!;
 
 // Helper function to safely cast Appwrite Document to our types
 function castDocument<T>(doc: any): T {
@@ -38,7 +38,7 @@ export async function createNote(note: Omit<Note, '_id' | 'created_at' | 'update
     
     const doc = await databases.createDocument(
       DATABASE_ID,
-      NOTES_COLLECTION_ID,
+      NOTES_TABLE_ID,
       ID.unique(),
       noteData as any
     );
@@ -57,7 +57,7 @@ export async function getNote(noteId: string) {
   try {
     const doc = await databases.getDocument(
       DATABASE_ID,
-      NOTES_COLLECTION_ID,
+      NOTES_TABLE_ID,
       noteId
     );
     
@@ -80,7 +80,7 @@ export async function updateNote(noteId: string, data: Partial<Note>) {
     
     const doc = await databases.updateDocument(
       DATABASE_ID,
-      NOTES_COLLECTION_ID,
+      NOTES_TABLE_ID,
       noteId,
       updateData as any
     );
@@ -100,7 +100,7 @@ export async function deleteNote(noteId: string) {
     // Soft delete by marking as deleted
     await databases.updateDocument(
       DATABASE_ID,
-      NOTES_COLLECTION_ID,
+      NOTES_TABLE_ID,
       noteId,
       { 
         is_deleted: true,
@@ -140,7 +140,7 @@ export async function listNotes(userId: string, filters?: {
     
     const response = await databases.listDocuments(
       DATABASE_ID,
-      NOTES_COLLECTION_ID,
+      NOTES_TABLE_ID,
       queries
     );
     
@@ -162,7 +162,7 @@ export async function createNotebook(notebook: Omit<Notebook, '_id' | 'created_a
     
     const doc = await databases.createDocument(
       DATABASE_ID,
-      NOTEBOOKS_COLLECTION_ID,
+      NOTEBOOKS_TABLE_ID,
       ID.unique(),
       notebookData
     );
@@ -178,7 +178,7 @@ export async function listNotebooks(userId: string) {
   try {
     const response = await databases.listDocuments(
       DATABASE_ID,
-      NOTEBOOKS_COLLECTION_ID,
+      NOTEBOOKS_TABLE_ID,
       [`owner_id=${userId}`]
     );
     
@@ -198,7 +198,7 @@ export async function updateNotebook(notebookId: string, data: Partial<Notebook>
     
     const doc = await databases.updateDocument(
       DATABASE_ID,
-      NOTEBOOKS_COLLECTION_ID,
+      NOTEBOOKS_TABLE_ID,
       notebookId,
       updateData
     );
@@ -214,7 +214,7 @@ export async function deleteNotebook(notebookId: string) {
   try {
     await databases.deleteDocument(
       DATABASE_ID,
-      NOTEBOOKS_COLLECTION_ID,
+      NOTEBOOKS_TABLE_ID,
       notebookId
     );
     
@@ -236,7 +236,7 @@ export async function createToDo(todo: Omit<ToDo, '_id' | 'created_at' | 'update
     
     const doc = await databases.createDocument(
       DATABASE_ID,
-      TODOS_COLLECTION_ID,
+      TODOS_TABLE_ID,
       ID.unique(),
       todoData
     );
@@ -257,7 +257,7 @@ export async function updateToDo(todoId: string, data: Partial<ToDo>) {
     
     const doc = await databases.updateDocument(
       DATABASE_ID,
-      TODOS_COLLECTION_ID,
+      TODOS_TABLE_ID,
       todoId,
       updateData
     );
@@ -279,7 +279,7 @@ export async function listToDos(userId: string, status?: string) {
     
     const response = await databases.listDocuments(
       DATABASE_ID,
-      TODOS_COLLECTION_ID,
+      TODOS_TABLE_ID,
       queries
     );
     
@@ -294,7 +294,7 @@ export async function deleteToDo(todoId: string) {
   try {
     await databases.deleteDocument(
       DATABASE_ID,
-      TODOS_COLLECTION_ID,
+      TODOS_TABLE_ID,
       todoId
     );
     
@@ -315,7 +315,7 @@ export async function shareResource(sharing: Omit<Sharing, '_id' | 'created_at'>
     
     const doc = await databases.createDocument(
       DATABASE_ID,
-      SHARING_COLLECTION_ID,
+      SHARING_TABLE_ID,
       ID.unique(),
       shareData
     );
@@ -337,7 +337,7 @@ export async function getSharedResources(userId: string, resourceType?: string) 
     
     const response = await databases.listDocuments(
       DATABASE_ID,
-      SHARING_COLLECTION_ID,
+      SHARING_TABLE_ID,
       queries
     );
     
@@ -352,7 +352,7 @@ export async function revokeShare(shareId: string) {
   try {
     await databases.deleteDocument(
       DATABASE_ID,
-      SHARING_COLLECTION_ID,
+      SHARING_TABLE_ID,
       shareId
     );
     
@@ -383,7 +383,7 @@ export async function trackAnalytics(
     
     const doc = await databases.createDocument(
       DATABASE_ID,
-      ANALYTICS_COLLECTION_ID,
+      ANALYTICS_TABLE_ID,
       ID.unique(),
       analyticsData
     );
@@ -406,7 +406,7 @@ export async function getAnalytics(userId: string, resourceId?: string) {
     
     const response = await databases.listDocuments(
       DATABASE_ID,
-      ANALYTICS_COLLECTION_ID,
+      ANALYTICS_TABLE_ID,
       queries
     );
     
@@ -442,7 +442,7 @@ export async function getAnalyticsSummary(userId: string, timeRange: 'day' | 'we
     
     const response = await databases.listDocuments(
       DATABASE_ID,
-      ANALYTICS_COLLECTION_ID,
+      ANALYTICS_TABLE_ID,
       queries
     );
     

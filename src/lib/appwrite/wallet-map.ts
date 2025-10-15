@@ -1,7 +1,7 @@
 import { Client, Databases, Query } from 'node-appwrite';
 
 const DB_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
-const COLLECTION_ID = process.env.WALLET_MAP_COLLECTION_ID!;
+const COLLECTION_ID = process.env.WALLET_MAP_TABLE_ID!;
 
 function getAdminClient() {
   const client = new Client()

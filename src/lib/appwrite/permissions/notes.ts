@@ -4,7 +4,7 @@
  */
 
 import { Permission, Role } from 'appwrite';
-import { getCurrentUser, databases, APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES } from '../../appwrite';
+import { getCurrentUser, tablesDB, APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES } from '../../appwrite';
 import type { Notes } from '@/types/appwrite';
 
 /**
@@ -101,11 +101,11 @@ export async function validatePublicNoteAccess(noteId: string): Promise<Notes | 
     console.log('Attempting to access public note:', noteId);
     
     // Use standard client to access public notes
-    const note = await databases.getDocument(
-      APPWRITE_DATABASE_ID, 
-      APPWRITE_COLLECTION_ID_NOTES, 
-      noteId
-    ) as unknown as Notes;
+    const note = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId
+    }) as unknown as Notes;
 
     console.log('Successfully retrieved note:', note.title, 'isPublic:', note.isPublic);
 
@@ -130,11 +130,11 @@ export async function validatePublicNoteAccess(noteId: string): Promise<Notes | 
 export async function toggleNoteVisibility(noteId: string): Promise<Notes | null> {
   try {
     // Get current note
-    const note = await databases.getDocument(
-      APPWRITE_DATABASE_ID, 
-      APPWRITE_COLLECTION_ID_NOTES, 
-      noteId
-    ) as unknown as Notes;
+    const note = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId
+    }) as unknown as Notes;
 
     // Check if user owns the note
     if (!(await isNoteOwner(note))) {
@@ -169,16 +169,16 @@ export async function toggleNoteVisibility(noteId: string): Promise<Notes | null
     }
     
     // Update the note with new visibility and permissions
-    const updatedNote = await databases.updateDocument(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_NOTES,
-      noteId,
-      {
+    const updatedNote = await tablesDB.updateRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId,
+      data: {
         isPublic: newIsPublic,
         updatedAt: new Date().toISOString()
       },
       permissions
-    ) as unknown as Notes;
+    }) as unknown as Notes;
 
     return updatedNote;
   } catch (error) {
@@ -192,11 +192,11 @@ export async function toggleNoteVisibility(noteId: string): Promise<Notes | null
  */
 export async function makeNotePublic(noteId: string): Promise<Notes | null> {
   try {
-    const note = await databases.getDocument(
-      APPWRITE_DATABASE_ID, 
-      APPWRITE_COLLECTION_ID_NOTES, 
-      noteId
-    ) as unknown as Notes;
+    const note = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId
+    }) as unknown as Notes;
 
     if (!(await isNoteOwner(note))) {
       throw new Error('Permission denied: You can only modify your own notes');
@@ -215,16 +215,16 @@ export async function makeNotePublic(noteId: string): Promise<Notes | null> {
       Permission.delete(Role.user(note.userId))
     ];
 
-    const updatedNote = await databases.updateDocument(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_NOTES,
-      noteId,
-      {
+    const updatedNote = await tablesDB.updateRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId,
+      data: {
         isPublic: true,
         updatedAt: new Date().toISOString()
       },
       permissions
-    ) as unknown as Notes;
+    }) as unknown as Notes;
 
     return updatedNote;
   } catch (error) {
@@ -238,11 +238,11 @@ export async function makeNotePublic(noteId: string): Promise<Notes | null> {
  */
 export async function makeNotePrivate(noteId: string): Promise<Notes | null> {
   try {
-    const note = await databases.getDocument(
-      APPWRITE_DATABASE_ID, 
-      APPWRITE_COLLECTION_ID_NOTES, 
-      noteId
-    ) as unknown as Notes;
+    const note = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId
+    }) as unknown as Notes;
 
     if (!(await isNoteOwner(note))) {
       throw new Error('Permission denied: You can only modify your own notes');
@@ -260,16 +260,16 @@ export async function makeNotePrivate(noteId: string): Promise<Notes | null> {
       Permission.delete(Role.user(note.userId))
     ];
 
-    const updatedNote = await databases.updateDocument(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_NOTES,
-      noteId,
-      {
+    const updatedNote = await tablesDB.updateRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId,
+      data: {
         isPublic: false,
         updatedAt: new Date().toISOString()
       },
       permissions
-    ) as unknown as Notes;
+    }) as unknown as Notes;
 
     return updatedNote;
   } catch (error) {
@@ -283,19 +283,19 @@ export async function makeNotePrivate(noteId: string): Promise<Notes | null> {
  */
 export async function getPublicNotes(limit: number = 50): Promise<{ documents: Notes[], total: number }> {
   try {
-    const response = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_NOTES,
-      [
+    const response = await tablesDB.listRows({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      queries: [
         // Only public notes
         // Query.equal('isPublic', true), // Commented out due to potential query limitations
         // Query.limit(limit),
         // Query.orderDesc('$createdAt')
       ]
-    );
+    });
 
     // Filter public notes on the client side for now
-    const publicNotes = response.documents.filter((doc: any) => doc.isPublic === true) as unknown as Notes[];
+    const publicNotes = response.rows.filter((doc: any) => doc.isPublic === true) as unknown as Notes[];
     
     return {
       documents: publicNotes.slice(0, limit),

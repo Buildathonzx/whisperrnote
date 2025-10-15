@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Storage, Functions, ID, Query, Permission, Role } from 'appwrite';
+import { Client, Account, Databases, Storage, Functions, ID, Query, Permission, Role, TablesDB } from 'appwrite';
 
 // Centralized Appwrite client + exported service instances and env IDs.
 // This isolates raw SDK usage from higher-level domain modules.
@@ -9,6 +9,7 @@ const client = new Client()
 
 const account = new Account(client);
 const databases = new Databases(client);
+const tablesDB = new TablesDB(client);
 const storage = new Storage(client);
 const functions = new Functions(client);
 
@@ -17,17 +18,17 @@ export const APP_URI = process.env.NEXT_PUBLIC_APP_URI!;
 
 // Database & Collection IDs
 export const APPWRITE_DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
-export const APPWRITE_COLLECTION_ID_USERS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_USERS!;
-export const APPWRITE_COLLECTION_ID_NOTES = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTES!;
-export const APPWRITE_COLLECTION_ID_TAGS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_TAGS!;
-export const APPWRITE_COLLECTION_ID_APIKEYS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_APIKEYS!;
-export const APPWRITE_COLLECTION_ID_COMMENTS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_COMMENTS!;
-export const APPWRITE_COLLECTION_ID_EXTENSIONS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_EXTENSIONS!;
-export const APPWRITE_COLLECTION_ID_REACTIONS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_REACTIONS!;
-export const APPWRITE_COLLECTION_ID_COLLABORATORS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_COLLABORATORS!;
-export const APPWRITE_COLLECTION_ID_ACTIVITYLOG = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_ACTIVITYLOG!;
-export const APPWRITE_COLLECTION_ID_SETTINGS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_SETTINGS!;
-export const APPWRITE_COLLECTION_ID_SUBSCRIPTIONS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_SUBSCRIPTIONS!;
+export const APPWRITE_TABLE_ID_USERS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_USERS!;
+export const APPWRITE_TABLE_ID_NOTES = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTES!;
+export const APPWRITE_TABLE_ID_TAGS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_TAGS!;
+export const APPWRITE_TABLE_ID_APIKEYS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_APIKEYS!;
+export const APPWRITE_TABLE_ID_COMMENTS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_COMMENTS!;
+export const APPWRITE_TABLE_ID_EXTENSIONS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_EXTENSIONS!;
+export const APPWRITE_TABLE_ID_REACTIONS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_REACTIONS!;
+export const APPWRITE_TABLE_ID_COLLABORATORS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_COLLABORATORS!;
+export const APPWRITE_TABLE_ID_ACTIVITYLOG = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_ACTIVITYLOG!;
+export const APPWRITE_TABLE_ID_SETTINGS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_SETTINGS!;
+export const APPWRITE_TABLE_ID_SUBSCRIPTIONS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_SUBSCRIPTIONS!;
 
 // Buckets
 export const APPWRITE_BUCKET_PROFILE_PICTURES = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_PROFILE_PICTURES!;
@@ -40,6 +41,7 @@ export {
   client,
   account,
   databases,
+  tablesDB,
   storage,
   functions,
   ID,

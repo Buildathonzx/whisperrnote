@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Storage, Functions, ID, Query, Permission, Role } from 'appwrite';
+import { Client, Account, Databases, Storage, Functions, ID, Query, Permission, Role, TablesDB } from 'appwrite';
 import type {
   Users,
   Notes,
@@ -32,6 +32,7 @@ const client = new Client()
 
 const account = new Account(client);
 const databases = new Databases(client);
+const tablesDB = new TablesDB(client);
 const storage = new Storage(client);
 const functions = new Functions(client);
 
@@ -40,17 +41,17 @@ const functions = new Functions(client);
 
 // Appwrite config IDs from env
 export const APPWRITE_DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
-export const APPWRITE_COLLECTION_ID_USERS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_USERS!;
-export const APPWRITE_COLLECTION_ID_NOTES = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTES!;
-export const APPWRITE_COLLECTION_ID_TAGS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_TAGS!;
-export const APPWRITE_COLLECTION_ID_APIKEYS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_APIKEYS!;
-export const APPWRITE_COLLECTION_ID_COMMENTS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_COMMENTS!;
-export const APPWRITE_COLLECTION_ID_EXTENSIONS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_EXTENSIONS!;
-export const APPWRITE_COLLECTION_ID_REACTIONS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_REACTIONS!;
-export const APPWRITE_COLLECTION_ID_COLLABORATORS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_COLLABORATORS!;
-export const APPWRITE_COLLECTION_ID_ACTIVITYLOG = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_ACTIVITYLOG!;
-export const APPWRITE_COLLECTION_ID_SETTINGS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_SETTINGS!;
-export const APPWRITE_COLLECTION_ID_SUBSCRIPTIONS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_SUBSCRIPTIONS!;
+export const APPWRITE_TABLE_ID_USERS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_USERS!;
+export const APPWRITE_TABLE_ID_NOTES = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTES!;
+export const APPWRITE_TABLE_ID_TAGS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_TAGS!;
+export const APPWRITE_TABLE_ID_APIKEYS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_APIKEYS!;
+export const APPWRITE_TABLE_ID_COMMENTS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_COMMENTS!;
+export const APPWRITE_TABLE_ID_EXTENSIONS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_EXTENSIONS!;
+export const APPWRITE_TABLE_ID_REACTIONS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_REACTIONS!;
+export const APPWRITE_TABLE_ID_COLLABORATORS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_COLLABORATORS!;
+export const APPWRITE_TABLE_ID_ACTIVITYLOG = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_ACTIVITYLOG!;
+export const APPWRITE_TABLE_ID_SETTINGS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_SETTINGS!;
+export const APPWRITE_TABLE_ID_SUBSCRIPTIONS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_SUBSCRIPTIONS!;
 
 export const APPWRITE_BUCKET_PROFILE_PICTURES = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_PROFILE_PICTURES!;
 export const APPWRITE_BUCKET_NOTES_ATTACHMENTS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_NOTES_ATTACHMENTS!;
@@ -58,7 +59,7 @@ export const APPWRITE_BUCKET_EXTENSION_ASSETS = process.env.NEXT_PUBLIC_APPWRITE
 export const APPWRITE_BUCKET_BACKUPS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_BACKUPS!;
 export const APPWRITE_BUCKET_TEMP_UPLOADS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_TEMP_UPLOADS!;
 
-export { client, account, databases, storage, functions, ID, Query, Permission, Role };
+export { client, account, databases, tablesDB, storage, functions, ID, Query, Permission, Role };
 
 function cleanDocumentData<T>(data: Partial<T>): Record<string, any> {
   const { $id, $sequence, $collectionId, $databaseId, $createdAt, $updatedAt, $permissions, ...cleanData } = data as any;
@@ -170,7 +171,7 @@ export async function createNote(data: Partial<Notes>) {
   ];
   const doc = await databases.createDocument(
     APPWRITE_DATABASE_ID,
-    APPWRITE_COLLECTION_ID_NOTES,
+    APPWRITE_TABLE_ID_NOTES,
     ID.unique(),
     {
       ...cleanData,
@@ -183,14 +184,14 @@ export async function createNote(data: Partial<Notes>) {
   );
   await databases.updateDocument(
     APPWRITE_DATABASE_ID,
-    APPWRITE_COLLECTION_ID_NOTES,
+    APPWRITE_TABLE_ID_NOTES,
     doc.$id,
     { id: doc.$id }
   );
   // Dual-write tags to note_tags pivot including tagId resolution
   try {
-    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
-    const tagsCollection = APPWRITE_COLLECTION_ID_TAGS;
+    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
+    const tagsCollection = APPWRITE_TABLE_ID_TAGS;
     const rawTags: string[] = Array.isArray((data as any).tags) ? (data as any).tags.filter(Boolean) : [];
     if (rawTags.length) {
       const unique = Array.from(new Set(rawTags.map(t => t.trim()))).filter(Boolean);
@@ -270,9 +271,9 @@ export async function createNote(data: Partial<Notes>) {
 }
 
 export async function getNote(noteId: string): Promise<Notes> {
-  const doc = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as any;
+  const doc = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId) as any;
   try {
-    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
     const pivot = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
       noteTagsCollection,
@@ -296,11 +297,11 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   const { id, userId, ...rest } = cleanData;
   const updatedAt = new Date().toISOString();
   const updatedData = { ...rest, updatedAt };
-  const before = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as any;
-  const doc = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId, updatedData) as any;
+  const before = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId) as any;
+  const doc = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId, updatedData) as any;
   // Note revisions logging (best-effort) aligned with new schema
   try {
-    const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTEREVISIONS || 'note_revisions';
+    const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTEREVISIONS || 'note_revisions';
     const significantFields = ['title', 'content', 'tags'];
     let changed = false;
     const changes: Record<string, { before: any; after: any }> = {};
@@ -357,8 +358,8 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   // Dual-write tags with cleanup (remove stale pivots) and dedupe + tagId resolution
   try {
     if (Array.isArray((data as any).tags)) {
-      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
-      const tagsCollection = APPWRITE_COLLECTION_ID_TAGS;
+      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
+      const tagsCollection = APPWRITE_TABLE_ID_TAGS;
       const incomingRaw: string[] = (data as any).tags.filter(Boolean).map((t: string) => t.trim());
       const normalizedIncoming = Array.from(new Set(incomingRaw)).filter(Boolean);
       const incomingSet = new Set(normalizedIncoming);
@@ -486,7 +487,7 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
 }
 
 export async function deleteNote(noteId: string) {
-  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId);
+  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId);
 }
 
 export async function listNotes(queries: any[] = [], limit: number = 100) {
@@ -505,13 +506,13 @@ export async function listNotes(queries: any[] = [], limit: number = 100) {
     Query.orderDesc('$createdAt')
   ];
 
-  const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, finalQueries);
+  const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, finalQueries);
   const notes = res.documents as unknown as Notes[];
 
   // Hydrate tags from pivot collection in batch (best-effort)
   try {
     if (notes.length) {
-      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
       const noteIds = notes.map((n: any) => n.$id || (n as any).id).filter(Boolean);
       if (noteIds.length) {
         // Appwrite supports passing array to Query.equal for multiple values
@@ -560,7 +561,7 @@ export async function getAllNotes(): Promise<{ documents: Notes[], total: number
       Query.orderDesc('$createdAt')
     ];
     if (cursor) queries.push(Query.cursorAfter(cursor));
-    const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, queries);
+    const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, queries);
     const notes = res.documents as unknown as Notes[];
     allNotes.push(...notes);
     if (notes.length < batchSize) break;
@@ -569,7 +570,7 @@ export async function getAllNotes(): Promise<{ documents: Notes[], total: number
   // Hydrate all tags in one or multiple batches if necessary
   try {
     if (allNotes.length) {
-      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
       const noteIds = allNotes.map((n: any) => n.$id || (n as any).id).filter(Boolean);
       if (noteIds.length) {
         // Appwrite max limit per request (assuming 100); chunk ids
@@ -614,7 +615,7 @@ export async function createTag(data: Partial<Tags>) {
   const cleanData = cleanDocumentData(data);
   const doc = await databases.createDocument(
     APPWRITE_DATABASE_ID,
-    APPWRITE_COLLECTION_ID_TAGS,
+    APPWRITE_TABLE_ID_TAGS,
     ID.unique(),
     {
       ...cleanData,
@@ -627,7 +628,7 @@ export async function createTag(data: Partial<Tags>) {
   // Patch the tag to set id = $id (Appwrite does not set this automatically)
   await databases.updateDocument(
     APPWRITE_DATABASE_ID,
-    APPWRITE_COLLECTION_ID_TAGS,
+    APPWRITE_TABLE_ID_TAGS,
     doc.$id,
     { id: doc.$id }
   );
@@ -637,17 +638,17 @@ export async function createTag(data: Partial<Tags>) {
 }
 
 export async function getTag(tagId: string): Promise<Tags> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, tagId) as Promise<Tags>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_TAGS, tagId) as Promise<Tags>;
 }
 
 export async function updateTag(tagId: string, data: Partial<Tags>) {
   // Do not allow updating id or userId directly
   const { id, userId, ...rest } = data;
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, tagId, cleanDocumentData(rest));
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_TAGS, tagId, cleanDocumentData(rest));
 }
 
 export async function deleteTag(tagId: string) {
-  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, tagId);
+  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_TAGS, tagId);
 }
 
 export async function listTags(queries: any[] = [], limit: number = 100) {
@@ -672,7 +673,7 @@ export async function listTags(queries: any[] = [], limit: number = 100) {
   ];
   
   // Cast documents to Tags[]
-  const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, finalQueries);
+  const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_TAGS, finalQueries);
   return { ...res, documents: res.documents as unknown as Tags[] };
 }
 
@@ -698,7 +699,7 @@ export async function getAllTags(): Promise<{ documents: Tags[], total: number }
       queries.push(Query.cursorAfter(cursor));
     }
     
-    const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, queries);
+    const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_TAGS, queries);
     const tags = res.documents as unknown as Tags[];
     
     allTags = [...allTags, ...tags];
@@ -717,7 +718,7 @@ export async function getAllTags(): Promise<{ documents: Tags[], total: number }
 }
 
 export async function listTagsByUser(userId: string) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_TAGS, [Query.equal('userId', userId)]);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_TAGS, [Query.equal('userId', userId)]);
 }
 
 // Internal helper: adjust tag usage count (best-effort, non-atomic)
@@ -726,7 +727,7 @@ async function adjustTagUsage(userId: string | null | undefined, tagName: string
     if (!userId || !tagName) return;
     const res = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_TAGS,
+      APPWRITE_TABLE_ID_TAGS,
       [Query.equal('userId', userId), Query.equal('name', tagName), Query.limit(1)] as any
     );
     if (res.documents.length) {
@@ -737,7 +738,7 @@ async function adjustTagUsage(userId: string | null | undefined, tagName: string
         try {
           await databases.updateDocument(
             APPWRITE_DATABASE_ID,
-            APPWRITE_COLLECTION_ID_TAGS,
+            APPWRITE_TABLE_ID_TAGS,
             doc.$id,
             { usageCount: next }
           );
@@ -754,23 +755,23 @@ async function adjustTagUsage(userId: string | null | undefined, tagName: string
 // --- APIKEYS CRUD ---
 
 export async function createApiKey(data: Partial<ApiKeys>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_APIKEYS, ID.unique(), cleanDocumentData(data));
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_APIKEYS, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getApiKey(apiKeyId: string): Promise<ApiKeys> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_APIKEYS, apiKeyId) as Promise<ApiKeys>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_APIKEYS, apiKeyId) as Promise<ApiKeys>;
 }
 
 export async function updateApiKey(apiKeyId: string, data: Partial<ApiKeys>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_APIKEYS, apiKeyId, cleanDocumentData(data));
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_APIKEYS, apiKeyId, cleanDocumentData(data));
 }
 
 export async function deleteApiKey(apiKeyId: string) {
-  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_APIKEYS, apiKeyId);
+  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_APIKEYS, apiKeyId);
 }
 
 export async function listApiKeys(queries: any[] = []) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_APIKEYS, queries);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_APIKEYS, queries);
 }
 
 // --- COMMENTS CRUD ---
@@ -784,23 +785,23 @@ export async function createComment(noteId: string, content: string) {
     userId: user.$id,
     createdAt: new Date().toISOString(),
   };
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, ID.unique(), data);
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COMMENTS, ID.unique(), data);
 }
 
 export async function getComment(commentId: string): Promise<Comments> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, commentId) as Promise<Comments>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COMMENTS, commentId) as Promise<Comments>;
 }
 
 export async function updateComment(commentId: string, data: Partial<Comments>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, commentId, cleanDocumentData(data));
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COMMENTS, commentId, cleanDocumentData(data));
 }
 
 export async function deleteComment(commentId: string) {
-  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, commentId);
+  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COMMENTS, commentId);
 }
 
 export async function listComments(noteId: string) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COMMENTS, [Query.equal('noteId', noteId)]);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COMMENTS, [Query.equal('noteId', noteId)]);
 }
 
 // --- EXTENSIONS CRUD ---
@@ -823,7 +824,7 @@ export async function createExtension(data: Partial<Extensions>) {
   
   const doc = await databases.createDocument(
     APPWRITE_DATABASE_ID,
-    APPWRITE_COLLECTION_ID_EXTENSIONS,
+    APPWRITE_TABLE_ID_EXTENSIONS,
     ID.unique(),
     {
       ...cleanData,
@@ -839,7 +840,7 @@ export async function createExtension(data: Partial<Extensions>) {
   // Patch the extension to set id = $id (Appwrite does not set this automatically)
   await databases.updateDocument(
     APPWRITE_DATABASE_ID,
-    APPWRITE_COLLECTION_ID_EXTENSIONS,
+    APPWRITE_TABLE_ID_EXTENSIONS,
     doc.$id,
     { id: doc.$id }
   );
@@ -849,7 +850,7 @@ export async function createExtension(data: Partial<Extensions>) {
 }
 
 export async function getExtension(extensionId: string): Promise<Extensions> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS, extensionId) as Promise<Extensions>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_EXTENSIONS, extensionId) as Promise<Extensions>;
 }
 
 export async function updateExtension(extensionId: string, data: Partial<Extensions>) {
@@ -863,15 +864,15 @@ export async function updateExtension(extensionId: string, data: Partial<Extensi
     updatedAt: new Date().toISOString()
   };
   
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS, extensionId, updatedData) as Promise<Extensions>;
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_EXTENSIONS, extensionId, updatedData) as Promise<Extensions>;
 }
 
 export async function deleteExtension(extensionId: string) {
-  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS, extensionId);
+  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_EXTENSIONS, extensionId);
 }
 
 export async function listExtensions(queries: any[] = []) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS, queries);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_EXTENSIONS, queries);
 }
 
 // --- REACTIONS CRUD ---
@@ -887,7 +888,7 @@ export async function createReaction(data: Partial<Reactions>) {
       try {
         const existing = await databases.listDocuments(
           APPWRITE_DATABASE_ID,
-          APPWRITE_COLLECTION_ID_REACTIONS,
+          APPWRITE_TABLE_ID_REACTIONS,
           [
             Query.equal('userId', userId),
             Query.equal('targetId', targetId),
@@ -911,23 +912,23 @@ export async function createReaction(data: Partial<Reactions>) {
   } catch (guardErr) {
     console.error('createReaction duplicate guard failed', guardErr);
   }
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_REACTIONS, ID.unique(), cleanDocumentData(data));
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_REACTIONS, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getReaction(reactionId: string): Promise<Reactions> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_REACTIONS, reactionId) as Promise<Reactions>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_REACTIONS, reactionId) as Promise<Reactions>;
 }
 
 export async function updateReaction(reactionId: string, data: Partial<Reactions>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_REACTIONS, reactionId, cleanDocumentData(data));
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_REACTIONS, reactionId, cleanDocumentData(data));
 }
 
 export async function deleteReaction(reactionId: string) {
-  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_REACTIONS, reactionId);
+  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_REACTIONS, reactionId);
 }
 
 export async function listReactions(queries: any[] = []) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_REACTIONS, queries);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_REACTIONS, queries);
 }
 
 // --- COLLABORATORS CRUD ---
@@ -941,7 +942,7 @@ export async function createCollaborator(data: Partial<Collaborators>) {
       try {
         const existing = await databases.listDocuments(
           APPWRITE_DATABASE_ID,
-          APPWRITE_COLLECTION_ID_COLLABORATORS,
+          APPWRITE_TABLE_ID_COLLABORATORS,
           [
             Query.equal('noteId', noteId),
             Query.equal('userId', userId),
@@ -954,7 +955,7 @@ export async function createCollaborator(data: Partial<Collaborators>) {
             try {
               await databases.updateDocument(
                 APPWRITE_DATABASE_ID,
-                APPWRITE_COLLECTION_ID_COLLABORATORS,
+                APPWRITE_TABLE_ID_COLLABORATORS,
                 existing.documents[0].$id,
                 { permission: (data as any).permission }
               );
@@ -978,70 +979,70 @@ export async function createCollaborator(data: Partial<Collaborators>) {
   } catch (guardErr) {
     console.error('createCollaborator duplicate guard failed', guardErr);
   }
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, ID.unique(), cleanDocumentData(data));
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getCollaborator(collaboratorId: string): Promise<Collaborators> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, collaboratorId) as Promise<Collaborators>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, collaboratorId) as Promise<Collaborators>;
 }
 
 export async function updateCollaborator(collaboratorId: string, data: Partial<Collaborators>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, collaboratorId, cleanDocumentData(data));
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, collaboratorId, cleanDocumentData(data));
 }
 
 export async function deleteCollaborator(collaboratorId: string) {
-  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, collaboratorId);
+  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, collaboratorId);
 }
 
 export async function listCollaborators(noteId: string) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, [Query.equal('noteId', noteId)]);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, [Query.equal('noteId', noteId)]);
 }
 
 // --- ACTIVITY LOG CRUD ---
 
 export async function createActivityLog(data: Partial<ActivityLog>) {
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, ID.unique(), cleanDocumentData(data));
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_ACTIVITYLOG, ID.unique(), cleanDocumentData(data));
 }
 
 export async function getActivityLog(activityLogId: string): Promise<ActivityLog> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, activityLogId) as Promise<ActivityLog>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_ACTIVITYLOG, activityLogId) as Promise<ActivityLog>;
 }
 
 export async function updateActivityLog(activityLogId: string, data: Partial<ActivityLog>) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, activityLogId, cleanDocumentData(data));
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_ACTIVITYLOG, activityLogId, cleanDocumentData(data));
 }
 
 export async function deleteActivityLog(activityLogId: string) {
-  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, activityLogId);
+  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_ACTIVITYLOG, activityLogId);
 }
 
 export async function listActivityLogs() {
   const user = await getCurrentUser();
   if (!user || !user.$id) throw new Error("User not authenticated");
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_ACTIVITYLOG, [Query.equal('userId', user.$id)]);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_ACTIVITYLOG, [Query.equal('userId', user.$id)]);
 }
 
 // --- SETTINGS CRUD ---
 
 export async function createSettings(data: Pick<Settings, 'userId' | 'settings'> & { mode?: string }) {
   if (!data.userId) throw new Error("userId is required to create settings");
-  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, data.userId, data);
+  return databases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_SETTINGS, data.userId, data);
 }
 
 export async function getSettings(settingsId: string): Promise<Settings> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, settingsId) as Promise<Settings>;
+  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_SETTINGS, settingsId) as Promise<Settings>;
 }
 
 export async function updateSettings(settingsId: string, data: any) {
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, settingsId, data);
+  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_SETTINGS, settingsId, data);
 }
 
 export async function deleteSettings(settingsId: string) {
-  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, settingsId);
+  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_SETTINGS, settingsId);
 }
 
 export async function listSettings(queries: any[] = []) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SETTINGS, queries);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_SETTINGS, queries);
 }
 
 // AI Mode specific functions
@@ -1111,22 +1112,22 @@ export async function deleteDocument(collectionId: string, documentId: string) {
 // --- ADVANCED/SEARCH ---
 
 export async function searchNotesByTitle(title: string) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, [Query.search('title', title)]);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, [Query.search('title', title)]);
 }
 
 export async function searchNotesByTag(tagId: string) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, [Query.contains('tags', tagId)]);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, [Query.contains('tags', tagId)]);
 }
 
 export async function listNotesByUser(userId: string) {
-  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, [Query.equal('userId', userId)]);
+  return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, [Query.equal('userId', userId)]);
 }
 
 
 export async function listPublicNotesByUser(userId: string) {
   return databases.listDocuments(
     APPWRITE_DATABASE_ID,
-    APPWRITE_COLLECTION_ID_NOTES,
+    APPWRITE_TABLE_ID_NOTES,
     [Query.equal('isPublic', true), Query.equal('userId', userId)]
   );
 }
@@ -1147,7 +1148,7 @@ export async function shareNoteWithUser(noteId: string, email: string, permissio
     // Find user by email (check in Users collection)
     const usersList = await databases.listDocuments(
       APPWRITE_DATABASE_ID, 
-      APPWRITE_COLLECTION_ID_USERS, 
+      APPWRITE_TABLE_ID_USERS, 
       [Query.equal('email', email)]
     );
 
@@ -1182,7 +1183,7 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
 
     const existingShares = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_COLLABORATORS,
+      APPWRITE_TABLE_ID_COLLABORATORS,
       [
         Query.equal('noteId', noteId),
         Query.equal('userId', targetUserId)
@@ -1192,14 +1193,14 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
     if (existingShares.documents.length > 0) {
       await databases.updateDocument(
         APPWRITE_DATABASE_ID,
-        APPWRITE_COLLECTION_ID_COLLABORATORS,
+        APPWRITE_TABLE_ID_COLLABORATORS,
         existingShares.documents[0].$id,
         { permission }
       );
     } else {
       await databases.createDocument(
         APPWRITE_DATABASE_ID,
-        APPWRITE_COLLECTION_ID_COLLABORATORS,
+        APPWRITE_TABLE_ID_COLLABORATORS,
         ID.unique(),
         {
           noteId,
@@ -1226,7 +1227,7 @@ export async function getSharedUsers(noteId: string) {
     // Get all collaborations for this note
     const collaborations = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_COLLABORATORS,
+      APPWRITE_TABLE_ID_COLLABORATORS,
       [Query.equal('noteId', noteId)]
     );
 
@@ -1236,7 +1237,7 @@ export async function getSharedUsers(noteId: string) {
         try {
           const user: any = await databases.getDocument(
             APPWRITE_DATABASE_ID,
-            APPWRITE_COLLECTION_ID_USERS,
+            APPWRITE_TABLE_ID_USERS,
             collab.userId
           );
 
@@ -1281,7 +1282,7 @@ export async function removeNoteSharing(noteId: string, targetUserId: string) {
     // Find and delete the collaboration record
     const collaborations = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_COLLABORATORS,
+      APPWRITE_TABLE_ID_COLLABORATORS,
       [
         Query.equal('noteId', noteId),
         Query.equal('userId', targetUserId)
@@ -1291,7 +1292,7 @@ export async function removeNoteSharing(noteId: string, targetUserId: string) {
     if (collaborations.documents.length > 0) {
       await databases.deleteDocument(
         APPWRITE_DATABASE_ID,
-        APPWRITE_COLLECTION_ID_COLLABORATORS,
+        APPWRITE_TABLE_ID_COLLABORATORS,
         collaborations.documents[0].$id
       );
     }
@@ -1311,7 +1312,7 @@ export async function getSharedNotes(): Promise<{ documents: Notes[], total: num
     // Get all collaborations where current user is a collaborator
     const collaborations = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_COLLABORATORS,
+      APPWRITE_TABLE_ID_COLLABORATORS,
       [Query.equal('userId', currentUser.$id)]
     );
 
@@ -1321,7 +1322,7 @@ export async function getSharedNotes(): Promise<{ documents: Notes[], total: num
         try {
           const note = await databases.getDocument(
             APPWRITE_DATABASE_ID,
-            APPWRITE_COLLECTION_ID_NOTES,
+            APPWRITE_TABLE_ID_NOTES,
             collab.noteId
           ) as unknown as Notes;
           
@@ -1363,7 +1364,7 @@ export async function getNoteWithSharing(noteId: string): Promise<(Notes & { isS
     // Check if note is shared with current user
     const collaboration = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_COLLABORATORS,
+      APPWRITE_TABLE_ID_COLLABORATORS,
       [
         Query.equal('noteId', noteId),
         Query.equal('userId', currentUser.$id)
@@ -1376,7 +1377,7 @@ export async function getNoteWithSharing(noteId: string): Promise<(Notes & { isS
       try {
         sharedBy = await databases.getDocument(
           APPWRITE_DATABASE_ID,
-          APPWRITE_COLLECTION_ID_USERS,
+          APPWRITE_TABLE_ID_USERS,
           note.userId
         );
       } catch (error) {
@@ -1398,7 +1399,7 @@ export async function getNoteWithSharing(noteId: string): Promise<(Notes & { isS
 
 export async function getPublicNote(noteId: string): Promise<Notes | null> {
   try {
-    const note = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as unknown as Notes;
+    const note = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId) as unknown as Notes;
     
     // Only return note if it's public
     if (note.isPublic) {
@@ -1632,7 +1633,7 @@ export async function listNoteAttachments(noteId: string, currentUserId?: string
         try {
           const collabRes: any = await databases.listDocuments(
             APPWRITE_DATABASE_ID,
-            APPWRITE_COLLECTION_ID_COLLABORATORS,
+            APPWRITE_TABLE_ID_COLLABORATORS,
             [Query.equal('noteId', noteId), Query.equal('userId', currentUserId)] as any
           );
           const isCollab = Array.isArray(collabRes?.documents) && collabRes.documents.length > 0;
@@ -1648,7 +1649,7 @@ export async function listNoteAttachments(noteId: string, currentUserId?: string
   const note = await getNote(noteId) as any;
   const embedded = normalizeNoteAttachmentsField(note);
   // If collection enabled, merge records (favor collection metadata if conflicts by fileId)
-  if (APPWRITE_COLLECTION_ID_ATTACHMENTS) {
+  if (APPWRITE_TABLE_ID_ATTACHMENTS) {
     try {
       const collectionRecords = await listAttachmentsForNote(noteId);
       if (collectionRecords.length) {
@@ -1698,9 +1699,9 @@ export async function removeAttachmentFromNote(noteId: string, attachmentId: str
 
 // --- NEW ATTACHMENTS COLLECTION MODEL ---
 // Progressive enhancement: supports richer metadata beyond embedded JSON strings.
-// If NEXT_PUBLIC_APPWRITE_COLLECTION_ID_ATTACHMENTS is set, we will dual-write to that collection.
+// If NEXT_PUBLIC_APPWRITE_TABLE_ID_ATTACHMENTS is set, we will dual-write to that collection.
 
-export const APPWRITE_COLLECTION_ID_ATTACHMENTS = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_ATTACHMENTS || undefined;
+export const APPWRITE_TABLE_ID_ATTACHMENTS = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_ATTACHMENTS || undefined;
 
 export interface AttachmentRecord {
   id: string;
@@ -1715,12 +1716,12 @@ export interface AttachmentRecord {
 }
 
 async function createAttachmentRecord(meta: { noteId: string; ownerId: string; fileId: string; filename: string; mimetype: string | null; sizeBytes: number; }): Promise<AttachmentRecord | null> {
-  if (!APPWRITE_COLLECTION_ID_ATTACHMENTS) return null;
+  if (!APPWRITE_TABLE_ID_ATTACHMENTS) return null;
   try {
     const now = new Date().toISOString();
     const doc: any = await databases.createDocument(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_ATTACHMENTS,
+      APPWRITE_TABLE_ID_ATTACHMENTS,
       ID.unique(),
       {
         noteId: meta.noteId,
@@ -1735,7 +1736,7 @@ async function createAttachmentRecord(meta: { noteId: string; ownerId: string; f
     );
     await databases.updateDocument(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_ATTACHMENTS,
+      APPWRITE_TABLE_ID_ATTACHMENTS,
       doc.$id,
       { id: doc.$id }
     );
@@ -1756,11 +1757,11 @@ async function createAttachmentRecord(meta: { noteId: string; ownerId: string; f
 }
 
 export async function listAttachmentsForNote(noteId: string): Promise<AttachmentRecord[]> {
-  if (!APPWRITE_COLLECTION_ID_ATTACHMENTS) return [];
+  if (!APPWRITE_TABLE_ID_ATTACHMENTS) return [];
   try {
     const res: any = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_ATTACHMENTS,
+      APPWRITE_TABLE_ID_ATTACHMENTS,
       [Query.equal('noteId', noteId), Query.limit(200), Query.orderDesc('$createdAt')] as any
     );
     return res.documents as AttachmentRecord[];
@@ -1771,11 +1772,11 @@ export async function listAttachmentsForNote(noteId: string): Promise<Attachment
 }
 
 export async function deleteAttachmentRecord(attachmentId: string) {
-  if (!APPWRITE_COLLECTION_ID_ATTACHMENTS) return;
+  if (!APPWRITE_TABLE_ID_ATTACHMENTS) return;
   try {
     await databases.deleteDocument(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_ATTACHMENTS,
+      APPWRITE_TABLE_ID_ATTACHMENTS,
       attachmentId
     );
   } catch (e) {
@@ -1828,7 +1829,7 @@ export function verifySignedAttachmentURL(params: { noteId: string; ownerId: str
 // --- NOTE REVISIONS UTILITIES ---
 export async function listNoteRevisions(noteId: string, limit: number = 50) {
   try {
-    const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTEREVISIONS || 'note_revisions';
+    const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTEREVISIONS || 'note_revisions';
     const res = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
       revisionsCollection,
@@ -1847,8 +1848,8 @@ export async function backfillNoteTagPivots(userId?: string) {
   try {
     const currentUser = userId ? { $id: userId } as any : await getCurrentUser();
     if (!currentUser?.$id) throw new Error('User not authenticated');
-    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
-    const tagsCollection = APPWRITE_COLLECTION_ID_TAGS;
+    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
+    const tagsCollection = APPWRITE_TABLE_ID_TAGS;
     // Fetch tag docs for user
     const tagDocsRes = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
@@ -1897,8 +1898,8 @@ export async function reconcileTagUsage(userId?: string) {
   try {
     const currentUser = userId ? { $id: userId } as any : await getCurrentUser();
     if (!currentUser?.$id) throw new Error('User not authenticated');
-    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
-    const tagsCollection = APPWRITE_COLLECTION_ID_TAGS;
+    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
+    const tagsCollection = APPWRITE_TABLE_ID_TAGS;
     // Fetch all user tag docs
     const tagDocsRes = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
@@ -1952,7 +1953,7 @@ export async function auditNoteTagPivots(userId?: string) {
   try {
     const currentUser = userId ? { $id: userId } as any : await getCurrentUser();
     if (!currentUser?.$id) throw new Error('User not authenticated');
-    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
 
     // Fetch pivots (bounded)
     const pivotsRes = await databases.listDocuments(
@@ -2057,14 +2058,14 @@ export async function listNotesPaginated(options: ListNotesPaginatedOptions = {}
 
   const res: any = await databases.listDocuments(
     APPWRITE_DATABASE_ID,
-    APPWRITE_COLLECTION_ID_NOTES,
+    APPWRITE_TABLE_ID_NOTES,
     finalQueries
   );
   const notes = res.documents as unknown as Notes[];
 
   if (hydrateTags && notes.length) {
     try {
-      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_NOTETAGS || 'note_tags';
+      const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
       const noteIds = notes.map((n: any) => n.$id || (n as any).id).filter(Boolean);
       if (noteIds.length) {
         const pivotRes = await databases.listDocuments(
@@ -2107,20 +2108,21 @@ export default {
   client,
   account,
   databases,
+  tablesDB,
   storage,
   // IDs
   APPWRITE_DATABASE_ID,
-  APPWRITE_COLLECTION_ID_USERS,
-  APPWRITE_COLLECTION_ID_NOTES,
-  APPWRITE_COLLECTION_ID_TAGS,
-  APPWRITE_COLLECTION_ID_APIKEYS,
-  APPWRITE_COLLECTION_ID_COMMENTS,
-  APPWRITE_COLLECTION_ID_EXTENSIONS,
-  APPWRITE_COLLECTION_ID_REACTIONS,
-  APPWRITE_COLLECTION_ID_COLLABORATORS,
-  APPWRITE_COLLECTION_ID_ACTIVITYLOG,
-   APPWRITE_COLLECTION_ID_SETTINGS,
-   APPWRITE_COLLECTION_ID_SUBSCRIPTIONS,
+  APPWRITE_TABLE_ID_USERS,
+  APPWRITE_TABLE_ID_NOTES,
+  APPWRITE_TABLE_ID_TAGS,
+  APPWRITE_TABLE_ID_APIKEYS,
+  APPWRITE_TABLE_ID_COMMENTS,
+  APPWRITE_TABLE_ID_EXTENSIONS,
+  APPWRITE_TABLE_ID_REACTIONS,
+  APPWRITE_TABLE_ID_COLLABORATORS,
+  APPWRITE_TABLE_ID_ACTIVITYLOG,
+   APPWRITE_TABLE_ID_SETTINGS,
+   APPWRITE_TABLE_ID_SUBSCRIPTIONS,
   APPWRITE_BUCKET_PROFILE_PICTURES,
   APPWRITE_BUCKET_NOTES_ATTACHMENTS,
   APPWRITE_BUCKET_EXTENSION_ASSETS,

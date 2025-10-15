@@ -4,7 +4,7 @@
  */
 
 import { Permission, Role } from 'appwrite';
-import { getCurrentUser, databases, APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_EXTENSIONS } from '../../appwrite';
+import { getCurrentUser, tablesDB, APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_EXTENSIONS } from '../../appwrite';
 import type { Extensions } from '@/types/appwrite';
 
 /**
@@ -100,11 +100,11 @@ export async function validatePublicExtensionAccess(extensionId: string): Promis
     console.log('Attempting to access public extension:', extensionId);
     
     // Use standard client to access public extensions
-    const extension = await databases.getDocument(
-      APPWRITE_DATABASE_ID, 
-      APPWRITE_COLLECTION_ID_EXTENSIONS, 
-      extensionId
-    ) as unknown as Extensions;
+    const extension = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_EXTENSIONS,
+      rowId: extensionId
+    }) as unknown as Extensions;
 
     console.log('Successfully retrieved extension:', extension.name, 'isPublic:', extension.isPublic);
 
@@ -129,11 +129,11 @@ export async function validatePublicExtensionAccess(extensionId: string): Promis
 export async function toggleExtensionVisibility(extensionId: string): Promise<Extensions | null> {
   try {
     // Get current extension
-    const extension = await databases.getDocument(
-      APPWRITE_DATABASE_ID, 
-      APPWRITE_COLLECTION_ID_EXTENSIONS, 
-      extensionId
-    ) as unknown as Extensions;
+    const extension = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_EXTENSIONS,
+      rowId: extensionId
+    }) as unknown as Extensions;
 
     // Check if user owns the extension
     if (!(await isExtensionOwner(extension))) {
@@ -168,16 +168,16 @@ export async function toggleExtensionVisibility(extensionId: string): Promise<Ex
     }
     
     // Update the extension with new visibility and permissions
-    const updatedExtension = await databases.updateDocument(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_EXTENSIONS,
-      extensionId,
-      {
+    const updatedExtension = await tablesDB.updateRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_EXTENSIONS,
+      rowId: extensionId,
+      data: {
         isPublic: newIsPublic,
         updatedAt: new Date().toISOString()
       },
       permissions
-    ) as unknown as Extensions;
+    }) as unknown as Extensions;
 
     return updatedExtension;
   } catch (error) {
@@ -191,11 +191,11 @@ export async function toggleExtensionVisibility(extensionId: string): Promise<Ex
  */
 export async function makeExtensionPublic(extensionId: string): Promise<Extensions | null> {
   try {
-    const extension = await databases.getDocument(
-      APPWRITE_DATABASE_ID, 
-      APPWRITE_COLLECTION_ID_EXTENSIONS, 
-      extensionId
-    ) as unknown as Extensions;
+    const extension = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_EXTENSIONS,
+      rowId: extensionId
+    }) as unknown as Extensions;
 
     if (!(await isExtensionOwner(extension))) {
       throw new Error('Permission denied: You can only modify your own extensions');
@@ -214,16 +214,16 @@ export async function makeExtensionPublic(extensionId: string): Promise<Extensio
       Permission.delete(Role.user(extension.authorId))
     ];
 
-    const updatedExtension = await databases.updateDocument(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_EXTENSIONS,
-      extensionId,
-      {
+    const updatedExtension = await tablesDB.updateRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_EXTENSIONS,
+      rowId: extensionId,
+      data: {
         isPublic: true,
         updatedAt: new Date().toISOString()
       },
       permissions
-    ) as unknown as Extensions;
+    }) as unknown as Extensions;
 
     return updatedExtension;
   } catch (error) {
@@ -237,11 +237,11 @@ export async function makeExtensionPublic(extensionId: string): Promise<Extensio
  */
 export async function makeExtensionPrivate(extensionId: string): Promise<Extensions | null> {
   try {
-    const extension = await databases.getDocument(
-      APPWRITE_DATABASE_ID, 
-      APPWRITE_COLLECTION_ID_EXTENSIONS, 
-      extensionId
-    ) as unknown as Extensions;
+    const extension = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_EXTENSIONS,
+      rowId: extensionId
+    }) as unknown as Extensions;
 
     if (!(await isExtensionOwner(extension))) {
       throw new Error('Permission denied: You can only modify your own extensions');
@@ -259,16 +259,16 @@ export async function makeExtensionPrivate(extensionId: string): Promise<Extensi
       Permission.delete(Role.user(extension.authorId))
     ];
 
-    const updatedExtension = await databases.updateDocument(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_EXTENSIONS,
-      extensionId,
-      {
+    const updatedExtension = await tablesDB.updateRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_EXTENSIONS,
+      rowId: extensionId,
+      data: {
         isPublic: false,
         updatedAt: new Date().toISOString()
       },
       permissions
-    ) as unknown as Extensions;
+    }) as unknown as Extensions;
 
     return updatedExtension;
   } catch (error) {
@@ -282,19 +282,19 @@ export async function makeExtensionPrivate(extensionId: string): Promise<Extensi
  */
 export async function getPublicExtensions(limit: number = 50): Promise<{ documents: Extensions[], total: number }> {
   try {
-    const response = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_EXTENSIONS,
-      [
+    const response = await tablesDB.listRows({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_EXTENSIONS,
+      queries: [
         // Only public extensions
         // Query.equal('isPublic', true), // Commented out due to potential query limitations
         // Query.limit(limit),
         // Query.orderDesc('$createdAt')
       ]
-    );
+    });
 
     // Filter public extensions on the client side for now
-    const publicExtensions = response.documents.filter((doc: any) => doc.isPublic === true) as unknown as Extensions[];
+    const publicExtensions = response.rows.filter((doc: any) => doc.isPublic === true) as unknown as Extensions[];
     
     return {
       documents: publicExtensions.slice(0, limit),

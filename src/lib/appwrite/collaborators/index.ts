@@ -1,5 +1,5 @@
-import { databases, ID, Query } from '../core/client';
-import { APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, APPWRITE_COLLECTION_ID_NOTES, APPWRITE_COLLECTION_ID_USERS } from '../core/client';
+import { tablesDB, ID, Query } from '../core/client';
+import { APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_COLLABORATORS, APPWRITE_TABLE_ID_NOTES, APPWRITE_TABLE_ID_USERS } from '../core/client';
 import type { Collaborators, Notes } from '@/types/appwrite';
 import { getCurrentUser } from '../auth';
 
@@ -27,7 +27,11 @@ export async function createCollaborator(data: Partial<Collaborators>) {
 
   // Ownership check: ensure current user owns the note before adding collaborators
   try {
-    const note = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as unknown as Notes;
+    const note = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId
+    }) as unknown as Notes;
     if (note.userId !== currentUser.$id) throw new Error('Only note owner can add collaborators');
   } catch (e) {
     throw new Error('Unable to verify note ownership');
@@ -35,29 +39,29 @@ export async function createCollaborator(data: Partial<Collaborators>) {
 
   // Duplicate guard
   try {
-    const existing = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_COLLABORATORS,
-      [
+    const existing = await tablesDB.listRows({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+      queries: [
         Query.equal('noteId', noteId),
         Query.equal('userId', targetUserId),
         Query.limit(1)
       ] as any
-    );
-    if (existing.documents.length) {
+    });
+    if (existing.rows.length) {
       // Update permission if changed
-      if ((data as any).permission && existing.documents[0].permission !== (data as any).permission) {
+      if ((data as any).permission && existing.rows[0].permission !== (data as any).permission) {
         try {
-          await databases.updateDocument(
-            APPWRITE_DATABASE_ID,
-            APPWRITE_COLLECTION_ID_COLLABORATORS,
-            existing.documents[0].$id,
-            { permission: (data as any).permission }
-          );
-          (existing.documents[0] as any).permission = (data as any).permission;
+          await tablesDB.updateRow({
+            databaseId: APPWRITE_DATABASE_ID,
+            tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+            rowId: existing.rows[0].$id,
+            data: { permission: (data as any).permission }
+          });
+          (existing.rows[0] as any).permission = (data as any).permission;
         } catch {}
       }
-      return existing.documents[0] as any;
+      return existing.rows[0] as any;
     }
   } catch (e) {
     // Non-fatal duplicate guard failure
@@ -82,36 +86,53 @@ export async function createCollaborator(data: Partial<Collaborators>) {
 
   const now = new Date().toISOString();
   const clean = cleanDocumentData<Collaborators>(data);
-  const doc = await databases.createDocument(
-    APPWRITE_DATABASE_ID,
-    APPWRITE_COLLECTION_ID_COLLABORATORS,
-    ID.unique(),
-    {
+  const doc = await tablesDB.createRow({
+    databaseId: APPWRITE_DATABASE_ID,
+    tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+    rowId: ID.unique(),
+    data: {
       ...clean,
       invitedAt: clean.invitedAt || now,
       accepted: typeof (clean as any).accepted === 'boolean' ? (clean as any).accepted : true,
     }
-  );
+  });
   return doc as unknown as Collaborators;
 }
 
 export async function getCollaborator(collaboratorId: string): Promise<Collaborators> {
-  return databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, collaboratorId) as Promise<Collaborators>;
+  return tablesDB.getRow({
+    databaseId: APPWRITE_DATABASE_ID,
+    tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+    rowId: collaboratorId
+  }) as Promise<Collaborators>;
 }
 
 export async function updateCollaborator(collaboratorId: string, data: Partial<Collaborators>) {
   const clean = cleanDocumentData<Collaborators>(data);
-  return databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, collaboratorId, clean);
+  return tablesDB.updateRow({
+    databaseId: APPWRITE_DATABASE_ID,
+    tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+    rowId: collaboratorId,
+    data: clean
+  });
 }
 
 export async function deleteCollaborator(collaboratorId: string) {
-  return databases.deleteDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, collaboratorId);
+  return tablesDB.deleteRow({
+    databaseId: APPWRITE_DATABASE_ID,
+    tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+    rowId: collaboratorId
+  });
 }
 
 export async function listCollaborators(noteId: string, limit: number = 100) {
   const queries = [Query.equal('noteId', noteId), Query.limit(limit)] as any;
-  const res = await databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_COLLABORATORS, queries);
-  return { ...res, documents: res.documents as unknown as Collaborators[] };
+  const res = await tablesDB.listRows({
+    databaseId: APPWRITE_DATABASE_ID,
+    tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+    queries
+  });
+  return { ...res, documents: res.rows as unknown as Collaborators[] };
 }
 
 // List notes shared with current user (mirrors legacy getSharedNotes but modular)
@@ -119,20 +140,20 @@ export async function listSharedNotesForCurrentUser() {
   const currentUser = await getCurrentUser();
   if (!currentUser?.$id) return { documents: [], total: 0 };
   try {
-    const collaborations = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_COLLABORATORS,
-      [Query.equal('userId', currentUser.$id), Query.limit(500)] as any
-    );
-    if (!collaborations.documents.length) return { documents: [], total: 0 };
+    const collaborations = await tablesDB.listRows({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+      queries: [Query.equal('userId', currentUser.$id), Query.limit(500)] as any
+    });
+    if (!collaborations.rows.length) return { documents: [], total: 0 };
     const notes: Notes[] = [];
-    for (const collab of collaborations.documents as any[]) {
+    for (const collab of collaborations.rows as any[]) {
       try {
-        const note = await databases.getDocument(
-          APPWRITE_DATABASE_ID,
-          APPWRITE_COLLECTION_ID_NOTES,
-          collab.noteId
-        ) as unknown as Notes;
+        const note = await tablesDB.getRow({
+          databaseId: APPWRITE_DATABASE_ID,
+          tableId: APPWRITE_TABLE_ID_NOTES,
+          rowId: collab.noteId
+        }) as unknown as Notes;
         (note as any).sharedPermission = collab.permission;
         (note as any).sharedAt = collab.invitedAt;
         notes.push(note);
@@ -149,13 +170,13 @@ export async function getNoteSharingForCurrentUser(noteId: string) {
   const currentUser = await getCurrentUser();
   if (!currentUser?.$id) return null;
   try {
-    const collabRes = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_COLLABORATORS,
-      [Query.equal('noteId', noteId), Query.equal('userId', currentUser.$id), Query.limit(1)] as any
-    );
-    if (!collabRes.documents.length) return null;
-    return collabRes.documents[0];
+    const collabRes = await tablesDB.listRows({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+      queries: [Query.equal('noteId', noteId), Query.equal('userId', currentUser.$id), Query.limit(1)] as any
+    });
+    if (!collabRes.rows.length) return null;
+    return collabRes.rows[0];
   } catch {
     return null;
   }
@@ -166,19 +187,23 @@ export async function removeNoteSharing(noteId: string, targetUserId: string) {
   const currentUser = await getCurrentUser();
   if (!currentUser?.$id) throw new Error('User not authenticated');
   try {
-    const note = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as any;
+    const note = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId
+    }) as any;
     if (note.userId !== currentUser.$id) throw new Error('Only note owner can remove sharing');
-    const collaborations = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_COLLABORATORS,
-      [Query.equal('noteId', noteId), Query.equal('userId', targetUserId), Query.limit(1)] as any
-    );
-    if (collaborations.documents.length) {
-      await databases.deleteDocument(
-        APPWRITE_DATABASE_ID,
-        APPWRITE_COLLECTION_ID_COLLABORATORS,
-        collaborations.documents[0].$id
-      );
+    const collaborations = await tablesDB.listRows({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+      queries: [Query.equal('noteId', noteId), Query.equal('userId', targetUserId), Query.limit(1)] as any
+    });
+    if (collaborations.rows.length) {
+      await tablesDB.deleteRow({
+        databaseId: APPWRITE_DATABASE_ID,
+        tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+        rowId: collaborations.rows[0].$id
+      });
     }
     return { success: true };
   } catch (e: any) {
@@ -191,15 +216,19 @@ export async function shareNoteWithUser(noteId: string, email: string, permissio
   const currentUser = await getCurrentUser();
   if (!currentUser?.$id) throw new Error('User not authenticated');
   try {
-    const note = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as any;
+    const note = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId
+    }) as any;
     if (note.userId !== currentUser.$id) throw new Error('Only note owner can share notes');
-    const users = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_USERS,
-      [Query.equal('email', email.toLowerCase()), Query.limit(1)] as any
-    );
-    if (!users.documents.length) throw new Error(`No user found with email: ${email}`);
-    const targetUserId = users.documents[0].id || users.documents[0].$id;
+    const users = await tablesDB.listRows({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_USERS,
+      queries: [Query.equal('email', email.toLowerCase()), Query.limit(1)] as any
+    });
+    if (!users.rows.length) throw new Error(`No user found with email: ${email}`);
+    const targetUserId = users.rows[0].id || users.rows[0].$id;
     if (!targetUserId) throw new Error('Invalid user record');
     await createCollaborator({ noteId, userId: targetUserId, permission });
     return { success: true, message: `Note shared with ${email}` };
@@ -213,7 +242,11 @@ export async function shareNoteWithUserId(noteId: string, targetUserId: string, 
   const currentUser = await getCurrentUser();
   if (!currentUser?.$id) throw new Error('User not authenticated');
   try {
-    const note = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, noteId) as any;
+    const note = await tablesDB.getRow({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      rowId: noteId
+    }) as any;
     if (note.userId !== currentUser.$id) throw new Error('Only note owner can share notes');
     if (targetUserId === currentUser.$id) throw new Error('Cannot share a note with yourself');
     await createCollaborator({ noteId, userId: targetUserId, permission });

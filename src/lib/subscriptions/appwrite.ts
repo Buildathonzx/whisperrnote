@@ -1,7 +1,7 @@
-  import { databases, ID, Query, APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SUBSCRIPTIONS } from '../appwrite';
+  import { databases, ID, Query, APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_SUBSCRIPTIONS } from '../appwrite';
 
 // Indicates whether subscription storage is configured
-const SUBSCRIPTIONS_CONFIGURED = Boolean(APPWRITE_DATABASE_ID && APPWRITE_COLLECTION_ID_SUBSCRIPTIONS);
+const SUBSCRIPTIONS_CONFIGURED = Boolean(APPWRITE_DATABASE_ID && APPWRITE_TABLE_ID_SUBSCRIPTIONS);
 
 import type { Subscription, SubscriptionPlan, SubscriptionStatus } from '@/types/appwrite';
 import type { SubscriptionProvider, ActivePlan } from './provider';
@@ -14,7 +14,7 @@ async function listUserSubscriptions(userId: string) {
   try {
     return await databases.listDocuments(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_SUBSCRIPTIONS,
+      APPWRITE_TABLE_ID_SUBSCRIPTIONS,
       [Query.equal('userId', userId), Query.orderDesc('currentPeriodStart'), Query.limit(20)] as any
     );
   } catch (e) {
@@ -30,7 +30,7 @@ async function getActiveSubscription(userId: string): Promise<Subscription | nul
   try {
     const res = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_SUBSCRIPTIONS,
+      APPWRITE_TABLE_ID_SUBSCRIPTIONS,
       [
         Query.equal('userId', userId),
         Query.limit(5),
@@ -83,16 +83,16 @@ async function upsertSubscription(userId: string, plan: SubscriptionPlan, patch:
     if (byPlan) {
       await databases.updateDocument(
         APPWRITE_DATABASE_ID,
-        APPWRITE_COLLECTION_ID_SUBSCRIPTIONS,
+        APPWRITE_TABLE_ID_SUBSCRIPTIONS,
         byPlan.$id,
         base
       );
-       return await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_SUBSCRIPTIONS, byPlan.$id) as unknown as Subscription;
+       return await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_SUBSCRIPTIONS, byPlan.$id) as unknown as Subscription;
     }
     base.createdAt = nowIso;
     const created = await databases.createDocument(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_SUBSCRIPTIONS,
+      APPWRITE_TABLE_ID_SUBSCRIPTIONS,
       ID.unique(),
       base
     );

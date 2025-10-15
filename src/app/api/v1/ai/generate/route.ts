@@ -80,7 +80,7 @@ export async function POST(request: Request) {
         const providerUsed = result.provider || providerId || aiService.getConfig().primaryProvider || 'unknown';
         await databases.createDocument(
           APPWRITE_DATABASE_ID,
-          process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID_AIGENERATIONS || 'ai_generations',
+          process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_AIGENERATIONS || 'ai_generations',
           (ID as any).unique(),
           {
             promptHash,

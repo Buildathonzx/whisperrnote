@@ -1,4 +1,4 @@
-import { databases, APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_APIKEYS, Query } from './appwrite';
+import { databases, APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_APIKEYS, Query } from './appwrite';
 import { hashApiKey } from './hash';
 
 export interface APIKeyValidationResult {
@@ -21,7 +21,7 @@ export async function validateApiKey(key: string | null | undefined): Promise<AP
     // Primary: lookup by keyHash attribute
     let res = await databases.listDocuments(
       APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_APIKEYS,
+      APPWRITE_TABLE_ID_APIKEYS,
       [Query.equal('keyHash', keyHash), Query.limit(1)] as any
     );
 
@@ -29,7 +29,7 @@ export async function validateApiKey(key: string | null | undefined): Promise<AP
     if (!res.documents.length) {
       res = await databases.listDocuments(
         APPWRITE_DATABASE_ID,
-        APPWRITE_COLLECTION_ID_APIKEYS,
+        APPWRITE_TABLE_ID_APIKEYS,
         [Query.equal('key', key), Query.limit(1)] as any
       );
     }
@@ -79,7 +79,7 @@ export async function createHashedApiKey(options: CreateApiKeyOptions = {}) {
   const now = new Date().toISOString();
   const doc = await databases.createDocument(
     APPWRITE_DATABASE_ID,
-    APPWRITE_COLLECTION_ID_APIKEYS,
+    APPWRITE_TABLE_ID_APIKEYS,
     (ID as any).unique(),
     {
       name: options.name || 'Default Key',

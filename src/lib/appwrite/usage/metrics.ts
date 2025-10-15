@@ -1,16 +1,16 @@
-import { databases, Query } from '../core/client';
-import { APPWRITE_DATABASE_ID, APPWRITE_COLLECTION_ID_NOTES, APPWRITE_COLLECTION_ID_APIKEYS, APPWRITE_COLLECTION_ID_COLLABORATORS } from '../core/client';
+import { tablesDB, Query } from '../core/client';
+import { APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, APPWRITE_TABLE_ID_APIKEYS, APPWRITE_TABLE_ID_COLLABORATORS } from '../core/client';
 
 // Counting helpers kept lightweight; callers can layer caching if needed.
 
 export async function countUserNotes(userId: string): Promise<number> {
   try {
-    const res = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_NOTES,
-      [Query.equal('userId', userId), Query.limit(1)] as any
-    );
-    return res.total ?? res.documents.length;
+    const res = await tablesDB.listRows({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_NOTES,
+      queries: [Query.equal('userId', userId), Query.limit(1)] as any
+    });
+    return res.total ?? res.rows.length;
   } catch {
     return 0;
   }
@@ -18,12 +18,12 @@ export async function countUserNotes(userId: string): Promise<number> {
 
 export async function countUserApiKeys(userId: string): Promise<number> {
   try {
-    const res = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_APIKEYS,
-      [Query.equal('userId', userId), Query.limit(1)] as any
-    );
-    return res.total ?? res.documents.length;
+    const res = await tablesDB.listRows({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_APIKEYS,
+      queries: [Query.equal('userId', userId), Query.limit(1)] as any
+    });
+    return res.total ?? res.rows.length;
   } catch {
     return 0;
   }
@@ -31,12 +31,12 @@ export async function countUserApiKeys(userId: string): Promise<number> {
 
 export async function countNoteCollaborators(noteId: string): Promise<number> {
   try {
-    const res = await databases.listDocuments(
-      APPWRITE_DATABASE_ID,
-      APPWRITE_COLLECTION_ID_COLLABORATORS,
-      [Query.equal('noteId', noteId), Query.limit(1)] as any
-    );
-    return res.total ?? res.documents.length;
+    const res = await tablesDB.listRows({
+      databaseId: APPWRITE_DATABASE_ID,
+      tableId: APPWRITE_TABLE_ID_COLLABORATORS,
+      queries: [Query.equal('noteId', noteId), Query.limit(1)] as any
+    });
+    return res.total ?? res.rows.length;
   } catch {
     return 0;
   }
