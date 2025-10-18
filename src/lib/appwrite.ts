@@ -164,6 +164,8 @@ export async function createNote(data: Partial<Notes>) {
   if (!user || !user.$id) throw new Error("User not authenticated");
   const now = new Date().toISOString();
   const cleanData = cleanDocumentData(data);
+  // Remove attachments from creation payload as it's initialized separately
+  const { attachments, ...noteData } = cleanData;
   const initialPermissions = [
     Permission.read(Role.user(user.$id)),
     Permission.update(Role.user(user.$id)),
@@ -174,11 +176,12 @@ export async function createNote(data: Partial<Notes>) {
     APPWRITE_TABLE_ID_NOTES,
     ID.unique(),
     {
-      ...cleanData,
+      ...noteData,
       userId: user.$id,
       id: null,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      attachments: null
     },
     initialPermissions
   );
