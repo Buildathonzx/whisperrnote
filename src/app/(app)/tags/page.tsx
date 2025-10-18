@@ -46,7 +46,8 @@ export default function TagsPage() {
     if (user) {
       (async () => { await fetchTags(); })();
     }
-  }, [isAuthenticated, user, showAuthModal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user]);
 
   const fetchTags = async () => {
     if (!user) {
