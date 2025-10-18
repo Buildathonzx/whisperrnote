@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Tags } from '@/types/appwrite';
 import { listTags, createTag, updateTag, deleteTag } from '@/lib/appwrite';
 import { useAuth } from '@/components/ui/AuthContext';
@@ -9,6 +9,7 @@ import { ID } from 'appwrite';
 
 export default function TagsPage() {
   const { user, isAuthenticated, showAuthModal } = useAuth();
+  const hasFetched = useRef(false);
   const [tags, setTags] = useState<Tags[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +61,9 @@ export default function TagsPage() {
       showAuthModal();
       return;
     }
-    if (user) {
+    
+    if (user && !hasFetched.current) {
+      hasFetched.current = true;
       fetchTags();
     }
   }, [isAuthenticated, user, fetchTags, showAuthModal]);
