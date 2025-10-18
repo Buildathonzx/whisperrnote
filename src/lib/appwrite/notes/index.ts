@@ -11,6 +11,23 @@ function cleanDocumentData<T>(data: Partial<T>): Record<string, any> {
   return cleanData;
 }
 
+// Whitelist of valid columns for notes table (based on appwrite.config.json)
+const VALID_NOTE_COLUMNS = [
+  'id', 'createdAt', 'updatedAt', 'userId', 'isPublic', 'status', 
+  'parentNoteId', 'title', 'content', 'tags', 'comments', 
+  'extensions', 'collaborators', 'metadata'
+];
+
+function filterNoteData(data: Record<string, any>): Record<string, any> {
+  const filtered: Record<string, any> = {};
+  for (const key of VALID_NOTE_COLUMNS) {
+    if (key in data) {
+      filtered[key] = data[key];
+    }
+  }
+  return filtered;
+}
+
 
 
 export async function createNote(data: Partial<Notes>) {
@@ -37,6 +54,7 @@ export async function createNote(data: Partial<Notes>) {
 
   const now = new Date().toISOString();
   const cleanData = cleanDocumentData(data);
+  const filteredData = filterNoteData(cleanData);
   const initialPermissions = [
     Permission.read(Role.user(user.$id)),
     Permission.update(Role.user(user.$id)),
@@ -47,7 +65,7 @@ export async function createNote(data: Partial<Notes>) {
     tableId: APPWRITE_TABLE_ID_NOTES,
     rowId: ID.unique(),
     data: {
-      ...cleanData,
+      ...filteredData,
       userId: user.$id,
       id: null,
       createdAt: now,
@@ -156,7 +174,8 @@ export async function getNote(noteId: string): Promise<Notes> {
 
 export async function updateNote(noteId: string, data: Partial<Notes>) {
   const cleanData = cleanDocumentData(data);
-  const { id, userId, ...rest } = cleanData;
+  const filteredData = filterNoteData(cleanData);
+  const { id, userId, ...rest } = filteredData;
   const updatedAt = new Date().toISOString();
   const updatedData = { ...rest, updatedAt };
   const before = await tablesDB.getRow({
