@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Tags } from '@/types/appwrite';
 import { listTags, createTag, updateTag, deleteTag } from '@/lib/appwrite';
 import { useAuth } from '@/components/ui/AuthContext';
@@ -38,18 +38,7 @@ export default function TagsPage() {
     '#00bcd4', // cyan
   ];
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      showAuthModal();
-      return;
-    }
-    if (user) {
-      (async () => { await fetchTags(); })();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, user]);
-
-  const fetchTags = async () => {
+  const fetchTags = useCallback(async () => {
     if (!user) {
       setError('User not authenticated');
       return;
@@ -64,7 +53,17 @@ export default function TagsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      showAuthModal();
+      return;
+    }
+    if (user) {
+      fetchTags();
+    }
+  }, [isAuthenticated, user, fetchTags, showAuthModal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
