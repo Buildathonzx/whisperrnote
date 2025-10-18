@@ -15,7 +15,7 @@ function cleanDocumentData<T>(data: Partial<T>): Record<string, any> {
 const VALID_NOTE_COLUMNS = [
   'id', 'createdAt', 'updatedAt', 'userId', 'isPublic', 'status', 
   'parentNoteId', 'title', 'content', 'tags', 'comments', 
-  'extensions', 'collaborators', 'metadata'
+  'extensions', 'collaborators', 'metadata', 'attachments'
 ];
 
 function filterNoteData(data: Record<string, any>): Record<string, any> {
@@ -55,6 +55,8 @@ export async function createNote(data: Partial<Notes>) {
   const now = new Date().toISOString();
   const cleanData = cleanDocumentData(data);
   const filteredData = filterNoteData(cleanData);
+  // Exclude attachments from creation payload (initialize separately)
+  const { attachments, ...noteDataWithoutAttachments } = filteredData;
   const initialPermissions = [
     Permission.read(Role.user(user.$id)),
     Permission.update(Role.user(user.$id)),
@@ -65,11 +67,12 @@ export async function createNote(data: Partial<Notes>) {
     tableId: APPWRITE_TABLE_ID_NOTES,
     rowId: ID.unique(),
     data: {
-      ...filteredData,
+      ...noteDataWithoutAttachments,
       userId: user.$id,
       id: null,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      attachments: null
     },
     permissions: initialPermissions
   });
