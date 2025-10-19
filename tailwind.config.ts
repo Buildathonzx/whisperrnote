@@ -99,6 +99,7 @@ const config: Config = {
         'float-3': 'float3 4s ease-in-out infinite 1s',
         'float-slow': 'floatSlow 6s ease-in-out infinite',
         'float-slow-reverse': 'floatSlowReverse 7s ease-in-out infinite 2s',
+        'slide-in-right': 'slideInRight 0.3s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -139,6 +140,16 @@ const config: Config = {
           '25%': { transform: 'translateY(-8px) translateX(-8px) rotate(-3deg)' },
           '50%': { transform: 'translateY(-15px) translateX(0px) rotate(0deg)' },
           '75%': { transform: 'translateY(-8px) translateX(8px) rotate(3deg)' },
+        },
+        slideInRight: {
+          'from': {
+            opacity: '0',
+            transform: 'translateX(100%)',
+          },
+          'to': {
+            opacity: '1',
+            transform: 'translateX(0)',
+          },
         },
       }
     },

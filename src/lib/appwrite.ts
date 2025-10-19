@@ -1122,6 +1122,70 @@ export async function searchNotesByTag(tagId: string) {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, [Query.contains('tags', tagId)]);
 }
 
+export async function getNotesByTag(tagId: string): Promise<Notes[]> {
+  try {
+    const user = await getCurrentUser();
+    if (!user || !user.$id) {
+      return [];
+    }
+
+    const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
+    const pivotRes = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      noteTagsCollection,
+      [Query.equal('tag', tagId), Query.limit(1000)] as any
+    );
+
+    const noteIds = pivotRes.documents.map((p: any) => p.noteId).filter(Boolean);
+    if (!noteIds.length) {
+      return [];
+    }
+
+    const notesRes = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      APPWRITE_TABLE_ID_NOTES,
+      [Query.equal('$id', noteIds), Query.equal('userId', user.$id), Query.orderDesc('$createdAt')] as any
+    );
+
+    const notes = notesRes.documents as unknown as Notes[];
+
+    try {
+      if (notes.length) {
+        const pivotResForHydration = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          noteTagsCollection,
+          [Query.equal('noteId', notes.map((n: any) => n.$id || (n as any).id).filter(Boolean)), Query.limit(Math.min(1000, notes.length * 10))] as any
+        );
+        const tagsByNoteId: { [noteId: string]: Set<string> } = {};
+        pivotResForHydration.documents.forEach((p: any) => {
+          const noteId = p.noteId;
+          if (noteId) {
+            if (!tagsByNoteId[noteId]) {
+              tagsByNoteId[noteId] = new Set();
+            }
+            if (p.tag) {
+              tagsByNoteId[noteId].add(p.tag);
+            }
+          }
+        });
+        notes.forEach((note: any) => {
+          const noteId = note.$id || (note as any).id;
+          if (noteId && tagsByNoteId[noteId]) {
+            note.tags = Array.from(tagsByNoteId[noteId]);
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error hydrating tags:', e);
+    }
+
+    return notes;
+  } catch (error) {
+    console.error('Error fetching notes by tag:', error);
+    throw error;
+  }
+}
+
 export async function listNotesByUser(userId: string) {
   return databases.listDocuments(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, [Query.equal('userId', userId)]);
 }
@@ -2202,6 +2266,7 @@ export default {
   deleteDocument,
   searchNotesByTitle,
   searchNotesByTag,
+  getNotesByTag,
   listNotesByUser,
   listPublicNotesByUser,
   getPublicNote,

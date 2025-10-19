@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Tags } from '@/types/appwrite';
-import { listTags, createTag, updateTag, deleteTag } from '@/lib/appwrite';
+import { Tags, Notes } from '@/types/appwrite';
+import { listTags, createTag, updateTag, deleteTag, updateNote } from '@/lib/appwrite';
 import { useAuth } from '@/components/ui/AuthContext';
 import { formatDateWithFallback } from '@/lib/date-utils';
+import { TagNotesListSidebar } from '@/components/ui/TagNotesListSidebar';
 import { ID } from 'appwrite';
 
 export default function TagsPage() {
@@ -16,6 +17,7 @@ export default function TagsPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingTag, setEditingTag] = useState<Tags | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<Tags | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -165,6 +167,100 @@ export default function TagsPage() {
     );
   }
 
+  // Show sidebar when a tag is selected
+  if (selectedTag) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="h-screen flex flex-col lg:grid lg:grid-cols-2">
+          {/* Desktop: Left side shows tags grid in background */}
+          <div className="hidden lg:block overflow-y-auto border-r border-border p-6 animate-fade-in">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-foreground mb-2">Tags Management</h1>
+              <p className="text-foreground/70">Organize your notes with custom tags and colors</p>
+            </div>
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-2xl">
+                <p className="text-red-700 dark:text-red-300">{error}</p>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center mb-6">
+              <div className="text-sm text-foreground/60">
+                {tags.length} tag{tags.length !== 1 ? 's' : ''} total
+              </div>
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="bg-gradient-to-r from-accent to-accent-dark text-brown-dark px-6 py-3 rounded-2xl font-semibold shadow-3d-light dark:shadow-3d-dark hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-300 hover:scale-105 active:scale-95"
+              >
+                ✨ Create New Tag
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              {tags.map((tag) => (
+                <button
+                  key={tag.$id}
+                  onClick={() => setSelectedTag(tag)}
+                  className={`bg-card border-2 rounded-3xl p-6 shadow-3d-light dark:shadow-3d-dark hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-300 hover:scale-105 text-left ${
+                    selectedTag?.$id === tag.$id ? 'border-accent' : 'border-border'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-6 h-6 rounded-lg shadow-sm"
+                        style={{ backgroundColor: tag.color || '#ffc700' }}
+                      />
+                      <h3 className="font-semibold text-foreground text-lg">{tag.name}</h3>
+                    </div>
+                    <div className="text-xs text-foreground/50 bg-background px-2 py-1 rounded-lg">
+                      {tag.usageCount || 0} notes
+                    </div>
+                  </div>
+
+                  {tag.description && (
+                    <p className="text-foreground/70 text-sm mb-4 line-clamp-2">
+                      {tag.description}
+                    </p>
+                  )}
+
+                  <div className="text-xs text-foreground/50 mb-4">
+                    Created {formatDateWithFallback(tag.createdAt, { year: 'numeric', month: 'short', day: 'numeric' })}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Right side or full screen on mobile: Notes sidebar */}
+          <div className="flex-1 overflow-y-auto lg:border-l lg:border-border p-4 lg:p-6 animate-slide-in-right">
+            <div className="max-w-4xl h-full">
+              <TagNotesListSidebar
+                tag={selectedTag}
+                onBack={() => setSelectedTag(null)}
+                onNoteUpdate={async (updatedNote) => {
+                  try {
+                    await updateNote(updatedNote.$id || '', updatedNote);
+                  } catch (err) {
+                    console.error('Failed to update note:', err);
+                  }
+                }}
+                onNoteDelete={(noteId) => {
+                  // Handle note deletion if needed
+                  console.log('Note deleted:', noteId);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Bottom Navigation Spacing */}
+        <div className="h-20 lg:hidden" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop spacing */}
@@ -302,9 +398,10 @@ export default function TagsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {tags.map((tag) => (
-                <div
+                <button
                   key={tag.$id}
-                  className="bg-card border border-border rounded-3xl p-6 shadow-3d-light dark:shadow-3d-dark hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-300 hover:scale-105"
+                  onClick={() => setSelectedTag(tag)}
+                  className="bg-card border border-border rounded-3xl p-6 shadow-3d-light dark:shadow-3d-dark hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-300 hover:scale-105 text-left"
                 >
                   {/* Tag Color Badge */}
                   <div className="flex items-start justify-between mb-4">
@@ -335,19 +432,25 @@ export default function TagsPage() {
                   {/* Actions */}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleEdit(tag)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(tag);
+                      }}
                       className="flex-1 bg-background text-foreground px-4 py-2 rounded-xl text-sm font-medium border border-border hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                       ✏️ Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(tag)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(tag);
+                      }}
                       className="flex-1 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-2 rounded-xl text-sm font-medium border border-red-300 dark:border-red-700 hover:shadow-inner-light dark:hover:shadow-inner-dark transform transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                       🗑️ Delete
                     </button>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
