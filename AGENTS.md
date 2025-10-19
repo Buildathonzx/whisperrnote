@@ -5,7 +5,7 @@
 - **Dev**: `npm run dev` (runs on port 3001 with turbopack)
 - **Lint**: `npm run lint` (Next.js ESLint)
 - **Start**: `npm run start` (production server)
-- No test framework configured - verify with user before implementing tests
+- No test framework configured - verify with user before implementing tests.
 
 ## Code Style Guidelines
 
