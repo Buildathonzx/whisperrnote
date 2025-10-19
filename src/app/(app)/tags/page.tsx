@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Tags, Notes } from '@/types/appwrite';
+import { Tags } from '@/types/appwrite';
 import { listTags, createTag, updateTag, deleteTag, updateNote } from '@/lib/appwrite';
 import { useAuth } from '@/components/ui/AuthContext';
 import { formatDateWithFallback } from '@/lib/date-utils';
