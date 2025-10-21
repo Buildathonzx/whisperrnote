@@ -1034,9 +1034,20 @@ export async function getAIMode(userId: string): Promise<string | null> {
 
 // --- STORAGE/BUCKETS ---
 
-export async function uploadFile(bucketId: string, file: File) {
+export async function uploadFile(bucketId: string, file: File, userId?: string) {
   try {
-    const result = await storage.createFile(bucketId, ID.unique(), file);
+    const user = userId ? { $id: userId } : await getCurrentUser();
+    if (!user?.$id) {
+      throw new Error('User not authenticated for file upload');
+    }
+
+    const permissions = [
+      Permission.read(Role.user(user.$id)),
+      Permission.update(Role.user(user.$id)),
+      Permission.delete(Role.user(user.$id))
+    ];
+
+    const result = await storage.createFile(bucketId, ID.unique(), file, permissions);
     return result;
   } catch (e: any) {
     console.error('[uploadFile] error', {
@@ -1478,7 +1489,7 @@ export async function deleteProfilePicture(fileId: string) {
 // --- NOTES ATTACHMENTS HELPERS (Legacy embedded + new collection) ---
 
 // Basic upload wrapper (raw file upload only)
-export async function uploadNoteAttachment(file: File) {
+export async function uploadNoteAttachment(file: File, userId?: string) {
   const bucketId = APPWRITE_BUCKET_NOTES_ATTACHMENTS;
   const startedAt = Date.now();
   if (!bucketId) {
@@ -1488,7 +1499,7 @@ export async function uploadNoteAttachment(file: File) {
     throw err;
   }
   try {
-    const res: any = await uploadFile(bucketId, file);
+    const res: any = await uploadFile(bucketId, file, userId);
     console.log('[attachments] uploadNoteAttachment:success', { bucketId, fileId: res.$id || res.id, durationMs: Date.now() - startedAt });
     return res;
   } catch (e: any) {
@@ -1603,10 +1614,10 @@ function validateAttachmentMime(mime: string | null | undefined) {
   }
 }
 
-export async function addAttachmentToNote(noteId: string, file: File) {
+export async function addAttachmentToNote(noteId: string, file: File, userId?: string) {
   const startTs = Date.now();
   console.log('[attachments] addAttachmentToNote:start', { noteId, name: (file as any)?.name, size: (file as any)?.size, type: (file as any)?.type });
-  const user = await getCurrentUser();
+  const user = userId ? { $id: userId } : await getCurrentUser();
   if (!user?.$id) throw new Error('User not authenticated');
   // Get existing note + attachments
   const note = await getNote(noteId) as any;
@@ -1636,7 +1647,7 @@ export async function addAttachmentToNote(noteId: string, file: File) {
   // Upload file
   let uploaded: any;
   try {
-    uploaded = await uploadNoteAttachment(file);
+    uploaded = await uploadNoteAttachment(file, user.$id);
   } catch (uploadErr: any) {
     console.error('[attachments] uploadNoteAttachment failed', {
       noteId,
