@@ -60,6 +60,15 @@ export async function POST(req: NextRequest, { params }: { params: { noteId: str
       console.log('[attachments.api] POST done', { noteId: params.noteId, attachmentId: meta.id, t: Date.now() });
       return NextResponse.json({ attachment: meta });
     } catch (e: any) {
+      console.error('[attachments.api] upload error details', {
+        noteId: params.noteId,
+        message: e?.message,
+        code: e?.code,
+        stack: e?.stack,
+        toString: e?.toString(),
+        type: typeof e
+      });
+      
       // Map known error codes from helper
       const code = e?.code;
       if (code === 'ATTACHMENT_SIZE_LIMIT') {
@@ -71,8 +80,12 @@ export async function POST(req: NextRequest, { params }: { params: { noteId: str
       if (code === 'PLAN_LIMIT_REACHED') {
         return NextResponse.json({ error: e.message, code }, { status: 400 });
       }
-      console.error('attachments.upload.error', { noteId: params.noteId, err: e?.message || String(e), code: e?.code });
-      return NextResponse.json({ error: e?.message || 'Upload failed' }, { status: 500 });
+      if (code === 'MISSING_BUCKET_ID') {
+        return NextResponse.json({ error: e.message, code }, { status: 500 });
+      }
+      
+      const errorMsg = e?.message || String(e) || 'Upload failed';
+      return NextResponse.json({ error: errorMsg, code: code || 'UNKNOWN' }, { status: 500 });
     }
   } catch (e: any) {
     console.error('attachments.upload.unhandled', { noteId: params.noteId, err: e?.message || String(e) });

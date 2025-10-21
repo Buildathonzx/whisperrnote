@@ -109,11 +109,25 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
               });
               if (!res.ok) {
                 let errorPayload: any = null;
-                try { errorPayload = await res.json(); } catch { try { errorPayload = { raw: await res.text() }; } catch { errorPayload = {}; } }
-                const msg = errorPayload?.error || `Upload failed (${res.status})`;
+                try { 
+                  errorPayload = await res.json(); 
+                } catch { 
+                  try { 
+                    errorPayload = { raw: await res.text() }; 
+                  } catch { 
+                    errorPayload = { error: `HTTP ${res.status}: ${res.statusText}` }; 
+                  } 
+                }
+                const msg = errorPayload?.error || errorPayload?.raw || `Upload failed (${res.status})`;
                 setUploadErrors(prev => [...prev, `${file.name}: ${msg}`].slice(-8));
                 hadErrors = true;
-                console.error('Attachment upload failed', { status: res.status, statusText: res.statusText, error: errorPayload });
+                console.error('Attachment upload failed', { 
+                  fileName: file.name,
+                  status: res.status, 
+                  statusText: res.statusText, 
+                  error: errorPayload,
+                  code: errorPayload?.code
+                });
               }
             } catch (e: any) {
               hadErrors = true;

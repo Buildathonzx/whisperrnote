@@ -1035,7 +1035,22 @@ export async function getAIMode(userId: string): Promise<string | null> {
 // --- STORAGE/BUCKETS ---
 
 export async function uploadFile(bucketId: string, file: File) {
-  return storage.createFile(bucketId, ID.unique(), file);
+  try {
+    const result = await storage.createFile(bucketId, ID.unique(), file);
+    return result;
+  } catch (e: any) {
+    console.error('[uploadFile] error', {
+      bucketId,
+      fileName: (file as any)?.name,
+      fileSize: (file as any)?.size,
+      fileType: (file as any)?.type,
+      message: e?.message,
+      code: e?.code,
+      statusCode: e?.statusCode,
+      type: e?.type
+    });
+    throw e;
+  }
 }
 
 export async function getFile(bucketId: string, fileId: string) {
@@ -1595,6 +1610,7 @@ export async function addAttachmentToNote(noteId: string, file: File) {
   if (!user?.$id) throw new Error('User not authenticated');
   // Get existing note + attachments
   const note = await getNote(noteId) as any;
+  if (!note) throw new Error('Note not found');
   if (note.userId !== user.$id) throw new Error('Only owner can add attachments currently');
 
   // Normalize current attachments (embedded metadata)
@@ -1606,6 +1622,7 @@ export async function addAttachmentToNote(noteId: string, file: File) {
     await enforceAttachmentPlanLimit(user.$id, existingMetas.length, file.size);
   } catch (e: any) {
     if (e?.code === 'ATTACHMENT_SIZE_LIMIT') throw e;
+    console.error('[attachments] plan limit check error', { error: e?.message });
   }
 
   // MIME validation + filename sanitization
@@ -1617,7 +1634,18 @@ export async function addAttachmentToNote(noteId: string, file: File) {
   const sanitizedName = sanitizeAttachmentFilename((file as any).name || 'attachment');
 
   // Upload file
-  const uploaded: any = await uploadNoteAttachment(file);
+  let uploaded: any;
+  try {
+    uploaded = await uploadNoteAttachment(file);
+  } catch (uploadErr: any) {
+    console.error('[attachments] uploadNoteAttachment failed', {
+      noteId,
+      fileName: (file as any)?.name,
+      message: uploadErr?.message,
+      code: uploadErr?.code
+    });
+    throw uploadErr;
+  }
 
   // Build metadata
   const meta: EmbeddedAttachmentMeta = {
