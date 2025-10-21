@@ -256,20 +256,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleInternetIdentity = () => {
-    // Open Internet Identity in a new, smaller window
-    const width = 500;
-    const height = 600;
-    const left = window.screenX + (window.outerWidth - width) / 2;
-    const top = window.screenY + (window.outerHeight - height) / 2;
-    
-    window.open(
-      'https://identity.internetcomputer.org/',
-      'internet-identity',
-      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
-    );
-  };
-
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || !isValidEmail(email)) return;
@@ -437,8 +423,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   <div className="flex-1 h-px bg-light-border dark:bg-dark-border"></div>
                 </div>
 
-                 {/* Passkey, Wallet & OAuth - Dynamic Grid Layout */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                {/* Passkey, Wallet & OAuth - Dynamic Grid Layout */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {/* Passkey Button */}
                   <motion.button
                     whileHover={{ scale: passkeySupported ? 1.02 : 1 }}
@@ -518,24 +504,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     </div>
                     <div className="font-medium text-xs text-foreground">
                       GitHub
-                    </div>
-                  </motion.button>
-
-                  {/* Internet Identity Button */}
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleInternetIdentity}
-                    title="Internet Identity"
-                    className="p-3 border border-light-border dark:border-dark-border rounded-xl bg-light-card dark:bg-dark-card hover:shadow-3d-light dark:hover:shadow-3d-dark transition-all text-center cursor-pointer flex flex-col items-center justify-center"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center mb-1.5">
-                      <svg className="w-3.5 h-3.5 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zM9 9V6h2v3h3v2h-3v3H9v-3H6V9h3z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="font-medium text-xs text-foreground">
-                      ICP
                     </div>
                   </motion.button>
                 </div>

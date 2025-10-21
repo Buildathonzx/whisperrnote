@@ -11,7 +11,6 @@ import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
 import { functions, OAuthProvider } from "@/lib/appwrite";
 import { type OAuthProvider as OAuthProviderType } from "appwrite";
-import { isICPEnabled } from "@/integrations/icp";
 import { SubscriptionTab } from "./SubscriptionTab";
 import { getUserProfilePicId, getUserAuthMethod, getUserWalletAddress, getUserField } from '@/lib/utils';
 
@@ -27,9 +26,7 @@ interface AuthMethods {
   walletAvailable: boolean;
 }
 
-interface EnabledIntegrations {
-  icp: boolean;
-}
+interface EnabledIntegrations {}
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('settings');
@@ -47,9 +44,7 @@ export default function SettingsPage() {
     passkeySupported: false,
     walletAvailable: false
   });
-  const [enabledIntegrations, setEnabledIntegrations] = useState<EnabledIntegrations>({
-    icp: false
-  });
+  const [enabledIntegrations, setEnabledIntegrations] = useState<EnabledIntegrations>({});
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const { userTier } = useSubscription();
@@ -104,10 +99,7 @@ export default function SettingsPage() {
 
         // Load enabled integrations
         try {
-          const icpEnabled = isICPEnabled();
-          setEnabledIntegrations({
-            icp: icpEnabled
-          });
+          setEnabledIntegrations({});
         } catch {
           console.error('Failed to load integrations');
         }

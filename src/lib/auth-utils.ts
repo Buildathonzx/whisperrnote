@@ -64,25 +64,12 @@ export function getAuthSession(): AuthSession | null {
   }
 }
 
-export function setAuthSession(identity: Identity, publicKey?: string): void {
-  const session: AuthSession = {
-    userId: identity.getPrincipal().toText(),
-    expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-    publicKey
-  };
-  localStorage.setItem('auth_session', JSON.stringify(session));
-}
 
 export function clearAuthSession(): void {
   localStorage.removeItem('auth_session');
 }
 
 export async function requireAuth(): Promise<boolean> {
-  const auth = AuthManager.getInstance();
-  if (auth.isAuthenticated()) {
-    return true;
-  }
-
   const session = getAuthSession();
   if (!session) {
     return false;
