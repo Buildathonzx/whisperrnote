@@ -40,6 +40,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [attachmentErrors, setAttachmentErrors] = useState<string[]>([]);
   const [currentAttachments, setCurrentAttachments] = useState<any[]>([]);
+  const [enhancedNote, setEnhancedNote] = useState<EnhancedNote | null>(null);
 
   const { showSuccess, showError } = useToast();
 
