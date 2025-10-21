@@ -1,26 +1,26 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/ui/AuthContext';
 
 export default function Home() {
   const router = useRouter();
   const { isAuthenticated, isLoading, showAuthModal } = useAuth();
+  const hasRunRef = useRef(false);
 
   useEffect(() => {
-    if (!isLoading) {
-      if (isAuthenticated) {
-        // User is logged in → go to notes
-        router.replace('/notes');
-      } else {
-        // User is NOT logged in → show auth modal, not landing
-        showAuthModal();
-        // Don't navigate - stay at / but with auth modal open
-      }
+    // Only run once to prevent loops
+    if (hasRunRef.current || isLoading) return;
+    hasRunRef.current = true;
+
+    if (isAuthenticated) {
+      router.push('/notes');
+    } else {
+      showAuthModal();
     }
   }, [isAuthenticated, isLoading, router, showAuthModal]);
 
-  // / is completely transparent - never display anything
+  // Don't render anything - just redirect
   return null;
 }

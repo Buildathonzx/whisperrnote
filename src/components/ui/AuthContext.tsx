@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { getCurrentUser, logout as authLogout } from '@/lib/auth';
 import { InitialLoadingScreen } from './InitialLoadingScreen';
 import { EmailVerificationReminder } from './EmailVerificationReminder';
@@ -216,21 +216,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const showAuthModal = () => {
+  const showAuthModal = useCallback(() => {
     setAuthModalOpen(true);
-  };
+  }, []);
 
-  const hideAuthModal = () => {
+  const hideAuthModal = useCallback(() => {
     setAuthModalOpen(false);
-  };
+  }, []);
 
-  const hideAuthModalAndRedirect = () => {
+  const hideAuthModalAndRedirect = useCallback(() => {
     setAuthModalOpen(false);
     // Small delay to ensure modal closes before navigation
     setTimeout(() => {
       window.location.href = '/';
     }, 100);
-  };
+  }, []);
 
   const value = {
     user,
