@@ -105,7 +105,8 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
               formData.append('file', file);
               const res = await fetch(`/api/notes/${newNote.$id || (newNote as any).id}/attachments`, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'include',
               });
               if (!res.ok) {
                 let errorPayload: any = null;

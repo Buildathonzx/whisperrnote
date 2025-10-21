@@ -34,11 +34,18 @@ export async function GET(_req: NextRequest, { params }: { params: { noteId: str
 // POST: upload new attachment (single file per request)
 export async function POST(req: NextRequest, { params }: { params: { noteId: string } }) {
   try {
+    const cookieHeader = req.headers.get('cookie') || req.headers.get('Cookie');
     const user = await resolveCurrentUser(req as any);
     if (!user) {
-      const cookieHeader = req.headers.get('cookie') || req.headers.get('Cookie');
-      console.warn('[attachments.api] POST auth_failed', { noteId: params.noteId, hasCookie: !!cookieHeader, cookieLength: cookieHeader?.length || 0 });
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.warn('[attachments.api] POST auth_failed', { 
+        noteId: params.noteId, 
+        hasCookie: !!cookieHeader, 
+        cookieLength: cookieHeader?.length || 0,
+        authHeader: !!req.headers.get('authorization'),
+        method: req.method,
+        url: req.url
+      });
+      return NextResponse.json({ error: 'Unauthorized - no user session' }, { status: 401 });
     }
 
     const cookieHeader = req.headers.get('cookie') || req.headers.get('Cookie');

@@ -103,6 +103,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
           const res = await fetch(`/api/notes/${note.$id}/attachments`, {
             method: 'POST',
             body: formData,
+            credentials: 'include',
           });
 
           if (!res.ok) {
@@ -135,7 +136,9 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
       }
     } finally {
       setIsUploadingAttachment(false);
-      e.currentTarget.value = '';
+      if (e.currentTarget) {
+        e.currentTarget.value = '';
+      }
     }
   };
 
