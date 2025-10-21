@@ -65,15 +65,13 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   };
 
   const handleSave = () => {
-    const updatedNote = {
-      ...note,
-      title,
-      content,
-      format,
+    const updatedNote: Partial<Notes> = {
+      title: title.trim(),
+      content: content.trim(),
+      format: format as string,
       tags: tags.split(',').map((tag: string) => tag.trim()).filter(Boolean),
-      updatedAt: new Date().toISOString()
     };
-    onUpdate(updatedNote);
+    onUpdate(updatedNote as Notes);
     setIsEditing(false);
   };
 
