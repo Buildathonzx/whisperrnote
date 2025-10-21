@@ -144,7 +144,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       });
 
       // Call Appwrite Function
-      const fnId = process.env.NEXT_PUBLIC_FUNCTION_ID as string | undefined;
+      const fnId = (process.env.NEXT_PUBLIC_FUNCTION_ID 
+        || process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID_WALLET 
+        || process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID) as string | undefined;
       if (!fnId) throw new Error('Wallet auth function not configured');
 
       const execution = await functions.createExecution(
