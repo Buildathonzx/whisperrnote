@@ -187,6 +187,10 @@ export type Notes = Models.Row & {
     extensions: string[] | null;
     collaborators: string[] | null;
     metadata: string | null;
+    format: string | null;
+    attachments: string | null;
+
+
 }
 
 export type Tags = Models.Row & {
