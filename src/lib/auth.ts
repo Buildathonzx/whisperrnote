@@ -1,9 +1,5 @@
 import { account, ID } from './appwrite';
 import { NextRequest } from 'next/server';
-import { Identity } from '@dfinity/agent';
-import { ICPAuth } from './icp/auth';
-import { BlockchainServiceImpl } from './blockchain/service';
-import type { BlockchainService } from './blockchain/types';
 
 // Register a new user
 export const register = async (email: string, password: string, name?: string) => {
@@ -154,58 +150,13 @@ export const getAuthUser = async (token: string) => {
 
 export class AuthManager {
   private static instance: AuthManager;
-  private icpAuth: ICPAuth;
-  private blockchainService: BlockchainServiceImpl | null = null;
 
-  private constructor() {
-    this.icpAuth = new ICPAuth();
-  }
+  private constructor() {}
 
   static getInstance(): AuthManager {
     if (!AuthManager.instance) {
       AuthManager.instance = new AuthManager();
     }
     return AuthManager.instance;
-  }
-
-  async initialize(): Promise<boolean> {
-    const isAuthenticated = await this.icpAuth.init();
-    if (isAuthenticated) {
-      await this.setupBlockchainService();
-    }
-    return isAuthenticated;
-  }
-
-  async login(): Promise<void> {
-    const identity = await this.icpAuth.login();
-    await this.setupBlockchainService(identity);
-  }
-
-  async logout(): Promise<void> {
-    if (this.blockchainService) {
-      this.blockchainService.disconnect();
-      this.blockchainService = null;
-    }
-    await this.icpAuth.logout();
-  }
-
-  async getIdentity(): Promise<Identity | null> {
-    return this.icpAuth.getIdentity();
-  }
-
-  getBlockchainService(): BlockchainService | null {
-    return this.blockchainService;
-  }
-
-  private async setupBlockchainService(identity?: Identity) {
-    const currentIdentity = identity || await this.getIdentity();
-    if (!currentIdentity) return;
-
-    // Initialize blockchain service with user's identity
-    // This will be implemented when needed
-  }
-
-  isAuthenticated(): boolean {
-    return this.blockchainService !== null;
   }
 }

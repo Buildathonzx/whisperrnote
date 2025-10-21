@@ -1,8 +1,6 @@
 import { ethers } from 'ethers';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { Identity } from '@dfinity/agent';
-import { AuthManager } from './auth';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
