@@ -21,6 +21,8 @@ import {
     searchUsers,
 } from './appwrite/user-profile';
 
+import { createRevision, pruneRevisions } from '@/lib/revisions';
+
 // Named re-exports for user profile helpers
 export { createUser, getUser, updateUser, deleteUser, listUsers, searchUsers };
 
@@ -302,78 +304,21 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   const updatedData = { ...rest, updatedAt };
   const before = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId) as any;
   const doc = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId, updatedData) as any;
-  // Note revisions logging (best-effort) aligned with new schema
+  
+  // Create revision using new system (handles diff, validation, etc.)
   try {
-    const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTEREVISIONS || 'note_revisions';
-    const significantFields = ['title', 'content', 'tags', 'format'];
-    let changed = false;
-    const changes: Record<string, { before: any; after: any }> = {};
-    for (const f of significantFields) {
-      if (f in (data as any)) {
-        const prevVal = before[f];
-        const newVal = (data as any)[f];
-        const prevSerialized = JSON.stringify(prevVal ?? null);
-        const newSerialized = JSON.stringify(newVal ?? null);
-        if (prevSerialized !== newSerialized) {
-          changed = true;
-          changes[f] = { before: prevVal ?? null, after: newVal ?? null };
-        }
-      }
-    }
-    if (changed) {
-      // Determine next revision number
-      let revisionNumber = 1;
-      try {
-        const existing = await databases.listDocuments(
-          APPWRITE_DATABASE_ID,
-          revisionsCollection,
-          [Query.equal('noteId', noteId), Query.orderDesc('revision'), Query.limit(1)] as any
-        );
-        if (existing.documents.length) {
-          revisionNumber = (existing.documents[0] as any).revision + 1;
-        }
-      } catch {}
-      
-      // Build diff JSON (bounded by 8000 size limit of diff attribute)
-      // For doodles, skip detailed diff since content is huge JSON
-      let diffStr: string | null = null;
-      if ((data as any).format !== 'doodle') {
-        try {
-          const diffObj = { changes };
-          const serialized = JSON.stringify(diffObj);
-          if (serialized.length <= 8000) {
-            diffStr = serialized;
-          } else {
-            // If too large, just note that changes occurred
-            diffStr = JSON.stringify({ summary: 'Changes made', fieldCount: Object.keys(changes).length });
-          }
-        } catch {
-          diffStr = null;
-        }
-      }
-      
-      await databases.createDocument(
-        APPWRITE_DATABASE_ID,
-        revisionsCollection,
-        ID.unique(),
-        {
-          noteId,
-          revision: revisionNumber,
-          userId: before.userId || null,
-          createdAt: updatedAt,
-          title: doc.title,
-          content: doc.content,
-          diff: diffStr,
-          diffFormat: diffStr ? 'json' : null,
-          fullSnapshot: true,
-          cause: 'manual'
-        }
-      );
-    }
+    await createRevision(noteId, before, doc, 'manual');
+    
+    // Prune old revisions based on user plan (best-effort, non-blocking)
+    pruneRevisions(noteId, before.userId).catch(e => 
+      console.error('Revision pruning failed (non-blocking):', e)
+    );
   } catch (revErr) {
-    console.error('note revision log failed', revErr);
+    console.error('Revision tracking failed:', revErr);
+    // Don't break note updates if revision system fails
   }
-  // Dual-write tags with cleanup (remove stale pivots) and dedupe + tagId resolution
+  
+  // Handle tags if provided
   try {
     if (Array.isArray((data as any).tags)) {
       const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
