@@ -65,13 +65,26 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   };
 
   const handleSave = () => {
+    // Create updated note preserving ID and other system fields
+    // but only updating the fields we've modified
     const updatedNote: Notes = {
-      ...note,
+      $id: note.$id,
+      id: note.id,
+      userId: note.userId,
+      createdAt: note.createdAt,
+      updatedAt: new Date().toISOString(),
       title: title.trim(),
       content: content.trim(),
       format: format as string,
       tags: tags.split(',').map((tag: string) => tag.trim()).filter(Boolean),
-    };
+      isPublic: note.isPublic,
+      status: note.status,
+      parentNoteId: note.parentNoteId,
+      comments: note.comments,
+      extensions: note.extensions,
+      collaborators: note.collaborators,
+      metadata: note.metadata,
+    } as Notes;
     onUpdate(updatedNote);
     setIsEditing(false);
   };
