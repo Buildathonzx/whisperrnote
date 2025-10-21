@@ -32,6 +32,7 @@ export async function createNote(note: Omit<Note, '_id' | 'created_at' | 'update
   try {
     const noteData = {
       ...note,
+      format: note.format || 'text',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import AttachmentsManager from '@/components/AttachmentsManager';
+import NoteContent from '@/components/NoteContent';
 import { formatFileSize } from '@/lib/utils';
 import { createNote, updateNote, getNote } from '@/lib/appwrite';
 
@@ -49,6 +50,7 @@ function truncate(s: string, n: number){ return s.length>n? s.slice(0,n-1)+'…'
 interface NoteEditorProps {
   initialContent?: string;
   initialTitle?: string;
+  initialFormat?: 'text' | 'doodle';
   noteId?: string; // existing note id if editing
   onSave?: (note: any) => void; // called after create or update
   onNoteCreated?: (note: any) => void; // called only on first creation
@@ -57,12 +59,14 @@ interface NoteEditorProps {
 export default function NoteEditor({ 
   initialContent = '', 
   initialTitle = '',
+  initialFormat = 'text',
   noteId: externalNoteId,
   onSave,
   onNoteCreated
 }: NoteEditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
+  const [format, setFormat] = useState<'text' | 'doodle'>(initialFormat);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [internalNoteId, setInternalNoteId] = useState<string | undefined>(externalNoteId);
@@ -79,6 +83,7 @@ export default function NoteEditor({
           if (n) {
             setTitle(n.title || '');
             setContent(n.content || '');
+            setFormat((n.format as 'text' | 'doodle') || 'text');
           }
         } catch {}
       })();
@@ -93,9 +98,18 @@ export default function NoteEditor({
       let saved: any;
       if (effectiveNoteId) {
         // update existing
-        saved = await updateNote(effectiveNoteId, { title: title.trim(), content: content.trim() });
+        saved = await updateNote(effectiveNoteId, { 
+          title: title.trim(), 
+          content: content.trim(),
+          format
+        });
       } else {
-        saved = await createNote({ title: title.trim(), content: content.trim(), tags: [] });
+        saved = await createNote({ 
+          title: title.trim(), 
+          content: content.trim(), 
+          format,
+          tags: [] 
+        });
         setInternalNoteId(saved?.$id || saved?.id);
         onNoteCreated?.(saved);
       }
@@ -119,18 +133,13 @@ export default function NoteEditor({
           className="text-lg font-semibold"
         />
 
-        <textarea
-          placeholder="Write your note content here..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
+        <NoteContent
+          format={format}
+          content={content}
+          onChange={setContent}
+          onFormatChange={setFormat}
           disabled={isSaving}
-          maxLength={65000}
-          className="w-full min-h-[200px] p-4 border border-border rounded-xl bg-card text-foreground text-sm resize-vertical focus:outline-none focus:ring-2 focus:ring-accent"
         />
-
-        <div className="text-sm text-gray-500 text-right">
-          {content.length}/65000 characters
-        </div>
 
         {/* Attachments only when we have a real note id */}
         {effectiveNoteId && (

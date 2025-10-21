@@ -23,6 +23,7 @@ export interface Note {
   owner_id: string;
   title: string;
   content: string;
+  format?: 'text' | 'doodle';
   is_deleted?: boolean;
   is_archived?: boolean;
   is_pinned?: boolean;
@@ -38,6 +39,13 @@ export interface Note {
   oneView?: boolean;
   expired?: boolean;
   analytics?: Analytics;
+}
+
+export interface DoodleStroke {
+  points: [number, number][];
+  color: string;
+  size: number;
+  opacity?: number;
 }
 
 export interface Notebook {
