@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Notes } from '@/types/appwrite';
+import DoodleCanvas from '@/components/DoodleCanvas';
 import { PencilIcon, TrashIcon, UserIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
 import { Modal } from './modal';
@@ -13,6 +14,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import { useToast } from './Toast';
 import { preProcessMarkdown } from '@/lib/markdown';
 import { formatFileSize } from '@/lib/utils';
+import NoteContentDisplay from '@/components/NoteContentDisplay';
 
 interface NoteDetailSidebarProps {
   note: Notes;
@@ -30,8 +32,10 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDoodleEditor, setShowDoodleEditor] = useState(false);
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
+  const [format, setFormat] = useState<'text' | 'doodle'>(note.format as 'text' | 'doodle' || 'text');
   const [tags, setTags] = useState(note.tags?.join(', ') || '');
   const [enhancedNote, setEnhancedNote] = useState<EnhancedNote | null>(null);
 
@@ -55,11 +59,17 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
     loadEnhancedNote();
   }, [note.$id]);
 
+  const handleDoodleSave = (doodleData: string) => {
+    setContent(doodleData);
+    setShowDoodleEditor(false);
+  };
+
   const handleSave = () => {
     const updatedNote = {
       ...note,
       title,
       content,
+      format,
       tags: tags.split(',').map((tag: string) => tag.trim()).filter(Boolean),
       updatedAt: new Date().toISOString()
     };
@@ -70,6 +80,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   const handleCancel = () => {
     setTitle(note.title);
     setContent(note.content);
+    setFormat(note.format as 'text' | 'doodle' || 'text');
     setTags(note.tags?.join(', ') || '');
     setIsEditing(false);
   };
@@ -129,29 +140,88 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
             Content
           </label>
           {isEditing ? (
-            <textarea
-              value={content || ''}
-              onChange={(e) => setContent(e.target.value)}
-              rows={12}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground resize-none"
-            />
-          ) : (
-            <div>
-              <div className="text-foreground/80 prose prose-sm max-w-none dark:prose-invert">
-                {note.content ? (
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeSanitize]}
-                  >
-                    {preProcessMarkdown(note.content)}
-                  </ReactMarkdown>
-                ) : (
-                  <span className="italic text-muted">No content</span>
-                )}
+            <div className="space-y-3">
+              {/* Format Toggle */}
+              <div className="flex gap-2 bg-muted rounded-lg p-1">
+                <button
+                  onClick={() => setFormat('text')}
+                  className={`flex-1 px-3 py-1.5 rounded text-sm font-medium transition-all ${
+                    format === 'text'
+                      ? 'bg-accent text-white'
+                      : 'text-foreground hover:bg-accent/20'
+                  }`}
+                >
+                  Text
+                </button>
+                <button
+                  onClick={() => setFormat('doodle')}
+                  className={`flex-1 px-3 py-1.5 rounded text-sm font-medium transition-all ${
+                    format === 'doodle'
+                      ? 'bg-accent text-white'
+                      : 'text-foreground hover:bg-accent/20'
+                  }`}
+                >
+                  Doodle
+                </button>
               </div>
 
-              {/* Copy Markdown Button */}
-              {note.content && (
+              {/* Content Based on Format */}
+              {format === 'text' ? (
+                <textarea
+                  value={content || ''}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={12}
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground resize-none"
+                />
+              ) : (
+                <div className="space-y-3">
+                  {content ? (
+                    <div className="border border-border rounded-lg overflow-hidden">
+                      <NoteContentDisplay
+                        content={content}
+                        format="doodle"
+                        className="w-full"
+                        onEditDoodle={() => setShowDoodleEditor(true)}
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowDoodleEditor(true)}
+                      className="w-full h-32 border-2 border-dashed border-border rounded-lg flex items-center justify-center hover:bg-accent/5 transition-colors"
+                    >
+                      <span className="text-sm text-muted">Click to draw</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div>
+              {note.format === 'doodle' ? (
+                <NoteContentDisplay
+                  content={note.content || ''}
+                  format="doodle"
+                  className="rounded-lg border border-border mb-2"
+                  onEditDoodle={() => setIsEditing(true)}
+                />
+              ) : (
+                <div className="text-foreground/80 prose prose-sm max-w-none dark:prose-invert">
+                  {note.content ? (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeSanitize]}
+                    >
+                      {preProcessMarkdown(note.content)}
+                    </ReactMarkdown>
+                  ) : (
+                    <span className="italic text-muted">No content</span>
+                  )}
+                </div>
+              )}
+
+              {/* Copy Button - only for text notes */}
+              {note.format !== 'doodle' && note.content && (
                 <div className="pt-2">
                   <Button
                     variant="outline"
@@ -159,7 +229,7 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
                     onClick={async () => {
                       try {
                         await navigator.clipboard.writeText(note.content || '');
-                        showSuccess('Copied', 'Markdown copied to clipboard');
+                        showSuccess('Copied', 'Content copied to clipboard');
                       } catch (err) {
                         console.error('Failed to copy note content', err);
                         showError('Copy failed', 'Could not copy content to clipboard');
@@ -264,6 +334,15 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
             Cancel
           </Button>
         </div>
+      )}
+
+      {/* Doodle Editor Modal */}
+      {showDoodleEditor && (
+        <DoodleCanvas
+          initialData={format === 'doodle' ? content : ''}
+          onSave={handleDoodleSave}
+          onClose={() => setShowDoodleEditor(false)}
+        />
       )}
 
       {/* Delete Confirmation Modal */}

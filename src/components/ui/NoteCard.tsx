@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './Card';
 import { useContextMenu } from './ContextMenuContext';
 import { useDynamicSidebar } from './DynamicSidebar';
@@ -7,6 +7,7 @@ import { ShareNoteModal } from '../ShareNoteModal';
 import { toggleNoteVisibility, getShareableUrl, isNotePublic } from '@/lib/appwrite/permissions/notes';
 import type { Notes } from '@/types/appwrite';
 import { Button } from './Button';
+import { DoodleStroke } from '@/types/notes';
 import { 
   PencilIcon, 
   TrashIcon, 
@@ -31,6 +32,40 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
   const [showShareModal, setShowShareModal] = useState(false);
   const { openMenu, closeMenu } = useContextMenu();
   const { openSidebar } = useDynamicSidebar();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Render doodle preview on canvas
+  useEffect(() => {
+    if (note.format !== 'doodle' || !note.content || !canvasRef.current) return;
+
+    try {
+      const strokes: DoodleStroke[] = JSON.parse(note.content);
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      strokes.forEach((stroke) => {
+        if (stroke.points.length < 2) return;
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.size;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.globalAlpha = stroke.opacity ?? 1;
+        ctx.beginPath();
+        ctx.moveTo(stroke.points[0][0], stroke.points[0][1]);
+        for (let i = 1; i < stroke.points.length; i++) {
+          ctx.lineTo(stroke.points[i][0], stroke.points[i][1]);
+        }
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      });
+    } catch {
+      console.error('Failed to render doodle preview');
+    }
+  }, [note.format, note.content]);
 
   const handleRightClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -214,10 +249,21 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onUpdate, onDelete }) => {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col justify-between min-h-0">
-          <p className="text-xs sm:text-sm text-foreground/70 line-clamp-4 sm:line-clamp-5 md:line-clamp-6 overflow-hidden whitespace-pre-wrap">
-            {note.content}
-          </p>
+        <CardContent className="flex-1 flex flex-col justify-between min-h-0 overflow-hidden">
+          {note.format === 'doodle' ? (
+            <div className="flex-1 rounded border border-border overflow-hidden">
+              <canvas
+                ref={canvasRef}
+                width={300}
+                height={200}
+                className="w-full h-full block"
+              />
+            </div>
+          ) : (
+            <p className="text-xs sm:text-sm text-foreground/70 line-clamp-4 sm:line-clamp-5 md:line-clamp-6 overflow-hidden whitespace-pre-wrap">
+              {note.content}
+            </p>
+          )}
           {note.tags && note.tags.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1 overflow-hidden">
               {note.tags.slice(0, 3).map((tag: string, index: number) => (

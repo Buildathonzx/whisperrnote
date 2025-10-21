@@ -19,6 +19,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { preProcessMarkdown } from '@/lib/markdown';
 import rehypeSanitize from 'rehype-sanitize';
+import NoteContentDisplay from '@/components/NoteContentDisplay';
 
 interface NoteViewerProps {
   note: Notes | null;
@@ -72,7 +73,13 @@ export default function NoteViewer({ note, onClose }: NoteViewerProps) {
       <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
         <TabPanel value={tabIndex} index={0}>
           <Box sx={{ '& .prose': { maxWidth: 'none' } }}>
-            {note.content ? (
+            {note.format === 'doodle' ? (
+              <NoteContentDisplay
+                content={note.content || ''}
+                format="doodle"
+                className="w-full max-w-4xl"
+              />
+            ) : note.content ? (
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeSanitize]}
