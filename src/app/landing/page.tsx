@@ -29,7 +29,7 @@ const features = [
     icon: <ShieldCheckIcon className="h-8 w-8 text-accent" />,
     title: 'Smart Collaboration',
     description:
-      'Real-time collaborative editing with AI insights and blockchain-verified ownership and permissions.',
+      'Real-time collaborative editing with AI insights and secure note management.',
   },
 ];
 
@@ -122,7 +122,7 @@ export default function LandingPage() {
               Your notes, AI powered onchain
             </h1>
             <p className="mx-auto mb-12 max-w-3xl text-lg text-light-fg/80 dark:text-dark-fg/80 md:text-xl">
-              Transform your ideas with AI assistance and secure them on blockchain. 
+              Transform your ideas with AI assistance and secure your notes. 
               Generate comprehensive content instantly, collaborate seamlessly, and own your data forever.
             </p>
             
@@ -134,7 +134,7 @@ export default function LandingPage() {
           <div className="container mx-auto px-5">
             <div className="mx-auto mb-16 max-w-2xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-light-fg dark:text-dark-fg md:text-4xl">
-                AI meets blockchain for the future of notes
+                AI-powered notes for the future
               </h2>
               <p className="mt-4 text-lg text-light-fg/60 dark:text-dark-fg/60">
                 Experience next-generation note-taking with intelligent content generation, 

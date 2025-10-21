@@ -29,7 +29,7 @@ const slides = [
         </div>
         
         <div className="text-2xl font-light opacity-90 max-w-3xl mx-auto">
-          The first <span className="font-bold bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent">AI-powered blockchain notes</span> platform
+          The first <span className="font-bold bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent">AI-powered notes</span> platform
         </div>
       </div>
     )
@@ -103,7 +103,7 @@ const slides = [
             = Secure Intelligence
           </div>
           <div className="text-xl opacity-90 max-w-2xl mx-auto">
-            AI enhances your thoughts while blockchain protects them
+            AI enhances your thoughts while powerful encryption protects them
           </div>
         </div>
       </div>
@@ -123,8 +123,8 @@ const slides = [
         
         <div className="bg-gradient-to-br from-purple-500/20 to-pink-600/20 backdrop-blur border border-white/20 rounded-3xl p-8 hover:scale-105 transition-all duration-500">
           <div className="text-6xl mb-4">🔐</div>
-          <div className="text-2xl font-bold mb-3">ICP Blockchain</div>
-          <div className="text-lg opacity-90">Internet Computer security</div>
+          <div className="text-2xl font-bold mb-3">End-to-End Encryption</div>
+          <div className="text-lg opacity-90">Military-grade security</div>
         </div>
         
         <div className="bg-gradient-to-br from-blue-500/20 to-purple-600/20 backdrop-blur border border-white/20 rounded-3xl p-8 hover:scale-105 transition-all duration-500">

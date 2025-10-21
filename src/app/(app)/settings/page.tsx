@@ -1029,52 +1029,9 @@ const IntegrationsTab = ({ enabledIntegrations }: { enabledIntegrations: Enabled
     <h1 className="text-foreground text-3xl font-bold">Integrations</h1>
     
     <div className="space-y-6">
-      {enabledIntegrations.icp && (
-        <div className="p-6 bg-background border border-border rounded-xl">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">ICP</span>
-              </div>
-              <div>
-                <h3 className="text-lg font-medium text-foreground">Internet Computer Protocol</h3>
-                <p className="text-sm text-foreground/70">Blockchain integration for decentralized note storage</p>
-              </div>
-            </div>
-            <span className="text-xs px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full">
-              Enabled
-            </span>
-          </div>
-          
-          <div className="space-y-3">
-            <div className="p-3 bg-card rounded-lg border border-border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Smart Contract Sync</p>
-                  <p className="text-xs text-foreground/60">Notes are automatically synced to ICP blockchain</p>
-                </div>
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              </div>
-            </div>
-            
-            <div className="p-3 bg-card rounded-lg border border-border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Decentralized Storage</p>
-                  <p className="text-xs text-foreground/60">Your notes are stored on a decentralized network</p>
-                </div>
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {!Object.values(enabledIntegrations).some(enabled => enabled) && (
-        <div className="text-center py-12">
-          <p className="text-foreground/60">No integrations are currently enabled.</p>
-        </div>
-      )}
+      <div className="text-center py-12">
+        <p className="text-foreground/60">No integrations are currently enabled.</p>
+      </div>
     </div>
   </div>
 );
