@@ -2,19 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { loginEmailPassword, signupEmailPassword, getCurrentUser } from '@/lib/appwrite';
+import { loginEmailPassword, signupEmailPassword, getCurrentUser, account, functions } from '@/lib/appwrite';
 import {
   registerPasskey,
   authenticateWithPasskey,
   isPlatformAuthenticatorAvailable
 } from '@/lib/appwrite/auth/passkey';
-import {
-  registerWallet,
-  authenticateWithWallet,
-  getWalletAvailability,
-  getWalletStatus,
-  type WalletAvailability
-} from '@/lib/appwrite/auth/wallet';
 import { PasswordInputWithStrength } from './PasswordStrengthIndicator';
 import { useAuth } from './AuthContext';
 import { useLoading } from './LoadingContext';
@@ -23,6 +16,10 @@ import { useLoading } from './LoadingContext';
 declare global {
   interface Window {
     PublicKeyCredential?: any;
+    ethereum?: {
+      request: (args: { method: string; params?: any[] }) => Promise<any>;
+      isMetaMask?: boolean;
+    };
   }
 }
 
@@ -39,14 +36,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [showPasswordField, setShowPasswordField] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<any>(null);
   const [passkeySupported, setPasskeySupported] = useState(false);
-  const [walletAvailability, setWalletAvailability] = useState<WalletAvailability>({
-    available: false,
-    browserExtension: false,
-    mobileApp: false,
-    hardwareSupported: false,
-    recommendedAction: 'install',
-    message: 'Checking wallet availability...'
-  });
+  const [walletMessage, setWalletMessage] = useState('Checking wallet availability...');
+  const [walletAvailable, setWalletAvailable] = useState(false);
   const { login: authLogin, refreshUser } = useAuth();
   const { showLoading, hideLoading } = useLoading();
 
@@ -54,7 +45,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   useEffect(() => {
     const checkSupport = async () => {
       setPasskeySupported(await isPlatformAuthenticatorAvailable());
-      setWalletAvailability(getWalletAvailability());
+      const hasEth = typeof window !== 'undefined' && !!window.ethereum;
+      setWalletAvailable(hasEth);
+      setWalletMessage(
+        hasEth
+          ? 'Wallet detected and ready to connect'
+          : 'Install MetaMask or another wallet extension'
+      );
     };
     checkSupport();
   }, []);
@@ -117,69 +114,64 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleWalletAuth = async () => {
-    // Always allow wallet attempts - provide helpful messages instead of blocking
-    if (!email || !email.includes('@')) {
+    if (!email || !isValidEmail(email)) {
       setTooltip('Enter your email first to register or authenticate with wallet');
       setError('');
       return;
     }
 
-    setError('');
-    setTooltip('');
-    
-    // Show different loading messages based on availability
-    const loadingMessage = walletAvailability.recommendedAction === 'openApp' 
-      ? 'Opening wallet app...' 
-      : 'Connecting to wallet...';
-    showLoading(loadingMessage);
-    
     try {
-      // Check if wallet is already connected and registered
-      const walletStatus = await getWalletStatus();
-      
-      if (walletStatus.connected) {
-        // Try to authenticate with existing wallet
-        const authResult = await authenticateWithWallet();
-        
-        if (authResult.success) {
-          const user = await getCurrentUser();
-          if (user) {
-            authLogin(user);
-            await refreshUser();
-            handleClose();
-            return;
-          }
-        }
+      setError('');
+      setTooltip('');
+      showLoading('Connecting to wallet...');
+
+      if (!window.ethereum) {
+        throw new Error('MetaMask not installed. Please install MetaMask.');
       }
-      
-      // If not authenticated, register new wallet
-      showLoading('Registering wallet...');
-      const connection = await registerWallet(email);
-      
-      if (connection) {
-        const user = await getCurrentUser();
-        if (user) {
-          authLogin(user);
-          await refreshUser();
-          handleClose();
-        }
+
+      // Connect wallet
+      const accounts = (await window.ethereum.request({ method: 'eth_requestAccounts' })) as string[];
+      const address = accounts?.[0];
+      if (!address) throw new Error('No wallet address available');
+
+      // Generate message and sign
+      const timestamp = Date.now();
+      const message = `auth-${timestamp}`;
+      const fullMessage = `Sign this message to authenticate: ${message}`;
+      const signature = await window.ethereum.request({
+        method: 'personal_sign',
+        params: [fullMessage, address]
+      });
+
+      // Call Appwrite Function
+      const fnId = process.env.NEXT_PUBLIC_FUNCTION_ID as string | undefined;
+      if (!fnId) throw new Error('Wallet auth function not configured');
+
+      const execution = await functions.createExecution(
+        fnId,
+        JSON.stringify({ email, address, signature, message }),
+        false
+      );
+
+      const response = JSON.parse((execution as any).responseBody || '{}');
+      const status = (execution as any).responseStatusCode;
+      if (status !== 200) {
+        throw new Error(response?.error || 'Authentication failed');
       }
-      
+
+      // Create session
+      await account.createSession({ userId: response.userId, secret: response.secret });
+
+      // Sync app auth state
+      const user = await getCurrentUser();
+      if (user) {
+        authLogin(user);
+        await refreshUser();
+        handleClose();
+      }
     } catch (err: any) {
       console.error('Wallet authentication error:', err);
-      
-      // Provide helpful error messages based on the situation
-      let errorMessage = err.message || 'Wallet authentication failed';
-      
-      if (errorMessage.includes('No Ethereum wallet provider found')) {
-        if (walletAvailability.deepLink) {
-          errorMessage = 'Please open this page in your mobile wallet app or install a wallet.';
-        } else {
-          errorMessage = 'Please install MetaMask, Coinbase Wallet, or connect a hardware wallet.';
-        }
-      }
-      
-      setError(errorMessage);
+      setError(err?.message || 'Wallet authentication failed');
     } finally {
       hideLoading();
     }
@@ -464,9 +456,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     <div className="font-medium text-sm text-foreground">
                       Wallet
                     </div>
-                    {!walletAvailability.browserExtension && (
+                    {!walletAvailable && (
                       <div className="text-xs text-foreground/60 mt-1">
-                        {walletAvailability.message}
+                        {walletMessage}
                       </div>
                     )}
                   </motion.button>
