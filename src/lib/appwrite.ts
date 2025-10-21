@@ -300,9 +300,80 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   const { id, userId, ...rest } = cleanData;
   const updatedAt = new Date().toISOString();
   const updatedData = { ...rest, updatedAt };
+  const before = await databases.getDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId) as any;
   const doc = await databases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_TABLE_ID_NOTES, noteId, updatedData) as any;
-  
-  // Handle tags if provided
+  // Note revisions logging (best-effort) aligned with new schema
+  try {
+    const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTEREVISIONS || 'note_revisions';
+    const significantFields = ['title', 'content', 'tags', 'format'];
+    let changed = false;
+    const changes: Record<string, { before: any; after: any }> = {};
+    for (const f of significantFields) {
+      if (f in (data as any)) {
+        const prevVal = before[f];
+        const newVal = (data as any)[f];
+        const prevSerialized = JSON.stringify(prevVal ?? null);
+        const newSerialized = JSON.stringify(newVal ?? null);
+        if (prevSerialized !== newSerialized) {
+          changed = true;
+          changes[f] = { before: prevVal ?? null, after: newVal ?? null };
+        }
+      }
+    }
+    if (changed) {
+      // Determine next revision number
+      let revisionNumber = 1;
+      try {
+        const existing = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          revisionsCollection,
+          [Query.equal('noteId', noteId), Query.orderDesc('revision'), Query.limit(1)] as any
+        );
+        if (existing.documents.length) {
+          revisionNumber = (existing.documents[0] as any).revision + 1;
+        }
+      } catch {}
+      
+      // Build diff JSON (bounded by 8000 size limit of diff attribute)
+      // For doodles, skip detailed diff since content is huge JSON
+      let diffStr: string | null = null;
+      if ((data as any).format !== 'doodle') {
+        try {
+          const diffObj = { changes };
+          const serialized = JSON.stringify(diffObj);
+          if (serialized.length <= 8000) {
+            diffStr = serialized;
+          } else {
+            // If too large, just note that changes occurred
+            diffStr = JSON.stringify({ summary: 'Changes made', fieldCount: Object.keys(changes).length });
+          }
+        } catch {
+          diffStr = null;
+        }
+      }
+      
+      await databases.createDocument(
+        APPWRITE_DATABASE_ID,
+        revisionsCollection,
+        ID.unique(),
+        {
+          noteId,
+          revision: revisionNumber,
+          userId: before.userId || null,
+          createdAt: updatedAt,
+          title: doc.title,
+          content: doc.content,
+          diff: diffStr,
+          diffFormat: diffStr ? 'json' : null,
+          fullSnapshot: true,
+          cause: 'manual'
+        }
+      );
+    }
+  } catch (revErr) {
+    console.error('note revision log failed', revErr);
+  }
+  // Dual-write tags with cleanup (remove stale pivots) and dedupe + tagId resolution
   try {
     if (Array.isArray((data as any).tags)) {
       const noteTagsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTETAGS || 'note_tags';
@@ -1837,6 +1908,21 @@ export function verifySignedAttachmentURL(params: { noteId: string; ownerId: str
 }
 
 
+// --- NOTE REVISIONS UTILITIES ---
+export async function listNoteRevisions(noteId: string, limit: number = 50) {
+  try {
+    const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTEREVISIONS || 'note_revisions';
+    const res = await databases.listDocuments(
+      APPWRITE_DATABASE_ID,
+      revisionsCollection,
+      [Query.equal('noteId', noteId), Query.orderDesc('revision'), Query.limit(limit)] as any
+    );
+    return res;
+  } catch (e) {
+    console.error('listNoteRevisions failed', e);
+    return { documents: [], total: 0 } as any;
+  }
+}
 
 // --- MAINTENANCE HELPERS (Best-effort, on-demand) ---
 // Backfill tagId on legacy note_tags rows missing tagId for a user's notes
