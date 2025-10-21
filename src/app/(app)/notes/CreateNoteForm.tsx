@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { createNote as appwriteCreateNote } from '@/lib/appwrite';
 import { useOverlay } from '@/components/ui/OverlayContext';
+import DoodleCanvas from '@/components/DoodleCanvas';
 import type { Notes } from '@/types/appwrite';
 import * as AppwriteTypes from '@/types/appwrite';
 import { 
@@ -12,7 +13,8 @@ import {
   TagIcon, 
   GlobeAltIcon, 
   LockClosedIcon,
-  PlusIcon
+  PlusIcon,
+  PencilIcon
 } from '@heroicons/react/24/outline';
 
 interface CreateNoteFormProps {
@@ -22,11 +24,13 @@ interface CreateNoteFormProps {
     content?: string;
     tags?: string[];
   };
+  initialFormat?: 'text' | 'doodle';
 }
 
-export default function CreateNoteForm({ onNoteCreated, initialContent }: CreateNoteFormProps) {
+export default function CreateNoteForm({ onNoteCreated, initialContent, initialFormat = 'text' }: CreateNoteFormProps) {
   const [title, setTitle] = useState(initialContent?.title || '');
   const [content, setContent] = useState(initialContent?.content || '');
+  const [format, setFormat] = useState<'text' | 'doodle'>(initialFormat);
   const [tags, setTags] = useState<string[]>(initialContent?.tags || []);
   const [currentTag, setCurrentTag] = useState('');
   const [isPublic, setIsPublic] = useState(false);
@@ -36,6 +40,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ uploaded: number; total: number }>({ uploaded: 0, total: 0 });
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
+  const [showDoodleEditor, setShowDoodleEditor] = useState(false);
   const { closeOverlay } = useOverlay();
 
   const handleAddTag = () => {
@@ -56,6 +61,12 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
     }
   };
 
+  const handleDoodleSave = (doodleData: string) => {
+    setContent(doodleData);
+    setFormat('doodle');
+    setShowDoodleEditor(false);
+  };
+
   const handleCreateNote = async () => {
     if (!title.trim() || isLoading || uploading) return;
 
@@ -63,6 +74,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
     const newNoteData = {
       title: title.trim(),
       content: content.trim(),
+      format,
       tags,
       isPublic,
       status,
@@ -128,25 +140,70 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-light-card dark:bg-dark-card rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] border-2 border-light-border dark:border-dark-border overflow-hidden max-h-[calc(100vh-4rem)] flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-light-border dark:border-dark-border bg-gradient-to-r from-accent/5 to-accent/10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/80 rounded-2xl flex items-center justify-center shadow-lg">
-            <DocumentTextIcon className="h-6 w-6 text-white" />
+    <>
+      {showDoodleEditor && (
+        <DoodleCanvas
+          initialData={format === 'doodle' ? content : ''}
+          onSave={handleDoodleSave}
+          onClose={() => setShowDoodleEditor(false)}
+        />
+      )}
+      
+      <div className="w-full max-w-2xl mx-auto bg-light-card dark:bg-dark-card rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.15)] border-2 border-light-border dark:border-dark-border overflow-hidden max-h-[calc(100vh-4rem)] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-light-border dark:border-dark-border bg-gradient-to-r from-accent/5 to-accent/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/80 rounded-2xl flex items-center justify-center shadow-lg">
+              {format === 'doodle' ? (
+                <PencilIcon className="h-6 w-6 text-white" />
+              ) : (
+                <DocumentTextIcon className="h-6 w-6 text-white" />
+              )}
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-light-fg dark:text-dark-fg">
+                {format === 'doodle' ? 'Create Doodle' : 'Create Note'}
+              </h2>
+              <p className="text-sm text-light-fg/70 dark:text-dark-fg/70">
+                {format === 'doodle' ? 'Draw and sketch your ideas' : 'Capture your thoughts and ideas'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-2xl font-black text-light-fg dark:text-dark-fg">Create Note</h2>
-            <p className="text-sm text-light-fg/70 dark:text-dark-fg/70">Capture your thoughts and ideas</p>
+          <div className="flex items-center gap-2">
+            {/* Format Toggle */}
+            <div className="flex bg-light-bg dark:bg-dark-bg rounded-xl border border-light-border dark:border-dark-border p-1">
+              <button
+                onClick={() => setFormat('text')}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
+                  format === 'text'
+                    ? 'bg-accent text-white'
+                    : 'text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
+                }`}
+              >
+                <DocumentTextIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">Text</span>
+              </button>
+              <button
+                onClick={() => setFormat('doodle')}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
+                  format === 'doodle'
+                    ? 'bg-accent text-white'
+                    : 'text-light-fg dark:text-dark-fg hover:bg-light-border dark:hover:bg-dark-border'
+                }`}
+              >
+                <PencilIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">Doodle</span>
+              </button>
+            </div>
+            
+            <button
+              onClick={closeOverlay}
+              className="p-2 rounded-xl hover:bg-light-bg dark:hover:bg-dark-bg text-light-fg dark:text-dark-fg transition-all duration-200"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
           </div>
         </div>
-        <button
-          onClick={closeOverlay}
-          className="p-2 rounded-xl hover:bg-light-bg dark:hover:bg-dark-bg text-light-fg dark:text-dark-fg transition-all duration-200"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
-      </div>
 
       {/* Form Content - Scrollable */}
       <div className="flex-1 overflow-y-auto">
@@ -164,20 +221,81 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
             />
           </div>
 
-          {/* Content Textarea */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Content</label>
-            <textarea
-              placeholder="Start writing your beautiful notes here... You can always edit and enhance them later."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full h-48 p-4 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 resize-none transition-all duration-200"
-              maxLength={65000}
-            />
-            <div className="text-xs text-light-fg/50 dark:text-dark-fg/50 text-right">
-              {content.length}/65000 characters
+          {/* Content - Text or Doodle */}
+          {format === 'text' ? (
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Content</label>
+              <textarea
+                placeholder="Start writing your beautiful notes here... You can always edit and enhance them later."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="w-full h-48 p-4 bg-light-bg dark:bg-dark-bg border-2 border-light-border dark:border-dark-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-light-fg dark:text-dark-fg placeholder-light-fg/50 dark:placeholder-dark-fg/50 resize-none transition-all duration-200"
+                maxLength={65000}
+              />
+              <div className="text-xs text-light-fg/50 dark:text-dark-fg/50 text-right">
+                {content.length}/65000 characters
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-light-fg dark:text-dark-fg">Doodle</label>
+              {content ? (
+                <div className="relative w-full h-48 rounded-2xl border-2 border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg overflow-hidden">
+                  <canvas 
+                    className="w-full h-full"
+                    ref={(canvas) => {
+                      if (!canvas || !content) return;
+                      try {
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) return;
+                        const strokes = JSON.parse(content);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        strokes.forEach((stroke: any) => {
+                          if (stroke.points.length < 2) return;
+                          ctx.strokeStyle = stroke.color;
+                          ctx.lineWidth = stroke.size;
+                          ctx.lineCap = 'round';
+                          ctx.lineJoin = 'round';
+                          ctx.beginPath();
+                          ctx.moveTo(stroke.points[0][0], stroke.points[0][1]);
+                          for (let i = 1; i < stroke.points.length; i++) {
+                            ctx.lineTo(stroke.points[i][0], stroke.points[i][1]);
+                          }
+                          ctx.stroke();
+                        });
+                      } catch {
+                        // Invalid doodle data
+                      }
+                    }}
+                    width={800}
+                    height={600}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDoodleEditor(true)}
+                    className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors rounded-xl flex items-center justify-center"
+                  >
+                    <span className="bg-accent text-white px-3 py-1.5 rounded-lg text-sm font-medium">Edit</span>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowDoodleEditor(true)}
+                  className="w-full h-48 border-2 border-dashed border-light-border dark:border-dark-border rounded-2xl bg-light-bg/50 dark:bg-dark-bg/50 hover:bg-light-bg dark:hover:bg-dark-bg transition-all duration-200 flex flex-col items-center justify-center gap-3 group"
+                >
+                  <div className="w-12 h-12 bg-accent/10 group-hover:bg-accent/20 rounded-2xl flex items-center justify-center transition-all duration-200">
+                    <PencilIcon className="h-6 w-6 text-accent" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-light-fg dark:text-dark-fg">Start Drawing</p>
+                    <p className="text-xs text-light-fg/60 dark:text-dark-fg/60">Click to open doodle editor</p>
+                  </div>
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Tags Section */}
           <div className="space-y-3">
@@ -411,7 +529,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
         </Button>
         <Button 
           onClick={handleCreateNote}
-          disabled={!title.trim() || isLoading || uploading}
+          disabled={!title.trim() || !content.trim() || isLoading || uploading}
           className="px-6 gap-2"
         >
           {(isLoading || uploading) ? (
@@ -421,12 +539,17 @@ export default function CreateNoteForm({ onNoteCreated, initialContent }: Create
             </>
           ) : (
             <>
-              <DocumentTextIcon className="h-4 w-4" />
-              {pendingFiles.length ? `Create & Upload (${pendingFiles.length})` : 'Create Note'}
+              {format === 'doodle' ? (
+                <PencilIcon className="h-4 w-4" />
+              ) : (
+                <DocumentTextIcon className="h-4 w-4" />
+              )}
+              {pendingFiles.length ? `Create & Upload (${pendingFiles.length})` : `Create ${format === 'doodle' ? 'Doodle' : 'Note'}`}
             </>
           )}
         </Button>
       </div>
     </div>
+    </>
   );
 }

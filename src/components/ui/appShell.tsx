@@ -45,6 +45,10 @@ export default function AppShell({ children }: AppShellProps) {
     router.push('/notes/new');
   };
 
+  const handleCreateDoodle = () => {
+    router.push('/notes/new?format=doodle');
+  };
+
   const handleCreateVoiceNote = () => {
     console.log('Creating voice note...');
   };
@@ -110,6 +114,7 @@ export default function AppShell({ children }: AppShellProps) {
 
       <QuickCreateFab
         onCreateNote={handleCreateNote}
+        onCreateDoodle={handleCreateDoodle}
         onCreateVoiceNote={handleCreateVoiceNote}
         onCreatePhotoNote={handleCreatePhotoNote}
         onCreateLinkNote={handleCreateLinkNote}

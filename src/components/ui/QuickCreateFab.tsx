@@ -14,11 +14,13 @@ import {
   Mic as VoiceIcon,
   Link as LinkIcon,
   Close as CloseIcon,
+  Edit as PencilIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
 
 interface QuickCreateFabProps {
   onCreateNote?: () => void;
+  onCreateDoodle?: () => void;
   onCreateVoiceNote?: () => void;
   onCreatePhotoNote?: () => void;
   onCreateLinkNote?: () => void;
@@ -26,6 +28,7 @@ interface QuickCreateFabProps {
 
 const actions = [
   { icon: <NoteIcon />, name: 'Text Note', action: 'text' },
+  { icon: <PencilIcon />, name: 'Doodle', action: 'doodle' },
   { icon: <VoiceIcon />, name: 'Voice Note', action: 'voice' },
   { icon: <CameraIcon />, name: 'Photo Note', action: 'photo' },
   { icon: <LinkIcon />, name: 'Link Note', action: 'link' },
@@ -33,6 +36,7 @@ const actions = [
 
 export default function QuickCreateFab({
   onCreateNote,
+  onCreateDoodle,
   onCreateVoiceNote,
   onCreatePhotoNote,
   onCreateLinkNote,
@@ -47,6 +51,9 @@ export default function QuickCreateFab({
     switch (action) {
       case 'text':
         onCreateNote?.();
+        break;
+      case 'doodle':
+        onCreateDoodle?.();
         break;
       case 'voice':
         onCreateVoiceNote?.();

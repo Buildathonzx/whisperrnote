@@ -102,6 +102,16 @@ export default function NotesPage() {
     }
   }, [openOverlay, handleNoteCreated]);
 
+  // Handle format query parameter for doodle creation
+  useEffect(() => {
+    const format = searchParams.get('format');
+    if (format === 'doodle') {
+      // Remove the format param from URL
+      window.history.replaceState({}, '', '/notes');
+      openOverlay(<CreateNoteForm initialFormat="doodle" onNoteCreated={handleNoteCreated} />);
+    }
+  }, [searchParams, openOverlay, handleNoteCreated]);
+
   const handleNoteUpdated = async (updatedNote: Notes) => {
     if (!updatedNote.$id) {
       console.error('Cannot update note: missing ID');

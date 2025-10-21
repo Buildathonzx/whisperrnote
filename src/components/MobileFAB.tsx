@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { PlusIcon, SparklesIcon, DocumentPlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, SparklesIcon, DocumentPlusIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { useOverlay } from '@/components/ui/OverlayContext';
 // AIGeneratePromptModal will be dynamically imported via lazy AI loader
 import CreateNoteForm from '@/app/(app)/notes/CreateNoteForm';
@@ -23,8 +23,21 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
     setIsExpanded(false);
     openOverlay(
       <CreateNoteForm 
+        initialFormat="text"
         onNoteCreated={(newNote) => {
           console.log('Note created:', newNote);
+        }} 
+      />
+    );
+  };
+
+  const handleCreateDoodleClick = () => {
+    setIsExpanded(false);
+    openOverlay(
+      <CreateNoteForm 
+        initialFormat="doodle"
+        onNoteCreated={(newNote) => {
+          console.log('Doodle created:', newNote);
         }} 
       />
     );
@@ -40,6 +53,7 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
         onGenerated: (result) => {
           openOverlay(
             <CreateNoteForm 
+              initialFormat="text"
               initialContent={{
                 title: result.title,
                 content: result.content,
@@ -85,6 +99,15 @@ export const MobileFAB: React.FC<MobileFABProps> = ({ className = '' }) => {
           >
             <SparklesIcon className="h-5 w-5" />
             <span className="font-medium text-sm">{aiLoading ? 'Loading AI...' : 'AI Generate'}</span>
+          </button>
+
+          {/* Create Doodle Button */}
+          <button
+            onClick={handleCreateDoodleClick}
+            className="flex items-center gap-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white px-4 py-3 rounded-2xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:-translate-y-1"
+          >
+            <PencilIcon className="h-5 w-5" />
+            <span className="font-medium text-sm">Create Doodle</span>
           </button>
 
           {/* Create Note Button */}
