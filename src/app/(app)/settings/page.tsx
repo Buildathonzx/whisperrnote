@@ -9,7 +9,7 @@ import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
-import { getWalletAvailability, authenticateWithWallet, getWalletStatus } from "@/lib/appwrite/auth/wallet";
+import { functions } from "@/lib/appwrite";
 import { isICPEnabled } from "@/integrations/icp";
 import { SubscriptionTab } from "./SubscriptionTab";
 import { getUserProfilePicId, getUserAuthMethod, getUserWalletAddress, getUserField } from '@/lib/utils';
@@ -89,15 +89,13 @@ export default function SettingsPage() {
         // Load authentication methods from backend
         try {
           const passkeySupported = await isPlatformAuthenticatorAvailable();
-          const walletAvailability = getWalletAvailability();
-          
           // Get MFA factors from backend instead of client storage
           const mfaFactors = await account.listMfaFactors();
           
           setAuthMethods({
             mfaFactors,
             passkeySupported,
-            walletAvailable: walletAvailability.available
+            walletAvailable: typeof window !== 'undefined' && !!(window as any).ethereum
           });
         } catch {
           console.error('Failed to load auth methods');
@@ -192,7 +190,7 @@ export default function SettingsPage() {
   };
 
   const handleConnectWallet = async () => {
-    if (!authMethods.walletAvailable) {
+    if (!(typeof window !== 'undefined' && (window as any).ethereum)) {
       setError("No wallet provider detected. Please install MetaMask or another Web3 wallet.");
       return;
     }
@@ -201,36 +199,53 @@ export default function SettingsPage() {
       setError("");
       setSuccess("");
 
-      const result = await authenticateWithWallet();
+      // Connect wallet
+      const accounts = (await (window as any).ethereum.request({ method: 'eth_requestAccounts' })) as string[];
+      const address = accounts?.[0];
+      if (!address) throw new Error('No wallet address available');
 
-      if (result.success) {
-        setSuccess("Wallet connected successfully! You can now use wallet authentication.");
-        // Refresh user data to show updated auth method
-        const updatedUser = await account.get();
-        setUser(updatedUser);
-        // Update auth methods to reflect wallet connection
-        setAuthMethods(prev => ({
-          ...prev,
-          walletAvailable: true
-        }));
+      // Sign message per function docs
+      const timestamp = Date.now();
+      const message = `auth-${timestamp}`;
+      const fullMessage = `Sign this message to authenticate: ${message}`;
+      const signature = await (window as any).ethereum.request({
+        method: 'personal_sign',
+        params: [fullMessage, address]
+      });
 
-        // Best-effort: mirror authMethod and walletAddress to users collection top-level fields
-        try {
-          const walletStatus = await getWalletStatus();
-          const address = walletStatus?.address || null;
-          const uid = (updatedUser && (updatedUser.$id || (updatedUser as any).id)) || (user && (user.$id || (user as any).id));
-          if (uid) {
-            await updateUser(uid, {
-              authMethod: 'wallet',
-              walletAddress: address,
-              lastWalletSignInAt: new Date().toISOString()
-            });
-          }
-        } catch (mirrorErr) {
-          console.warn('Failed to mirror wallet details to users collection', mirrorErr);
-        }
-      } else {
-        setError(result.error || "Failed to connect wallet");
+      const fnId = (process.env.NEXT_PUBLIC_FUNCTION_ID 
+        || process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID_WALLET 
+        || process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID) as string | undefined;
+      if (!fnId) throw new Error('Wallet auth function not configured');
+
+      const execution = await functions.createExecution(
+        fnId,
+        JSON.stringify({ email: user?.email, address, signature, message }),
+        false
+      );
+
+      const response = JSON.parse((execution as any).responseBody || '{}');
+      const status = (execution as any).responseStatusCode;
+      if (status !== 200) {
+        throw new Error(response?.error || 'Authentication failed');
+      }
+
+      await account.createSession({ userId: response.userId, secret: response.secret });
+
+      setSuccess("Wallet connected successfully! You can now use wallet authentication.");
+      const updatedUser = await account.get();
+      setUser(updatedUser);
+
+      // Best-effort mirror
+      try {
+        const uid = updatedUser.$id;
+        await updateUser(uid, {
+          authMethod: 'wallet',
+          walletAddress: address,
+          lastWalletSignInAt: new Date().toISOString()
+        });
+      } catch (mirrorErr) {
+        console.warn('Failed to mirror wallet details to users collection', mirrorErr);
       }
     } catch (err: any) {
       setError((err as Error).message || "Failed to connect wallet");
