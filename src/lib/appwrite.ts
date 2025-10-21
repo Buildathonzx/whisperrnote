@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Storage, Functions, ID, Query, Permission, Role, TablesDB } from 'appwrite';
+import { Client, Account, Databases, Storage, Functions, ID, Query, Permission, Role, TablesDB, OAuthProvider } from 'appwrite';
 import type {
   Users,
   Notes,
@@ -59,7 +59,7 @@ export const APPWRITE_BUCKET_EXTENSION_ASSETS = process.env.NEXT_PUBLIC_APPWRITE
 export const APPWRITE_BUCKET_BACKUPS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_BACKUPS!;
 export const APPWRITE_BUCKET_TEMP_UPLOADS = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_TEMP_UPLOADS!;
 
-export { client, account, databases, tablesDB, storage, functions, ID, Query, Permission, Role };
+export { client, account, databases, tablesDB, storage, functions, ID, Query, Permission, Role, OAuthProvider };
 
 function cleanDocumentData<T>(data: Partial<T>): Record<string, any> {
   const { $id, $sequence, $collectionId, $databaseId, $createdAt, $updatedAt, $permissions, ...cleanData } = data as any;
