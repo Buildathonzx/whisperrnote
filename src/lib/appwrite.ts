@@ -305,7 +305,7 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
   // Note revisions logging (best-effort) aligned with new schema
   try {
     const revisionsCollection = process.env.NEXT_PUBLIC_APPWRITE_TABLE_ID_NOTEREVISIONS || 'note_revisions';
-    const significantFields = ['title', 'content', 'tags'];
+    const significantFields = ['title', 'content', 'tags', 'format'];
     let changed = false;
     const changes: Record<string, { before: any; after: any }> = {};
     for (const f of significantFields) {
@@ -333,10 +333,25 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
           revisionNumber = (existing.documents[0] as any).revision + 1;
         }
       } catch {}
+      
       // Build diff JSON (bounded by 8000 size limit of diff attribute)
-      let diffObj = { changes } as any;
-      let diffStr = '';
-      try { diffStr = JSON.stringify(diffObj).slice(0, 7900); } catch { diffStr = ''; }
+      // For doodles, skip detailed diff since content is huge JSON
+      let diffStr: string | null = null;
+      if ((data as any).format !== 'doodle') {
+        try {
+          const diffObj = { changes };
+          const serialized = JSON.stringify(diffObj);
+          if (serialized.length <= 8000) {
+            diffStr = serialized;
+          } else {
+            // If too large, just note that changes occurred
+            diffStr = JSON.stringify({ summary: 'Changes made', fieldCount: Object.keys(changes).length });
+          }
+        } catch {
+          diffStr = null;
+        }
+      }
+      
       await databases.createDocument(
         APPWRITE_DATABASE_ID,
         revisionsCollection,
@@ -348,7 +363,7 @@ export async function updateNote(noteId: string, data: Partial<Notes>) {
           createdAt: updatedAt,
           title: doc.title,
           content: doc.content,
-          diff: diffStr || null,
+          diff: diffStr,
           diffFormat: diffStr ? 'json' : null,
           fullSnapshot: true,
           cause: 'manual'
