@@ -48,7 +48,6 @@ export async function POST(req: NextRequest, { params }: { params: { noteId: str
       return NextResponse.json({ error: 'Unauthorized - no user session' }, { status: 401 });
     }
 
-    const cookieHeader = req.headers.get('cookie') || req.headers.get('Cookie');
     const trace = { op: 'upload', noteId: params.noteId, userId: user.$id, t: Date.now(), hasCookie: !!cookieHeader, cookieLength: cookieHeader?.length || 0 };
     console.log('[attachments.api] POST start', trace);
 
