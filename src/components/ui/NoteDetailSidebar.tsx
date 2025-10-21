@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Notes } from '@/types/appwrite';
 import DoodleCanvas from '@/components/DoodleCanvas';
-import { PencilIcon, TrashIcon, UserIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, UserIcon, ClipboardDocumentIcon, PaperClipIcon } from '@heroicons/react/24/outline';
 import { Button } from './Button';
 import { Modal } from './modal';
 import { formatNoteCreatedDate, formatNoteUpdatedDate } from '@/lib/date-utils';
@@ -37,9 +37,30 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   const [content, setContent] = useState(note.content);
   const [format, setFormat] = useState<'text' | 'doodle'>(note.format as 'text' | 'doodle' || 'text');
   const [tags, setTags] = useState(note.tags?.join(', ') || '');
-  const [enhancedNote, setEnhancedNote] = useState<EnhancedNote | null>(null);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [attachmentErrors, setAttachmentErrors] = useState<string[]>([]);
+  const [currentAttachments, setCurrentAttachments] = useState<any[]>([]);
 
   const { showSuccess, showError } = useToast();
+
+  useEffect(() => {
+    if (note.attachments && Array.isArray(note.attachments)) {
+      try {
+        const parsed = note.attachments.map((a: any) => {
+          if (typeof a === 'string') {
+            return JSON.parse(a);
+          }
+          return a;
+        });
+        setCurrentAttachments(parsed);
+      } catch (e) {
+        console.error('Error parsing attachments:', e);
+        setCurrentAttachments([]);
+      }
+    } else {
+      setCurrentAttachments([]);
+    }
+  }, [note.attachments]);
 
   // Load enhanced note with sharing information
   useEffect(() => {
@@ -62,6 +83,59 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
   const handleDoodleSave = (doodleData: string) => {
     setContent(doodleData);
     setShowDoodleEditor(false);
+  };
+
+  const handleAttachmentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.currentTarget.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploadingAttachment(true);
+    setAttachmentErrors([]);
+    const newErrors: string[] = [];
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          const res = await fetch(`/api/notes/${note.$id}/attachments`, {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!res.ok) {
+            let errorPayload: any = null;
+            try {
+              errorPayload = await res.json();
+            } catch {
+              try {
+                errorPayload = { raw: await res.text() };
+              } catch {
+                errorPayload = { error: `HTTP ${res.status}: ${res.statusText}` };
+              }
+            }
+            const msg = errorPayload?.error || errorPayload?.raw || `Upload failed (${res.status})`;
+            newErrors.push(`${file.name}: ${msg}`);
+          } else {
+            const data = await res.json();
+            if (data.attachment) {
+              setCurrentAttachments((prev) => [...prev, data.attachment]);
+              showSuccess('Attachment added', `${file.name} uploaded successfully`);
+            }
+          }
+        } catch (err: any) {
+          newErrors.push(`${file.name}: ${err?.message || 'Upload failed'}`);
+        }
+      }
+
+      if (newErrors.length > 0) {
+        setAttachmentErrors(newErrors);
+      }
+    } finally {
+      setIsUploadingAttachment(false);
+      e.currentTarget.value = '';
+    }
   };
 
   const handleSave = () => {
@@ -285,11 +359,43 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
         </div>
 
         {/* Attachments */}
-        {note.attachments && note.attachments.length > 0 && (
-          <div>
-            <label className="block text-sm font-medium text-muted mb-2">Attachments</label>
+        <div>
+          <label className="block text-sm font-medium text-muted mb-2">Attachments</label>
+          {isEditing && (
+            <div className="mb-3">
+              <input
+                type="file"
+                id="attachment-input"
+                multiple
+                onChange={handleAttachmentUpload}
+                disabled={isUploadingAttachment}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => document.getElementById('attachment-input')?.click()}
+                disabled={isUploadingAttachment}
+                className="w-full"
+              >
+                <PaperClipIcon className="h-4 w-4 mr-2" />
+                {isUploadingAttachment ? 'Uploading...' : 'Add Attachments'}
+              </Button>
+              {attachmentErrors.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {attachmentErrors.map((err, i) => (
+                    <div key={i} className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                      {err}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          {currentAttachments.length > 0 ? (
             <ul className="space-y-1 max-h-40 overflow-auto pr-1">
-              {note.attachments.map((a: any) => (
+              {currentAttachments.map((a: any) => (
                 <li key={a.id} className="flex items-center justify-between gap-2 text-xs bg-accent/10 rounded px-2 py-1">
                   <div className="flex flex-col min-w-0">
                     <a href={`/notes/${note.$id}/${a.id}`} className="truncate font-medium text-accent hover:underline" title={a.name}>{a.name}</a>
@@ -305,8 +411,10 @@ export function NoteDetailSidebar({ note, onUpdate, onDelete }: NoteDetailSideba
                 </li>
               ))}
             </ul>
-          </div>
-        )}
+          ) : (
+            <p className="text-xs text-muted italic">No attachments</p>
+          )}
+        </div>
 
         {/* Metadata */}
         <div className="pt-4 border-t border-border space-y-2">
