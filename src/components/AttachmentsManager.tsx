@@ -39,10 +39,9 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/notes/${noteId}/attachments`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to load attachments');
-      const data = await res.json();
-      setAttachments(Array.isArray(data.attachments) ? data.attachments : []);
+      const { listNoteAttachments } = await import('@/lib/appwrite');
+      const attachments = await listNoteAttachments(noteId);
+      setAttachments(Array.isArray(attachments) ? attachments : []);
     } catch (e: any) {
       setError(e.message || 'Failed to load attachments');
     } finally {
@@ -71,19 +70,10 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
     setUploading(prev => [...prev, ...batch]);
 
     for (const temp of batch) {
-      // Update progress immutably
       setUploading(cur => cur.map(u => u.tempId === temp.tempId ? { ...u, progress: 10 } : u));
-      const form = new FormData();
-      form.append('file', temp.file);
       try {
-        const res = await fetch(`/api/notes/${noteId}/attachments`, { method: 'POST', body: form, credentials: 'include' });
-        if (!res.ok) {
-          const j = await res.json().catch(() => ({}));
-          if (j.code === 'ATTACHMENT_SIZE_LIMIT') throw new Error(j.error || 'File exceeds plan size limit');
-          if (j.code === 'PLAN_LIMIT_REACHED') throw new Error(j.error || 'Plan limit reached');
-          if (j.code === 'UNSUPPORTED_MIME_TYPE') throw new Error('Unsupported file type');
-          throw new Error(j.error || `Upload failed (${res.status})`);
-        }
+        const { addAttachmentToNote } = await import('@/lib/appwrite');
+        await addAttachmentToNote(noteId, temp.file);
         setUploading(cur => cur.map(u => u.tempId === temp.tempId ? { ...u, progress: 100, status: 'done' } : u));
         await fetchAttachments();
       } catch (e: any) {
@@ -119,8 +109,8 @@ export const AttachmentsManager: React.FC<AttachmentsManagerProps> = ({ noteId, 
   const deleteAttachment = async (id: string) => {
     if (!confirm('Delete this attachment?')) return;
     try {
-      const res = await fetch(`/api/notes/${noteId}/attachments/${id}`, { method: 'DELETE', credentials: 'include' });
-      if (!res.ok) throw new Error('Delete failed');
+      const { removeAttachmentFromNote } = await import('@/lib/appwrite');
+      await removeAttachmentFromNote(noteId, id);
       await fetchAttachments();
     } catch (e: any) {
       setError(e.message || 'Delete failed');

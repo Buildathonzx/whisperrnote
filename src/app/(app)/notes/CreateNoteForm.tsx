@@ -93,7 +93,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
       const newNote = await appwriteCreateNote(newNoteData);
       if (newNote) {
         onNoteCreated(newNote);
-        // Upload pending files sequentially (simple approach for now)
+        // Upload pending files sequentially using client SDK
         if (pendingFiles.length) {
           setUploading(true);
           setUploadProgress({ uploaded: 0, total: pendingFiles.length });
@@ -101,35 +101,9 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
           for (let i = 0; i < pendingFiles.length; i++) {
             const file = pendingFiles[i];
             try {
-              const formData = new FormData();
-              formData.append('file', file);
-              const res = await fetch(`/api/notes/${newNote.$id || (newNote as any).id}/attachments`, {
-                method: 'POST',
-                body: formData,
-                credentials: 'include',
-              });
-              if (!res.ok) {
-                let errorPayload: any = null;
-                try { 
-                  errorPayload = await res.json(); 
-                } catch { 
-                  try { 
-                    errorPayload = { raw: await res.text() }; 
-                  } catch { 
-                    errorPayload = { error: `HTTP ${res.status}: ${res.statusText}` }; 
-                  } 
-                }
-                const msg = errorPayload?.error || errorPayload?.raw || `Upload failed (${res.status})`;
-                setUploadErrors(prev => [...prev, `${file.name}: ${msg}`].slice(-8));
-                hadErrors = true;
-                console.error('Attachment upload failed', { 
-                  fileName: file.name,
-                  status: res.status, 
-                  statusText: res.statusText, 
-                  error: errorPayload,
-                  code: errorPayload?.code
-                });
-              }
+              const { addAttachmentToNote } = await import('@/lib/appwrite');
+              const noteId = newNote.$id || (newNote as any).id;
+              await addAttachmentToNote(noteId, file);
             } catch (e: any) {
               hadErrors = true;
               setUploadErrors(prev => [...prev, `${file.name}: ${e?.message || 'Upload error'}`].slice(-8));
