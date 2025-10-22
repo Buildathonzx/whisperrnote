@@ -358,8 +358,9 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                   multiple
                   accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.md,.txt"
                   onChange={(e) => {
-                    if (e.target.files) {
-                      setPendingFiles(prev => [...prev, ...Array.from(e.target.files!)].slice(0, 10));
+                    if (e.target.files && e.target.files.length > 0) {
+                      const newFiles = Array.from(e.target.files);
+                      setPendingFiles(prev => [...prev, ...newFiles].slice(0, 10));
                       e.target.value = '';
                     }
                   }}
