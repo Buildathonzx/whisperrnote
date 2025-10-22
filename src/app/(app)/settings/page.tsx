@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, updateUser, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, deleteProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail } from "@/lib/appwrite";
+import { account, updateUser, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, deleteProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail, functions } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useAuth } from "@/components/ui/AuthContext";
@@ -9,10 +9,8 @@ import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
-import { functions, OAuthProvider } from "@/lib/appwrite";
-import { type OAuthProvider as OAuthProviderType } from "appwrite";
-import { SubscriptionTab } from "./SubscriptionTab";
 import { getUserProfilePicId, getUserAuthMethod, getUserWalletAddress, getUserField } from '@/lib/utils';
+import { SubscriptionTab } from "./SubscriptionTab";
 
 type TabType = 'profile' | 'settings' | 'preferences' | 'integrations' | 'subscription';
 
@@ -192,20 +190,27 @@ export default function SettingsPage() {
       setError("");
       setSuccess("");
 
-      // Connect wallet
-      const accounts = (await (window as any).ethereum.request({ method: 'eth_requestAccounts' })) as string[];
-      const address = accounts?.[0];
-      if (!address) throw new Error('No wallet address available');
+      // Get current user's ID for authentication
+      const currentUser = await account.get();
+      const userId = currentUser.$id;
 
-      // Sign message per function docs
+      // Request wallet connection
+      const accounts = (await (window as any).ethereum.request({ method: 'eth_requestAccounts' })) as string[];
+      const walletAddress = accounts?.[0];
+      if (!walletAddress) throw new Error('No wallet address available');
+
+      // Create message for user to sign
       const timestamp = Date.now();
-      const message = `auth-${timestamp}`;
-      const fullMessage = `Sign this message to authenticate: ${message}`;
+      const baseMessage = `auth-${timestamp}`;
+      const fullMessage = `Sign this message to authenticate: ${baseMessage}`;
+
+      // User signs the message
       const signature = await (window as any).ethereum.request({
         method: 'personal_sign',
-        params: [fullMessage, address]
+        params: [fullMessage, walletAddress]
       });
 
+      // Call connect-wallet endpoint via function
       const fnId = (process.env.NEXT_PUBLIC_FUNCTION_ID 
         || process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID_WALLET 
         || process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID) as string | undefined;
@@ -213,49 +218,27 @@ export default function SettingsPage() {
 
       const execution = await functions.createExecution(
         fnId,
-        JSON.stringify({ email: user?.email, address, signature, message }),
-        false
+        JSON.stringify({
+          userId,
+          address: walletAddress,
+          signature,
+          message: baseMessage
+        }),
+        false,
+        '/connect-wallet'
       );
 
       const response = JSON.parse((execution as any).responseBody || '{}');
       const status = (execution as any).responseStatusCode;
       if (status !== 200) {
-        throw new Error(response?.error || 'Authentication failed');
+        throw new Error(response?.error || 'Failed to connect wallet');
       }
 
-      await account.createSession({ userId: response.userId, secret: response.secret });
-
-      setSuccess("Wallet connected successfully! You can now use wallet authentication.");
+      setSuccess(`✓ Wallet ${walletAddress.substring(0, 6)}...${walletAddress.substring(38)} connected successfully!`);
       const updatedUser = await account.get();
       setUser(updatedUser);
-
-      // Best-effort mirror
-      try {
-        const uid = updatedUser.$id;
-        await updateUser(uid, {
-          authMethod: 'wallet',
-          walletAddress: address,
-          lastWalletSignInAt: new Date().toISOString()
-        });
-      } catch (mirrorErr) {
-        console.warn('Failed to mirror wallet details to users collection', mirrorErr);
-      }
     } catch (err: any) {
       setError((err as Error).message || "Failed to connect wallet");
-    }
-  };
-
-  const handleConnectOAuth = async (provider: OAuthProvider) => {
-    try {
-      setError("");
-      setSuccess("");
-
-      const success = `${typeof window !== 'undefined' ? window.location.origin : ''}/settings?tab=settings`;
-      const failure = `${typeof window !== 'undefined' ? window.location.origin : ''}/settings?error=oauth`;
-      
-      await account.createOAuth2Session({ provider, success, failure });
-    } catch (err: any) {
-      setError((err as Error).message || `Failed to connect ${provider}`);
     }
   };
 
@@ -393,7 +376,6 @@ export default function SettingsPage() {
                   handlePasswordReset={handlePasswordReset}
                   handleCancelPasswordReset={handleCancelPasswordReset}
                   onConnectWallet={handleConnectWallet}
-                  onConnectOAuth={handleConnectOAuth}
                   onPublicProfileToggle={handlePublicProfileToggle}
                 />
              )}
@@ -490,7 +472,6 @@ const SettingsTab = ({
   handlePasswordReset,
   handleCancelPasswordReset,
   onConnectWallet,
-  onConnectOAuth,
   onPublicProfileToggle
 }: any) => {
   const [showDelete, setShowDelete] = useState(false);
@@ -498,6 +479,27 @@ const SettingsTab = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [deleteSuccess, setDeleteSuccess] = useState('');
+  const [isDisconnectingWallet, setIsDisconnectingWallet] = useState(false);
+
+  const walletConnected = getUserWalletAddress(user);
+
+  const handleDisconnectWallet = async () => {
+    setIsDisconnectingWallet(true);
+    try {
+      const currentUser = await account.get();
+      await account.updatePrefs({
+        ...currentUser.prefs,
+        walletEth: undefined
+      });
+      const updatedUser = await account.get();
+      // Force re-render by updating parent state through user object
+      Object.assign(user, updatedUser);
+    } catch (err: any) {
+      console.error('Error disconnecting wallet:', err);
+    } finally {
+      setIsDisconnectingWallet(false);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     if (!user) return;
@@ -571,56 +573,50 @@ const SettingsTab = ({
                <p className="text-foreground text-sm">
                  Current method: <span className="font-medium">{getUserAuthMethod(user) || 'Email'}</span>
                </p>
-               {getUserAuthMethod(user) === 'wallet' && getUserWalletAddress(user) && (
+               {walletConnected && (
                  <p className="text-foreground/70 text-xs">
-                   Wallet: {getUserWalletAddress(user)?.slice(0, 6)}...{getUserWalletAddress(user)?.slice(-4)}
+                   Wallet: {walletConnected?.slice(0, 6)}...{walletConnected?.slice(-4)}
                  </p>
                )}
              </div>
            </div>
 
-           {/* Additional Auth Methods */}
-           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-             {getUserAuthMethod(user) !== 'wallet' && authMethods.walletAvailable && (
+           {/* Wallet Management */}
+           <div className="space-y-3">
+             {walletConnected ? (
+               <div className="p-3 bg-card rounded-lg border border-border">
+                 <div className="flex items-center justify-between">
+                   <div>
+                     <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                       <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                       Wallet Connected
+                     </p>
+                     <p className="text-xs text-foreground/60 mt-1">{walletConnected}</p>
+                   </div>
+                   <Button
+                     variant="secondary"
+                     size="sm"
+                     onClick={handleDisconnectWallet}
+                     disabled={isDisconnectingWallet}
+                     className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                   >
+                     {isDisconnectingWallet ? 'Disconnecting...' : 'Disconnect'}
+                   </Button>
+                 </div>
+               </div>
+             ) : authMethods.walletAvailable ? (
                <Button
                  variant="secondary"
                  size="sm"
                  onClick={onConnectWallet}
-                 className="flex items-center justify-center gap-2"
+                 className="w-full flex items-center justify-center gap-2"
                >
                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                    <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                  </svg>
-                 Wallet
+                 Connect Wallet
                </Button>
-             )}
-             <Button
-               variant="secondary"
-               size="sm"
-               onClick={() => onConnectOAuth(OAuthProvider.Google)}
-               title="Google"
-               className="flex items-center justify-center gap-1"
-             >
-               <svg className="w-4 h-4" viewBox="0 0 24 24">
-                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-               </svg>
-               Google
-             </Button>
-             <Button
-               variant="secondary"
-               size="sm"
-               onClick={() => onConnectOAuth(OAuthProvider.Github)}
-               title="GitHub"
-               className="flex items-center justify-center gap-1"
-             >
-               <svg className="w-4 h-4 text-foreground" fill="currentColor" viewBox="0 0 24 24">
-                 <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
-               </svg>
-               GitHub
-             </Button>
+             ) : null}
            </div>
          </div>
 
