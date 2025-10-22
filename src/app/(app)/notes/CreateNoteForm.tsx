@@ -384,8 +384,8 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                     </button>
                   </div>
                   <div className="max-h-24 overflow-y-auto rounded-xl border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg">
-                    {pendingFiles.map((file, i) => (
-                      <div key={`${file.name}-${file.size}-${i}`} className="flex items-center justify-between gap-3 p-3 hover:bg-light-border/50 dark:hover:bg-dark-border/50 transition-colors">
+                    {pendingFiles.map((file) => (
+                      <div key={`${file.name}-${file.size}-${file.lastModified}`} className="flex items-center justify-between gap-3 p-3 hover:bg-light-border/50 dark:hover:bg-dark-border/50 transition-colors">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
                             <DocumentTextIcon className="h-4 w-4 text-accent" />
@@ -401,7 +401,7 @@ export default function CreateNoteForm({ onNoteCreated, initialContent, initialF
                         </div>
                         <button
                           type="button"
-                          onClick={() => setPendingFiles(pendingFiles.filter((_, idx) => idx !== i))}
+                          onClick={() => setPendingFiles(pendingFiles.filter(f => f !== file))}
                           className="p-1 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
                         >
                           <XMarkIcon className="h-4 w-4" />
