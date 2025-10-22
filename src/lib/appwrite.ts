@@ -1034,7 +1034,32 @@ export async function getAIMode(userId: string): Promise<string | null> {
 
 // --- STORAGE/BUCKETS ---
 
-export async function uploadFile(bucketId: string, file: File, userId?: string) {
+// Helper to get a session-aware storage client for server-side operations
+async function getSessionAwareStorage(req?: { headers: { get(k: string): string | null } }): Promise<Storage> {
+  if (typeof window !== 'undefined') {
+    return storage;
+  }
+  
+  if (req) {
+    const cookieHeader = req.headers.get('cookie') || req.headers.get('Cookie');
+    if (cookieHeader) {
+      const sessionClient = new Client()
+        .setEndpoint(APPWRITE_ENDPOINT)
+        .setProject(APPWRITE_PROJECT_ID);
+      
+      const sessionMatch = cookieHeader.match(/a_session_[^=]+=([^;]+)/);
+      if (sessionMatch) {
+        sessionClient.headers['cookie'] = cookieHeader;
+      }
+      
+      return new Storage(sessionClient);
+    }
+  }
+  
+  return storage;
+}
+
+export async function uploadFile(bucketId: string, file: File, userId?: string, req?: { headers: { get(k: string): string | null } }) {
   try {
     const user = userId ? { $id: userId } : await getCurrentUser();
     if (!user?.$id) {
@@ -1047,7 +1072,8 @@ export async function uploadFile(bucketId: string, file: File, userId?: string) 
       Permission.delete(Role.user(user.$id))
     ];
 
-    const result = await storage.createFile(bucketId, ID.unique(), file, permissions);
+    const storageClient = await getSessionAwareStorage(req);
+    const result = await storageClient.createFile(bucketId, ID.unique(), file, permissions);
     return result;
   } catch (e: any) {
     console.error('[uploadFile] error', {
@@ -1058,7 +1084,8 @@ export async function uploadFile(bucketId: string, file: File, userId?: string) 
       message: e?.message,
       code: e?.code,
       statusCode: e?.statusCode,
-      type: e?.type
+      type: e?.type,
+      response: e?.response
     });
     throw e;
   }
@@ -1489,7 +1516,7 @@ export async function deleteProfilePicture(fileId: string) {
 // --- NOTES ATTACHMENTS HELPERS (Legacy embedded + new collection) ---
 
 // Basic upload wrapper (raw file upload only)
-export async function uploadNoteAttachment(file: File, userId?: string) {
+export async function uploadNoteAttachment(file: File, userId?: string, req?: { headers: { get(k: string): string | null } }) {
   const bucketId = APPWRITE_BUCKET_NOTES_ATTACHMENTS;
   const startedAt = Date.now();
   if (!bucketId) {
@@ -1499,7 +1526,7 @@ export async function uploadNoteAttachment(file: File, userId?: string) {
     throw err;
   }
   try {
-    const res: any = await uploadFile(bucketId, file, userId);
+    const res: any = await uploadFile(bucketId, file, userId, req);
     console.log('[attachments] uploadNoteAttachment:success', { bucketId, fileId: res.$id || res.id, durationMs: Date.now() - startedAt });
     return res;
   } catch (e: any) {
@@ -1614,7 +1641,7 @@ function validateAttachmentMime(mime: string | null | undefined) {
   }
 }
 
-export async function addAttachmentToNote(noteId: string, file: File, userId?: string) {
+export async function addAttachmentToNote(noteId: string, file: File, userId?: string, req?: { headers: { get(k: string): string | null } }) {
   const startTs = Date.now();
   console.log('[attachments] addAttachmentToNote:start', { noteId, name: (file as any)?.name, size: (file as any)?.size, type: (file as any)?.type });
   const user = userId ? { $id: userId } : await getCurrentUser();
@@ -1647,7 +1674,7 @@ export async function addAttachmentToNote(noteId: string, file: File, userId?: s
   // Upload file
   let uploaded: any;
   try {
-    uploaded = await uploadNoteAttachment(file, user.$id);
+    uploaded = await uploadNoteAttachment(file, user.$id, req);
   } catch (uploadErr: any) {
     console.error('[attachments] uploadNoteAttachment failed', {
       noteId,

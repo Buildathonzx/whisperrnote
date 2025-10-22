@@ -62,7 +62,7 @@ export async function POST(req: NextRequest, { params }: { params: { noteId: str
     }
 
     try {
-      const meta = await (await import('@/lib/appwrite')).addAttachmentToNote(params.noteId, file, user.$id);
+      const meta = await (await import('@/lib/appwrite')).addAttachmentToNote(params.noteId, file, user.$id, req as any);
       console.log('[attachments.api] POST done', { noteId: params.noteId, attachmentId: meta.id, t: Date.now() });
       return NextResponse.json({ attachment: meta });
     } catch (e: any) {
