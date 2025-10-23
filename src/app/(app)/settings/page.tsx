@@ -509,6 +509,10 @@ const SettingsTab = ({
   const [deleteError, setDeleteError] = useState('');
   const [deleteSuccess, setDeleteSuccess] = useState('');
   const [isDisconnectingWallet, setIsDisconnectingWallet] = useState(false);
+  const [passkeyOpsLoading, setPasskeyOpsLoading] = useState(false);
+  const [renamingPasskeyId, setRenamingPasskeyId] = useState<string | null>(null);
+  const [newPasskeyName, setNewPasskeyName] = useState('');
+  const { renameKey, deletePasskey: deletePasskeyOp, disableKey, enableKey } = usePasskeyManagement();
 
   const walletConnected = getUserWalletAddress(user);
 
@@ -527,6 +531,49 @@ const SettingsTab = ({
     } finally {
       setIsDisconnectingWallet(false);
     }
+  };
+
+  const handleRenamePasskey = async (credentialId: string) => {
+    if (!newPasskeyName.trim()) return;
+    setPasskeyOpsLoading(true);
+    const success = await renameKey(user.email, credentialId, newPasskeyName);
+    if (success) {
+      setRenamingPasskeyId(null);
+      setNewPasskeyName('');
+    }
+    setPasskeyOpsLoading(false);
+  };
+
+  const handleDeletePasskey = async (credentialId: string) => {
+    setPasskeyOpsLoading(true);
+    const success = await deletePasskeyOp(user.email, credentialId);
+    if (success) {
+      const updated = authMethods.passkeys.filter(p => p.id !== credentialId);
+      setAuthMethods({ ...authMethods, passkeys: updated });
+    }
+    setPasskeyOpsLoading(false);
+  };
+
+  const handleTogglePasskeyStatus = async (credentialId: string, currentStatus: string) => {
+    setPasskeyOpsLoading(true);
+    if (currentStatus === 'active') {
+      const success = await disableKey(user.email, credentialId);
+      if (success) {
+        const updated = authMethods.passkeys.map(p => 
+          p.id === credentialId ? { ...p, status: 'disabled' as const } : p
+        );
+        setAuthMethods({ ...authMethods, passkeys: updated });
+      }
+    } else {
+      const success = await enableKey(user.email, credentialId);
+      if (success) {
+        const updated = authMethods.passkeys.map(p => 
+          p.id === credentialId ? { ...p, status: 'active' as const } : p
+        );
+        setAuthMethods({ ...authMethods, passkeys: updated });
+      }
+    }
+    setPasskeyOpsLoading(false);
   };
 
   const handleDeleteAccount = async () => {
@@ -694,59 +741,103 @@ const SettingsTab = ({
           {authMethods.passkeys && authMethods.passkeys.length > 0 ? (
             <div className="space-y-3">
               {authMethods.passkeys.map((passkey) => (
-                <div key={passkey.id} className="p-3 bg-card rounded-lg border border-border flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{passkey.name}</p>
-                    <div className="text-xs text-foreground/60 mt-1">
-                      <p>Created: {new Date(passkey.createdAt).toLocaleDateString()}</p>
-                      {passkey.lastUsedAt && (
-                        <p>Last used: {new Date(passkey.lastUsedAt).toLocaleDateString()}</p>
-                      )}
-                      <p>Status: <span className={passkey.status === 'active' ? 'text-green-600' : 'text-yellow-600'}>{passkey.status}</span></p>
+                <div key={passkey.id} className="p-3 bg-card rounded-lg border border-border">
+                  {renamingPasskeyId === passkey.id ? (
+                    <div className="flex gap-2 mb-3">
+                      <input
+                        type="text"
+                        value={newPasskeyName}
+                        onChange={(e) => setNewPasskeyName(e.target.value)}
+                        placeholder="Enter passkey name"
+                        className="flex-1 px-2 py-1 text-sm bg-background border border-border rounded"
+                        maxLength={50}
+                      />
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleRenamePasskey(passkey.id)}
+                        disabled={passkeyOpsLoading}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setRenamingPasskeyId(null);
+                          setNewPasskeyName('');
+                        }}
+                      >
+                        Cancel
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {passkey.status === 'active' ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          // TODO: Implement disable passkey
-                        }}
-                      >
-                        Disable
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          // TODO: Implement enable passkey
-                        }}
-                      >
-                        Enable
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        // TODO: Implement rename passkey
-                      }}
-                    >
-                      Rename
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-600"
-                      onClick={() => {
-                        // TODO: Implement delete passkey
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </div>
+                  ) : (
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground">{passkey.name}</p>
+                        <div className="text-xs text-foreground/60 mt-1">
+                          <p>Created: {new Date(passkey.createdAt).toLocaleDateString()}</p>
+                          {passkey.lastUsedAt && (
+                            <p>Last used: {new Date(passkey.lastUsedAt).toLocaleDateString()}</p>
+                          )}
+                          <p>
+                            Status: 
+                            <span className={`ml-1 ${
+                              passkey.status === 'active' 
+                                ? 'text-green-600 dark:text-green-400' 
+                                : passkey.status === 'disabled'
+                                ? 'text-yellow-600 dark:text-yellow-400'
+                                : 'text-red-600 dark:text-red-400'
+                            }`}>
+                              {passkey.status}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0 ml-4">
+                        {passkey.status === 'active' ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleTogglePasskeyStatus(passkey.id, passkey.status)}
+                            disabled={passkeyOpsLoading}
+                          >
+                            Disable
+                          </Button>
+                        ) : passkey.status === 'disabled' ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleTogglePasskeyStatus(passkey.id, passkey.status)}
+                            disabled={passkeyOpsLoading}
+                          >
+                            Enable
+                          </Button>
+                        ) : null}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setRenamingPasskeyId(passkey.id);
+                            setNewPasskeyName(passkey.name);
+                          }}
+                          disabled={passkeyOpsLoading}
+                        >
+                          Rename
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 dark:text-red-400"
+                          onClick={() => handleDeletePasskey(passkey.id)}
+                          disabled={passkeyOpsLoading || authMethods.passkeys.length <= 1}
+                          title={authMethods.passkeys.length <= 1 ? 'Cannot delete the last passkey' : ''}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
