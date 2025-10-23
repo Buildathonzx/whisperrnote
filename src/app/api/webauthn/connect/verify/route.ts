@@ -28,25 +28,7 @@ import { NextResponse } from 'next/server';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { verifyChallengeToken } from '../../../../../lib/passkeys';
 import { PasskeyServer } from '../../../../../lib/passkey-server';
-
-// Simple in-memory rate limiter
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-function checkRateLimit(key: string, max: number, windowMs: number) {
-  const now = Date.now();
-  const entry = rateLimitMap.get(key);
-  
-  if (!entry || now > entry.resetTime) {
-    rateLimitMap.set(key, { count: 1, resetTime: now + windowMs });
-    return { allowed: true, reset: now + windowMs };
-  }
-  
-  if (entry.count < max) {
-    entry.count++;
-    return { allowed: true, reset: entry.resetTime };
-  }
-  
-  return { allowed: false, reset: entry.resetTime };
-}
+import { rateLimit, buildRateKey } from '../../../../../lib/rateLimit';
 
 export async function POST(req: Request) {
   try {
@@ -61,8 +43,7 @@ export async function POST(req: Request) {
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const windowMs = parseInt(process.env.WEBAUTHN_RATE_LIMIT_WINDOW_MS || '60000', 10);
     const max = parseInt(process.env.WEBAUTHN_RATE_LIMIT_MAX || '20', 10);
-    const key = `webauthn:connect:verify:${ip}:${email}`;
-    const rl = checkRateLimit(key, max, windowMs);
+    const rl = rateLimit(buildRateKey(['webauthn','connect','verify', ip, email]), max, windowMs);
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Too many verification attempts. Wait and retry.' }, { status: 429, headers: { 'Retry-After': Math.ceil((rl.reset - Date.now())/1000).toString() } });
     }
