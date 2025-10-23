@@ -1304,6 +1304,15 @@ const SettingsTab = ({
           )}
         </div>
       </div>
+
+      <MFAModal
+        isOpen={mfaModalOpen}
+        onClose={() => setMfaModalOpen(false)}
+        type={mfaModalType}
+        isEnabled={mfaModalType === 'totp' ? authMethods.mfaFactors?.totp.enabled || false : authMethods.mfaFactors?.email.enabled || false}
+        onEnable={handleMFAEnable}
+        onDisable={handleMFADisable}
+      />
     </div>
   );
 };
