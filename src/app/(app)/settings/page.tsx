@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { account, updateUser, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, deleteProfilePicture, listNotes, updateAIMode, getAIMode, sendPasswordResetEmail, functions } from "@/lib/appwrite";
+import { account, updateUser, getSettings, createSettings, updateSettings, uploadProfilePicture, getProfilePicture, deleteProfilePicture, updateAIMode, getAIMode, sendPasswordResetEmail, functions } from "@/lib/appwrite";
 import { Button } from "@/components/ui/Button";
 import { useOverlay } from "@/components/ui/OverlayContext";
 import { useAuth } from "@/components/ui/AuthContext";
@@ -9,7 +9,7 @@ import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
-import { getUserProfilePicId, getUserAuthMethod, getUserWalletAddress, getUserField, getUserIdentities, hasWalletConnected } from '@/lib/utils';
+import { getUserProfilePicId, getUserWalletAddress, getUserField, getUserIdentities, hasWalletConnected } from '@/lib/utils';
 import { SubscriptionTab } from "./SubscriptionTab";
 
 type TabType = 'profile' | 'settings' | 'preferences' | 'integrations' | 'subscription';
@@ -27,7 +27,9 @@ interface AuthMethods {
   githubIdentity: boolean;
 }
 
-interface EnabledIntegrations {}
+interface EnabledIntegrations {
+  [key: string]: boolean;
+}
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('settings');
@@ -491,7 +493,6 @@ const SettingsTab = ({
   const [deleteError, setDeleteError] = useState('');
   const [deleteSuccess, setDeleteSuccess] = useState('');
   const [isDisconnectingWallet, setIsDisconnectingWallet] = useState(false);
-  const [walletLoading, setWalletLoading] = useState(false);
 
   const walletConnected = getUserWalletAddress(user);
 
@@ -615,9 +616,8 @@ const SettingsTab = ({
                     variant="secondary"
                     size="sm"
                     onClick={onConnectWallet}
-                    disabled={walletLoading}
                   >
-                    {walletLoading ? 'Connecting...' : 'Connect'}
+                    Connect
                   </Button>
                 )}
               </div>

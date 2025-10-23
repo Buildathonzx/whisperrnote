@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { functions, account } from '@/lib/appwrite';
+import { Models } from 'appwrite';
 
 interface WalletManagerState {
   loading: boolean;
@@ -53,8 +54,9 @@ export function useWalletManager() {
         '/connect-wallet'
       );
 
-      const response = JSON.parse((execution as any).responseBody || '{}');
-      const statusCode = (execution as any).responseStatusCode;
+      const execData = execution as Models.Execution;
+      const response = JSON.parse(execData.responseBody || '{}');
+      const statusCode = execData.responseStatusCode;
 
       if (statusCode !== 200) {
         throw new Error(response.error || 'Failed to connect wallet');
