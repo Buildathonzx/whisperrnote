@@ -730,9 +730,20 @@ const SettingsTab = ({
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => {
-                // TODO: Implement add passkey modal
+              onClick={async () => {
+                setPasskeyOpsLoading(true);
+                try {
+                  const { addPasskeyToAccount } = await import('@/lib/passkey-client-utils');
+                  await addPasskeyToAccount(user.email);
+                  const updated = await loadPasskeys(user.email);
+                  setAuthMethods({ ...authMethods, passkeys: updated });
+                } catch (err) {
+                  console.error('Error adding passkey:', err);
+                } finally {
+                  setPasskeyOpsLoading(false);
+                }
               }}
+              disabled={passkeyOpsLoading}
             >
               Add Passkey
             </Button>
