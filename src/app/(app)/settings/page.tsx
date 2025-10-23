@@ -9,7 +9,7 @@ import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
-import { getUserProfilePicId, getUserAuthMethod, getUserWalletAddress, getUserField } from '@/lib/utils';
+import { getUserProfilePicId, getUserAuthMethod, getUserWalletAddress, getUserField, getUserIdentities, hasWalletConnected } from '@/lib/utils';
 import { SubscriptionTab } from "./SubscriptionTab";
 
 type TabType = 'profile' | 'settings' | 'preferences' | 'integrations' | 'subscription';
@@ -21,7 +21,10 @@ interface AuthMethods {
     phone?: boolean;
   } | null;
   passkeySupported: boolean;
-  walletAvailable: boolean;
+  passkeyEnabled: boolean;
+  walletConnected: boolean;
+  googleIdentity: boolean;
+  githubIdentity: boolean;
 }
 
 interface EnabledIntegrations {}
@@ -40,7 +43,10 @@ export default function SettingsPage() {
   const [authMethods, setAuthMethods] = useState<AuthMethods>({
     mfaFactors: null,
     passkeySupported: false,
-    walletAvailable: false
+    passkeyEnabled: false,
+    walletConnected: false,
+    googleIdentity: false,
+    githubIdentity: false
   });
   const [enabledIntegrations, setEnabledIntegrations] = useState<EnabledIntegrations>({});
   const [showPasswordReset, setShowPasswordReset] = useState(false);
@@ -86,10 +92,17 @@ export default function SettingsPage() {
           // Get MFA factors from backend instead of client storage
           const mfaFactors = await account.listMfaFactors();
           
+          // Get identities and wallet info
+          const identities = getUserIdentities(u);
+          const walletConnected = hasWalletConnected(u);
+          
           setAuthMethods({
             mfaFactors,
             passkeySupported,
-            walletAvailable: typeof window !== 'undefined' && !!(window as any).ethereum
+            passkeyEnabled: !!getUserField(u, 'passkeyCredentialId'),
+            walletConnected,
+            googleIdentity: identities.google,
+            githubIdentity: identities.github
           });
         } catch {
           console.error('Failed to load auth methods');
@@ -211,9 +224,7 @@ export default function SettingsPage() {
       });
 
       // Call connect-wallet endpoint via function
-      const fnId = (process.env.NEXT_PUBLIC_FUNCTION_ID 
-        || process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID_WALLET 
-        || process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID) as string | undefined;
+      const fnId = process.env.NEXT_PUBLIC_FUNCTION_ID;
       if (!fnId) throw new Error('Wallet auth function not configured');
 
       const execution = await functions.createExecution(
@@ -480,6 +491,7 @@ const SettingsTab = ({
   const [deleteError, setDeleteError] = useState('');
   const [deleteSuccess, setDeleteSuccess] = useState('');
   const [isDisconnectingWallet, setIsDisconnectingWallet] = useState(false);
+  const [walletLoading, setWalletLoading] = useState(false);
 
   const walletConnected = getUserWalletAddress(user);
 
@@ -492,7 +504,6 @@ const SettingsTab = ({
         walletEth: undefined
       });
       const updatedUser = await account.get();
-      // Force re-render by updating parent state through user object
       Object.assign(user, updatedUser);
     } catch (err: any) {
       console.error('Error disconnecting wallet:', err);

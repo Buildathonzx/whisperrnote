@@ -130,29 +130,29 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         throw new Error('MetaMask not installed. Please install MetaMask.');
       }
 
-      // Connect wallet
+      // 1. Connect wallet
       const accounts = (await window.ethereum.request({ method: 'eth_requestAccounts' })) as string[];
-      const address = accounts?.[0];
-      if (!address) throw new Error('No wallet address available');
+      const walletAddress = accounts?.[0];
+      if (!walletAddress) throw new Error('No wallet address available');
 
-      // Generate message and sign
+      // 2. Generate message for signing
       const timestamp = Date.now();
-      const message = `auth-${timestamp}`;
-      const fullMessage = `Sign this message to authenticate: ${message}`;
+      const baseMessage = `auth-${timestamp}`;
+      const fullMessage = `Sign this message to authenticate: ${baseMessage}`;
+
+      // 3. Request signature
       const signature = await window.ethereum.request({
         method: 'personal_sign',
-        params: [fullMessage, address]
+        params: [fullMessage, walletAddress]
       });
 
-      // Call Appwrite Function
-      const fnId = (process.env.NEXT_PUBLIC_FUNCTION_ID 
-        || process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID_WALLET 
-        || process.env.NEXT_PUBLIC_APPWRITE_FUNCTION_ID) as string | undefined;
+      // 4. Call Appwrite Function
+      const fnId = process.env.NEXT_PUBLIC_FUNCTION_ID;
       if (!fnId) throw new Error('Wallet auth function not configured');
 
       const execution = await functions.createExecution(
         fnId,
-        JSON.stringify({ email, address, signature, message }),
+        JSON.stringify({ email, address: walletAddress, signature, message: baseMessage }),
         false
       );
 
@@ -162,7 +162,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         throw new Error(response?.error || 'Authentication failed');
       }
 
-      // Create session
+      // 5. Create session
       await account.createSession({ userId: response.userId, secret: response.secret });
 
       // Sync app auth state
