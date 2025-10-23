@@ -495,6 +495,7 @@ const SettingsTab = ({
   const [deleteError, setDeleteError] = useState('');
   const [deleteSuccess, setDeleteSuccess] = useState('');
   const [isDisconnectingWallet, setIsDisconnectingWallet] = useState(false);
+  const [passkeyOpsLoading, setPasskeyOpsLoading] = useState(false);
 
   const walletConnected = getUserWalletAddress(user);
 
