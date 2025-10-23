@@ -810,19 +810,7 @@ const SettingsTab = ({
             <Button
               variant="secondary"
               size="sm"
-              onClick={async () => {
-                setPasskeyOpsLoading(true);
-                try {
-                  const { addPasskeyToAccount } = await import('@/lib/passkey-client-utils');
-                  await addPasskeyToAccount(user.email);
-                  const updated = await loadPasskeys(user.email);
-                  setAuthMethods({ ...authMethods, passkeys: updated });
-                } catch (err) {
-                  console.error('Error adding passkey:', err);
-                } finally {
-                  setPasskeyOpsLoading(false);
-                }
-              }}
+              onClick={handleAddPasskey}
               disabled={passkeyOpsLoading}
             >
               Add Passkey
