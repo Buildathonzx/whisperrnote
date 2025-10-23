@@ -142,11 +142,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Registration returned incomplete credential', ...(debug ? { registrationInfoKeys: Object.keys(registrationInfo || {}), credentialKeys: Object.keys(credObj || {}) } : {}) }, { status: 500 });
     }
 
-    // Persist passkey in user prefs - reuse same logic as registration
+    // Persist passkey in user prefs - use the addPasskeyToExistingAccount method
     const server = new PasskeyServer();
-    const result = await server.registerPasskey(email, attestation, challenge, { rpID, origin });
-    if (!result?.token?.secret) {
-      return NextResponse.json({ error: 'Failed to register passkey' }, { status: 500 });
+    const result = await server.addPasskeyToExistingAccount(email, attestation, challenge, { rpID, origin });
+    if (!result?.success) {
+      return NextResponse.json({ error: 'Failed to add passkey' }, { status: 500 });
     }
 
     // Success - no session created (user already authenticated)

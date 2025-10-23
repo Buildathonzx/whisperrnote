@@ -64,6 +64,81 @@ export class PasskeyServer {
     return await users.create(ID.unique(), email);
   }
 
+  /**
+   * Add passkey to existing authenticated account (for settings page)
+   * Does NOT check shouldBlockPasskeyForEmail because user is authenticated
+   */
+  async addPasskeyToExistingAccount(
+    email: string,
+    credentialData: any,
+    challenge: string,
+    opts?: { rpID?: string; origin?: string }
+  ) {
+    // Get or create user (same as registerPasskey)
+    const user = await this.prepareUser(email);
+
+    // Verify the WebAuthn registration (same as registerPasskey)
+    const verification = await (SimpleWebAuthnServer.verifyRegistrationResponse as any)({
+      response: credentialData,
+      expectedChallenge: challenge,
+      expectedOrigin: opts?.origin || process.env.NEXT_PUBLIC_ORIGIN || 'http://localhost:3000',
+      expectedRPID: opts?.rpID || process.env.NEXT_PUBLIC_RP_ID || 'localhost'
+    });
+
+    if (!verification.verified) {
+      throw new Error('Registration verification failed');
+    }
+
+    // Store passkey in user preferences (support server v7/v8 shapes)
+    const registrationInfo: any = (verification as any).registrationInfo;
+    const cred = registrationInfo?.credential || {};
+    const passkeyData = {
+      id: typeof cred.id === 'string' ? cred.id : Buffer.from(cred.id || new Uint8Array()).toString('base64url'),
+      publicKey: Buffer.from(cred.publicKey || new Uint8Array()).toString('base64url'),
+      counter: typeof cred.counter === 'number' ? cred.counter : (registrationInfo.counter || 0),
+      transports: Array.isArray(cred.transports) ? cred.transports : (credentialData.response?.transports || [])
+    };
+    if (!passkeyData.id || !passkeyData.publicKey) {
+      throw new Error('RegistrationInfo missing credential id/publicKey');
+    }
+
+    // Get existing prefs
+    const existingPrefs = user.prefs || {};
+    const credentialsStr = (existingPrefs.passkey_credentials || '') as string;
+    const countersStr = (existingPrefs.passkey_counter || '') as string;
+
+    // Parse existing credentials and counters
+    const credObj: Record<string, string> = credentialsStr ? (JSON.parse(credentialsStr) as Record<string, string>) : {};
+    const counterObj: Record<string, number> = countersStr ? (JSON.parse(countersStr) as Record<string, number>) : {};
+    
+    // Add new passkey
+    credObj[passkeyData.id] = passkeyData.publicKey;
+    counterObj[passkeyData.id] = passkeyData.counter;
+    
+    // Initialize metadata for new passkey
+    const metadataStr = (existingPrefs.passkey_metadata || '') as string;
+    let metadataObj: Record<string, any> = metadataStr ? JSON.parse(metadataStr) : {};
+    const timeStr = this.formatTimestamp(Date.now());
+    metadataObj[passkeyData.id] = {
+      name: `Passkey ${timeStr}`,
+      createdAt: Date.now(),
+      lastUsedAt: null,
+      status: 'active'
+    };
+    
+    // Merge and persist
+    const mergedPrefs = { ...(user.prefs || {}) } as Record<string, unknown>;
+    mergedPrefs.passkey_credentials = JSON.stringify(credObj);
+    mergedPrefs.passkey_counter = JSON.stringify(counterObj);
+    mergedPrefs.passkey_metadata = JSON.stringify(metadataObj);
+    await users.updatePrefs(user.$id, mergedPrefs);
+
+    return {
+      success: true,
+      message: 'Passkey added successfully'
+    };
+  }
+
   async registerPasskey(
     email: string,
     credentialData: any,
