@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { loginEmailPassword, signupEmailPassword, getCurrentUser, account, functions } from '@/lib/appwrite';
 import { OAuthProvider } from 'appwrite';
 import {
-  registerPasskey,
-  authenticateWithPasskey,
-  isPlatformAuthenticatorAvailable
-} from '@/lib/appwrite/auth/passkey';
+  authenticateWithPasskey as authenticateWithPasskeyUtil,
+  addPasskeyToAccount
+} from '@/lib/passkey-client-utils';
+import { isPlatformAuthenticatorAvailable } from '@/lib/appwrite/auth/passkey';
 import { PasswordInputWithStrength } from './PasswordStrengthIndicator';
 import { useAuth } from './AuthContext';
 import { useLoading } from './LoadingContext';
