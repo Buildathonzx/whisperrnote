@@ -840,89 +840,6 @@ const SettingsTab = ({
         </div>
       </div>
 
-      {/* MFA Section */}
-      <div className="p-6 bg-background border border-border rounded-xl">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-medium text-foreground">Multi-Factor Authentication</h3>
-            <p className="text-sm text-foreground/70">Enhance your account security with MFA</p>
-          </div>
-          {authMethods.mfaEnabled ? (
-            <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
-              Enabled
-            </span>
-          ) : (
-            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
-              Disabled
-            </span>
-          )}
-        </div>
-
-        {authMethods.mfaFactors ? (
-          <div className="space-y-3">
-            {/* TOTP Method */}
-            <div className="p-3 bg-card rounded-lg border border-border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Authenticator App (TOTP)</p>
-                  <p className="text-xs text-foreground/60 mt-1">
-                    {authMethods.mfaFactors.totp.enabled 
-                      ? 'Enabled • Verified' 
-                      : authMethods.mfaFactors.totp.verified
-                      ? 'Available • Not enabled'
-                      : 'Not set up'
-                    }
-                  </p>
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    setMfaModalType('totp');
-                    setMfaModalOpen(true);
-                  }}
-                  disabled={mfaLoading}
-                >
-                  {authMethods.mfaFactors.totp.enabled ? 'Manage' : 'Enable'}
-                </Button>
-              </div>
-            </div>
-
-            {/* Email Method */}
-            <div className="p-3 bg-card rounded-lg border border-border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Email OTP</p>
-                  <p className="text-xs text-foreground/60 mt-1">
-                    {authMethods.mfaFactors.email.enabled 
-                      ? 'Enabled • Verified' 
-                      : authMethods.mfaFactors.email.verified
-                      ? 'Available • Not enabled'
-                      : 'Not set up'
-                    }
-                  </p>
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    setMfaModalType('email');
-                    setMfaModalOpen(true);
-                  }}
-                  disabled={mfaLoading}
-                >
-                  {authMethods.mfaFactors.email.enabled ? 'Manage' : 'Enable'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="p-3 bg-card rounded-lg border border-border">
-            <p className="text-sm text-foreground/60">Failed to load MFA settings</p>
-          </div>
-        )}
-      </div>
-
       {/* Password Section */}
       <div className="p-6 bg-background border border-border rounded-xl">
         <div className="flex items-center justify-between mb-4">
@@ -1228,15 +1145,6 @@ const SettingsTab = ({
           )}
         </div>
       </div>
-
-      <MFAModal
-        isOpen={mfaModalOpen}
-        onClose={() => setMfaModalOpen(false)}
-        type={mfaModalType}
-        isEnabled={mfaModalType === 'totp' ? authMethods.mfaFactors?.totp.enabled || false : authMethods.mfaFactors?.email.enabled || false}
-        onEnable={handleMFAEnable}
-        onDisable={handleMFADisable}
-      />
     </div>
   );
 };
