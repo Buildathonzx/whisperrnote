@@ -8,30 +8,24 @@ import { useAuth } from "@/components/ui/AuthContext";
 import { useSubscription } from "@/components/ui/SubscriptionContext";
 import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
-import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
 import { getUserProfilePicId, getUserWalletAddress, getUserField, getUserIdentities, hasWalletConnected } from '@/lib/utils';
-import { usePasskeyManagement } from '@/hooks/usePasskeyManagement';
-import { MFAModal } from '@/components/ui/MFAModal';
+import { listPasskeys } from '@/lib/passkey-client-utils';
 import { SubscriptionTab } from "./SubscriptionTab";
 
 type TabType = 'profile' | 'settings' | 'preferences' | 'integrations' | 'subscription';
 
 interface AuthMethods {
-  mfaEnabled: boolean;
-  mfaFactors: {
-    totp: { enabled: boolean; verified: boolean };
-    email: { enabled: boolean; verified: boolean };
-  } | null;
-  passkeySupported: boolean;
-  passkeyEnabled: boolean;
   passkeys: Array<{
-    id: string;
-    name: string;
-    createdAt: number;
-    lastUsedAt: number | null;
-    status: 'active' | 'disabled' | 'compromised';
+    credentialId: string;
+    publicKey: string;
+    counter: number;
+    transports?: string[];
+    name?: string;
+    createdAt?: number;
+    lastUsedAt?: number | null;
+    status?: 'active' | 'disabled' | 'compromised';
   }>;
-  walletConnected: boolean;
+  walletConnected: boolean | string;
   googleIdentity: boolean;
   githubIdentity: boolean;
 }
@@ -52,10 +46,6 @@ export default function SettingsPage() {
   const [isRemovingProfilePic, setIsRemovingProfilePic] = useState<boolean>(false);
   const [currentAIMode, setCurrentAIMode] = useState<AIMode>(AIMode.STANDARD);
   const [authMethods, setAuthMethods] = useState<AuthMethods>({
-    mfaEnabled: false,
-    mfaFactors: null,
-    passkeySupported: false,
-    passkeyEnabled: false,
     passkeys: [],
     walletConnected: false,
     googleIdentity: false,
@@ -101,32 +91,18 @@ export default function SettingsPage() {
 
         // Load authentication methods from backend
         try {
-          const passkeySupported = await isPlatformAuthenticatorAvailable();
-          const mfaFactors = await account.listMfaFactors();
-          const mfaStatus = await account.getMfaStatus();
-          
           const identities = getUserIdentities(u);
           const walletConnected = hasWalletConnected(u);
           
           // Load passkeys
           let userPasskeys: any[] = [];
           try {
-            userPasskeys = await loadPasskeys(u.email);
+            userPasskeys = await listPasskeys(u.email);
           } catch (err) {
             console.error('Failed to load passkeys:', err);
           }
           
-          const mfaEnabled = mfaStatus?.totp || mfaStatus?.email || false;
-          const mfaFactorsData = mfaFactors ? {
-            totp: { enabled: !!mfaStatus?.totp, verified: !!mfaFactors?.totp },
-            email: { enabled: !!mfaStatus?.email, verified: !!mfaFactors?.email }
-          } : null;
-          
           setAuthMethods({
-            mfaEnabled,
-            mfaFactors: mfaFactorsData,
-            passkeySupported,
-            passkeyEnabled: !!getUserField(u, 'passkeyCredentialId'),
             passkeys: userPasskeys,
             walletConnected,
             googleIdentity: identities.google,
@@ -519,13 +495,6 @@ const SettingsTab = ({
   const [deleteError, setDeleteError] = useState('');
   const [deleteSuccess, setDeleteSuccess] = useState('');
   const [isDisconnectingWallet, setIsDisconnectingWallet] = useState(false);
-  const [passkeyOpsLoading, setPasskeyOpsLoading] = useState(false);
-  const [renamingPasskeyId, setRenamingPasskeyId] = useState<string | null>(null);
-  const [newPasskeyName, setNewPasskeyName] = useState('');
-  const [mfaModalOpen, setMfaModalOpen] = useState(false);
-  const [mfaModalType, setMfaModalType] = useState<'totp' | 'email'>('totp');
-  const [mfaLoading, setMfaLoading] = useState(false);
-  const { renameKey, deletePasskey: deletePasskeyOp, disableKey, enableKey } = usePasskeyManagement();
 
   const walletConnected = getUserWalletAddress(user);
 
@@ -587,51 +556,6 @@ const SettingsTab = ({
       }
     }
     setPasskeyOpsLoading(false);
-  };
-
-  const handleMFAEnable = async (type: 'totp' | 'email') => {
-    setMfaLoading(true);
-    try {
-      const endpoint = type === 'totp' ? '/api/mfa/totp/verify' : '/api/mfa/email/setup';
-      const response = await fetch(endpoint, { method: 'POST', body: JSON.stringify({}) });
-      if (!response.ok) throw new Error('Failed to enable MFA');
-      
-      const updated = { ...authMethods };
-      if (type === 'totp' && updated.mfaFactors) {
-        updated.mfaFactors.totp.enabled = true;
-      } else if (type === 'email' && updated.mfaFactors) {
-        updated.mfaFactors.email.enabled = true;
-      }
-      updated.mfaEnabled = true;
-      setAuthMethods(updated);
-    } catch (err: any) {
-      console.error('MFA enable error:', err);
-    } finally {
-      setMfaLoading(false);
-    }
-  };
-
-  const handleMFADisable = async (type: 'totp' | 'email') => {
-    setMfaLoading(true);
-    try {
-      const endpoint = type === 'totp' ? '/api/mfa/totp/disable' : '/api/mfa/email/disable';
-      const response = await fetch(endpoint, { method: 'POST' });
-      if (!response.ok) throw new Error('Failed to disable MFA');
-      
-      const updated = { ...authMethods };
-      if (type === 'totp' && updated.mfaFactors) {
-        updated.mfaFactors.totp.enabled = false;
-      } else if (type === 'email' && updated.mfaFactors) {
-        updated.mfaFactors.email.enabled = false;
-      }
-      const stillEnabled = (updated.mfaFactors?.totp.enabled || updated.mfaFactors?.email.enabled) || false;
-      updated.mfaEnabled = stillEnabled;
-      setAuthMethods(updated);
-    } catch (err: any) {
-      console.error('MFA disable error:', err);
-    } finally {
-      setMfaLoading(false);
-    }
   };
 
   const handleDeleteAccount = async () => {

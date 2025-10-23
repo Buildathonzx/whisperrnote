@@ -55,61 +55,6 @@ export async function addPasskeyToAccount(email: string) {
   return verifyRes.json();
 }
 
-export async function authenticateWithPasskey(email: string) {
-  if (!('credentials' in navigator)) {
-    throw new Error('WebAuthn is not supported in this browser');
-  }
-
-  const res = await fetch('/api/webauthn/auth/options', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: email }),
-  });
-
-  if (!res.ok) {
-    const data = await res.json();
-    throw new Error(data.error || 'Failed to get authentication options');
-  }
-
-  const options = await res.json();
-
-  const publicKey: Record<string, unknown> = { ...options };
-  publicKey.challenge = base64UrlToBuffer(options.challenge as string);
-  if (publicKey.allowCredentials) {
-    publicKey.allowCredentials = publicKey.allowCredentials.map((c: Record<string, unknown>) => ({
-      ...c,
-      id: base64UrlToBuffer(c.id as string),
-    }));
-  }
-
-  const assertion = await navigator.credentials.get({ publicKey });
-  if (!assertion) throw new Error('Assertion creation returned null');
-
-  const json = publicKeyCredentialToJSON(assertion);
-
-  const verifyRes = await fetch('/api/webauthn/auth/verify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      userId: email, 
-      assertion: json, 
-      challenge: options.challenge, 
-      challengeToken: options.challengeToken 
-    }),
-  });
-
-  if (!verifyRes.ok) {
-    const data = await verifyRes.json();
-    throw new Error(data.error || 'Failed to verify authentication');
-  }
-
-  const result = await verifyRes.json();
-  if (result.token?.secret) {
-    await account.createSession({ userId: result.token.userId, secret: result.token.secret });
-  }
-  return result;
-}
-
 export async function listPasskeys(email: string) {
   const res = await fetch(`/api/webauthn/passkeys/list?email=${encodeURIComponent(email)}`);
   
