@@ -10,6 +10,7 @@ import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { getUserProfilePicId, getUserWalletAddress, getUserField, getUserIdentities, hasWalletConnected } from '@/lib/utils';
 import { listPasskeys } from '@/lib/passkey-client-utils';
+import { usePasskeyManagement } from '@/hooks/usePasskeyManagement';
 import { getMFAStatus, createTOTPFactor, verifyTOTPFactor, deleteTOTPFactor, createEmailMFAFactor, deleteEmailMFAFactor } from '@/lib/mfa';
 import { MFASettingsModal } from '@/components/ui/MFASettingsModal';
 import { SubscriptionTab } from "./SubscriptionTab";
@@ -514,6 +515,10 @@ const SettingsTab = ({
   const [mfaModalFactor, setMfaModalFactor] = useState<'totp' | 'email'>('totp');
   const [mfaMFALoading, setMFALoading] = useState(false);
   const [totpSetupData, setTotpSetupData] = useState<any>(null);
+  const [renamingPasskeyId, setRenamingPasskeyId] = useState<string | null>(null);
+  const [newPasskeyName, setNewPasskeyName] = useState('');
+
+  const { renameKey, removePasskey: deletePasskeyOp, disableKey, enableKey, addPasskey } = usePasskeyManagement();
 
   const walletConnected = getUserWalletAddress(user);
 
@@ -537,44 +542,61 @@ const SettingsTab = ({
   const handleRenamePasskey = async (credentialId: string) => {
     if (!newPasskeyName.trim()) return;
     setPasskeyOpsLoading(true);
-    const success = await renameKey(user.email, credentialId, newPasskeyName);
-    if (success) {
+    try {
+      await renameKey(user.email, credentialId, newPasskeyName);
       setRenamingPasskeyId(null);
       setNewPasskeyName('');
+      // Reload passkeys
+      const updated = await listPasskeys(user.email);
+      setAuthMethods({ ...authMethods, passkeys: updated });
+    } catch (err) {
+      console.error('Failed to rename passkey:', err);
+    } finally {
+      setPasskeyOpsLoading(false);
     }
-    setPasskeyOpsLoading(false);
   };
 
   const handleDeletePasskey = async (credentialId: string) => {
     setPasskeyOpsLoading(true);
-    const success = await deletePasskeyOp(user.email, credentialId);
-    if (success) {
-      const updated = authMethods.passkeys.filter(p => p.id !== credentialId);
+    try {
+      await deletePasskeyOp(user.email, credentialId);
+      const updated = await listPasskeys(user.email);
       setAuthMethods({ ...authMethods, passkeys: updated });
+    } catch (err) {
+      console.error('Failed to delete passkey:', err);
+    } finally {
+      setPasskeyOpsLoading(false);
     }
-    setPasskeyOpsLoading(false);
   };
 
   const handleTogglePasskeyStatus = async (credentialId: string, currentStatus: string) => {
     setPasskeyOpsLoading(true);
-    if (currentStatus === 'active') {
-      const success = await disableKey(user.email, credentialId);
-      if (success) {
-        const updated = authMethods.passkeys.map(p => 
-          p.id === credentialId ? { ...p, status: 'disabled' as const } : p
-        );
-        setAuthMethods({ ...authMethods, passkeys: updated });
+    try {
+      if (currentStatus === 'active') {
+        await disableKey(user.email, credentialId);
+      } else {
+        await enableKey(user.email, credentialId);
       }
-    } else {
-      const success = await enableKey(user.email, credentialId);
-      if (success) {
-        const updated = authMethods.passkeys.map(p => 
-          p.id === credentialId ? { ...p, status: 'active' as const } : p
-        );
-        setAuthMethods({ ...authMethods, passkeys: updated });
-      }
+      const updated = await listPasskeys(user.email);
+      setAuthMethods({ ...authMethods, passkeys: updated });
+    } catch (err) {
+      console.error('Failed to toggle passkey status:', err);
+    } finally {
+      setPasskeyOpsLoading(false);
     }
-    setPasskeyOpsLoading(false);
+  };
+
+  const handleAddPasskey = async () => {
+    setPasskeyOpsLoading(true);
+    try {
+      await addPasskey(user.email);
+      const updated = await listPasskeys(user.email);
+      setAuthMethods({ ...authMethods, passkeys: updated });
+    } catch (err) {
+      console.error('Failed to add passkey:', err);
+    } finally {
+      setPasskeyOpsLoading(false);
+    }
   };
 
   const handleMFAEnable = async (factor: 'totp' | 'email') => {
