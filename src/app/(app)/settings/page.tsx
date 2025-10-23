@@ -11,6 +11,7 @@ import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
 import { getUserProfilePicId, getUserWalletAddress, getUserField, getUserIdentities, hasWalletConnected } from '@/lib/utils';
 import { usePasskeyManagement } from '@/hooks/usePasskeyManagement';
+import { MFAModal } from '@/components/ui/MFAModal';
 import { SubscriptionTab } from "./SubscriptionTab";
 
 type TabType = 'profile' | 'settings' | 'preferences' | 'integrations' | 'subscription';
@@ -63,6 +64,9 @@ export default function SettingsPage() {
   const [enabledIntegrations, setEnabledIntegrations] = useState<EnabledIntegrations>({});
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [mfaModalOpen, setMfaModalOpen] = useState(false);
+  const [mfaModalType, setMfaModalType] = useState<'totp' | 'email'>('totp');
+  const [mfaLoading, setMfaLoading] = useState(false);
   const { userTier } = useSubscription();
   const { openOverlay, closeOverlay } = useOverlay();
   const router = useRouter();
@@ -585,6 +589,51 @@ const SettingsTab = ({
     setPasskeyOpsLoading(false);
   };
 
+  const handleMFAEnable = async (type: 'totp' | 'email') => {
+    setMfaLoading(true);
+    try {
+      const endpoint = type === 'totp' ? '/api/mfa/totp/verify' : '/api/mfa/email/setup';
+      const response = await fetch(endpoint, { method: 'POST', body: JSON.stringify({}) });
+      if (!response.ok) throw new Error('Failed to enable MFA');
+      
+      const updated = { ...authMethods };
+      if (type === 'totp' && updated.mfaFactors) {
+        updated.mfaFactors.totp.enabled = true;
+      } else if (type === 'email' && updated.mfaFactors) {
+        updated.mfaFactors.email.enabled = true;
+      }
+      updated.mfaEnabled = true;
+      setAuthMethods(updated);
+    } catch (err: any) {
+      console.error('MFA enable error:', err);
+    } finally {
+      setMfaLoading(false);
+    }
+  };
+
+  const handleMFADisable = async (type: 'totp' | 'email') => {
+    setMfaLoading(true);
+    try {
+      const endpoint = type === 'totp' ? '/api/mfa/totp/disable' : '/api/mfa/email/disable';
+      const response = await fetch(endpoint, { method: 'POST' });
+      if (!response.ok) throw new Error('Failed to disable MFA');
+      
+      const updated = { ...authMethods };
+      if (type === 'totp' && updated.mfaFactors) {
+        updated.mfaFactors.totp.enabled = false;
+      } else if (type === 'email' && updated.mfaFactors) {
+        updated.mfaFactors.email.enabled = false;
+      }
+      const stillEnabled = (updated.mfaFactors?.totp.enabled || updated.mfaFactors?.email.enabled) || false;
+      updated.mfaEnabled = stillEnabled;
+      setAuthMethods(updated);
+    } catch (err: any) {
+      console.error('MFA disable error:', err);
+    } finally {
+      setMfaLoading(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (!user) return;
     if (deleteConfirm !== 'DELETE') {
@@ -865,6 +914,89 @@ const SettingsTab = ({
             <p className="text-xs text-foreground/60">No passkeys added yet.</p>
           )}
         </div>
+      </div>
+
+      {/* MFA Section */}
+      <div className="p-6 bg-background border border-border rounded-xl">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-medium text-foreground">Multi-Factor Authentication</h3>
+            <p className="text-sm text-foreground/70">Enhance your account security with MFA</p>
+          </div>
+          {authMethods.mfaEnabled ? (
+            <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
+              Enabled
+            </span>
+          ) : (
+            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
+              Disabled
+            </span>
+          )}
+        </div>
+
+        {authMethods.mfaFactors ? (
+          <div className="space-y-3">
+            {/* TOTP Method */}
+            <div className="p-3 bg-card rounded-lg border border-border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Authenticator App (TOTP)</p>
+                  <p className="text-xs text-foreground/60 mt-1">
+                    {authMethods.mfaFactors.totp.enabled 
+                      ? 'Enabled • Verified' 
+                      : authMethods.mfaFactors.totp.verified
+                      ? 'Available • Not enabled'
+                      : 'Not set up'
+                    }
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setMfaModalType('totp');
+                    setMfaModalOpen(true);
+                  }}
+                  disabled={mfaLoading}
+                >
+                  {authMethods.mfaFactors.totp.enabled ? 'Manage' : 'Enable'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Email Method */}
+            <div className="p-3 bg-card rounded-lg border border-border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Email OTP</p>
+                  <p className="text-xs text-foreground/60 mt-1">
+                    {authMethods.mfaFactors.email.enabled 
+                      ? 'Enabled • Verified' 
+                      : authMethods.mfaFactors.email.verified
+                      ? 'Available • Not enabled'
+                      : 'Not set up'
+                    }
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setMfaModalType('email');
+                    setMfaModalOpen(true);
+                  }}
+                  disabled={mfaLoading}
+                >
+                  {authMethods.mfaFactors.email.enabled ? 'Manage' : 'Enable'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-3 bg-card rounded-lg border border-border">
+            <p className="text-sm text-foreground/60">Failed to load MFA settings</p>
+          </div>
+        )}
       </div>
 
       {/* Password Section */}
