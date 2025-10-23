@@ -8,7 +8,6 @@ import {
   authenticateWithPasskey as authenticateWithPasskeyUtil,
   addPasskeyToAccount
 } from '@/lib/passkey-client-utils';
-import { isPlatformAuthenticatorAvailable } from '@/lib/appwrite/auth/passkey';
 import { PasswordInputWithStrength } from './PasswordStrengthIndicator';
 import { useAuth } from './AuthContext';
 import { useLoading } from './LoadingContext';
@@ -45,7 +44,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   // Check for passkey and wallet support on mount
   useEffect(() => {
     const checkSupport = async () => {
-      setPasskeySupported(await isPlatformAuthenticatorAvailable());
+      setPasskeySupported('credentials' in navigator);
       const hasEth = typeof window !== 'undefined' && !!window.ethereum;
       setWalletAvailable(hasEth);
       setWalletMessage(
