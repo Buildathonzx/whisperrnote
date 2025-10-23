@@ -64,9 +64,6 @@ export default function SettingsPage() {
   const [enabledIntegrations, setEnabledIntegrations] = useState<EnabledIntegrations>({});
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
-  const [mfaModalOpen, setMfaModalOpen] = useState(false);
-  const [mfaModalType, setMfaModalType] = useState<'totp' | 'email'>('totp');
-  const [mfaLoading, setMfaLoading] = useState(false);
   const { userTier } = useSubscription();
   const { openOverlay, closeOverlay } = useOverlay();
   const router = useRouter();
@@ -525,6 +522,9 @@ const SettingsTab = ({
   const [passkeyOpsLoading, setPasskeyOpsLoading] = useState(false);
   const [renamingPasskeyId, setRenamingPasskeyId] = useState<string | null>(null);
   const [newPasskeyName, setNewPasskeyName] = useState('');
+  const [mfaModalOpen, setMfaModalOpen] = useState(false);
+  const [mfaModalType, setMfaModalType] = useState<'totp' | 'email'>('totp');
+  const [mfaLoading, setMfaLoading] = useState(false);
   const { renameKey, deletePasskey: deletePasskeyOp, disableKey, enableKey } = usePasskeyManagement();
 
   const walletConnected = getUserWalletAddress(user);
