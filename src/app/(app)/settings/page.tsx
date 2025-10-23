@@ -10,6 +10,8 @@ import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { getUserProfilePicId, getUserWalletAddress, getUserField, getUserIdentities, hasWalletConnected } from '@/lib/utils';
 import { listPasskeys } from '@/lib/passkey-client-utils';
+import { getMFAStatus, createTOTPFactor, verifyTOTPFactor, deleteTOTPFactor, createEmailMFAFactor, deleteEmailMFAFactor } from '@/lib/mfa';
+import { MFASettingsModal } from '@/components/ui/MFASettingsModal';
 import { SubscriptionTab } from "./SubscriptionTab";
 
 type TabType = 'profile' | 'settings' | 'preferences' | 'integrations' | 'subscription';
@@ -28,6 +30,10 @@ interface AuthMethods {
   walletConnected: boolean | string;
   googleIdentity: boolean;
   githubIdentity: boolean;
+  mfaStatus: {
+    totp: boolean;
+    email: boolean;
+  };
 }
 
 interface EnabledIntegrations {
@@ -49,7 +55,11 @@ export default function SettingsPage() {
     passkeys: [],
     walletConnected: false,
     googleIdentity: false,
-    githubIdentity: false
+    githubIdentity: false,
+    mfaStatus: {
+      totp: false,
+      email: false,
+    }
   });
   const [enabledIntegrations, setEnabledIntegrations] = useState<EnabledIntegrations>({});
   const [showPasswordReset, setShowPasswordReset] = useState(false);
@@ -101,12 +111,16 @@ export default function SettingsPage() {
           } catch (err) {
             console.error('Failed to load passkeys:', err);
           }
+
+          // Load MFA status
+          const mfaStatus = await getMFAStatus();
           
           setAuthMethods({
             passkeys: userPasskeys,
             walletConnected,
             googleIdentity: identities.google,
-            githubIdentity: identities.github
+            githubIdentity: identities.github,
+            mfaStatus
           });
         } catch {
           console.error('Failed to load auth methods');
@@ -496,6 +510,10 @@ const SettingsTab = ({
   const [deleteSuccess, setDeleteSuccess] = useState('');
   const [isDisconnectingWallet, setIsDisconnectingWallet] = useState(false);
   const [passkeyOpsLoading, setPasskeyOpsLoading] = useState(false);
+  const [mfaModalOpen, setMfaModalOpen] = useState(false);
+  const [mfaModalFactor, setMfaModalFactor] = useState<'totp' | 'email'>('totp');
+  const [mfaMFALoading, setMFALoading] = useState(false);
+  const [totpSetupData, setTotpSetupData] = useState<any>(null);
 
   const walletConnected = getUserWalletAddress(user);
 
@@ -557,6 +575,63 @@ const SettingsTab = ({
       }
     }
     setPasskeyOpsLoading(false);
+  };
+
+  const handleMFAEnable = async (factor: 'totp' | 'email') => {
+    setMFALoading(true);
+    try {
+      if (factor === 'totp') {
+        const setup = await createTOTPFactor();
+        setTotpSetupData(setup);
+      } else {
+        await createEmailMFAFactor();
+      }
+    } catch (err: any) {
+      console.error('MFA setup error:', err);
+      throw err;
+    } finally {
+      setMFALoading(false);
+    }
+  };
+
+  const handleMFAVerify = async (factor: 'totp' | 'email', otp: string) => {
+    setMFALoading(true);
+    try {
+      if (factor === 'totp') {
+        await verifyTOTPFactor(otp);
+      }
+      const newStatus = await getMFAStatus();
+      setAuthMethods({
+        ...authMethods,
+        mfaStatus: newStatus
+      });
+    } catch (err: any) {
+      console.error('MFA verification error:', err);
+      throw err;
+    } finally {
+      setMFALoading(false);
+    }
+  };
+
+  const handleMFADisable = async (factor: 'totp' | 'email') => {
+    setMFALoading(true);
+    try {
+      if (factor === 'totp') {
+        await deleteTOTPFactor();
+      } else {
+        await deleteEmailMFAFactor();
+      }
+      const newStatus = await getMFAStatus();
+      setAuthMethods({
+        ...authMethods,
+        mfaStatus: newStatus
+      });
+    } catch (err: any) {
+      console.error('MFA disable error:', err);
+      throw err;
+    } finally {
+      setMFALoading(false);
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -838,6 +913,73 @@ const SettingsTab = ({
           ) : (
             <p className="text-xs text-foreground/60">No passkeys added yet.</p>
           )}
+        </div>
+      </div>
+
+      {/* MFA Section */}
+      <div className="p-6 bg-background border border-border rounded-xl">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-medium text-foreground">Multi-Factor Authentication</h3>
+            <p className="text-sm text-foreground/70">Enhance your account security</p>
+          </div>
+          {(authMethods.mfaStatus.totp || authMethods.mfaStatus.email) ? (
+            <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
+              Enabled
+            </span>
+          ) : (
+            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
+              Disabled
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          {/* TOTP */}
+          <div className="p-3 bg-card rounded-lg border border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">Authenticator App (TOTP)</p>
+                <p className="text-xs text-foreground/60 mt-1">
+                  {authMethods.mfaStatus.totp ? 'Enabled • Verified' : 'Not enabled'}
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setMfaModalFactor('totp');
+                  setMfaModalOpen(true);
+                }}
+                disabled={mfaMFALoading}
+              >
+                {authMethods.mfaStatus.totp ? 'Manage' : 'Enable'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Email OTP */}
+          <div className="p-3 bg-card rounded-lg border border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">Email OTP</p>
+                <p className="text-xs text-foreground/60 mt-1">
+                  {authMethods.mfaStatus.email ? 'Enabled • Verified' : 'Not enabled'}
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setMfaModalFactor('email');
+                  setMfaModalOpen(true);
+                }}
+                disabled={mfaMFALoading}
+              >
+                {authMethods.mfaStatus.email ? 'Manage' : 'Enable'}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1146,6 +1288,21 @@ const SettingsTab = ({
           )}
         </div>
       </div>
+
+      <MFASettingsModal
+        isOpen={mfaModalOpen}
+        onClose={() => {
+          setMfaModalOpen(false);
+          setTotpSetupData(null);
+        }}
+        factor={mfaModalFactor}
+        isEnabled={mfaModalFactor === 'totp' ? authMethods.mfaStatus.totp : authMethods.mfaStatus.email}
+        onEnable={handleMFAEnable}
+        onDisable={handleMFADisable}
+        onVerify={handleMFAVerify}
+        totpQrCode={totpSetupData?.qrCode}
+        totpManualEntry={totpSetupData?.secret}
+      />
     </div>
   );
 };
