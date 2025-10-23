@@ -203,7 +203,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    if (!email || !email.includes('@')) {
+    if (!email || !isValidEmail(email)) {
       setTooltip('Enter your email first to register or authenticate with passkey');
       setError('');
       return;
@@ -211,46 +211,34 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     
     setError('');
     setTooltip('');
-    showLoading('Setting up passkey authentication...');
+    showLoading('Authenticating with passkey...');
     
     try {
-      // Try to authenticate with existing passkey
-      const authResult = await authenticateWithPasskey(email);
-
-      if (authResult.success) {
-        const user = await getCurrentUser();
-        if (user) {
-          authLogin(user);
-          await refreshUser();
-          handleClose();
-          return;
-        }
+      await authenticateWithPasskeyUtil(email);
+      
+      const user = await getCurrentUser();
+      if (user) {
+        authLogin(user);
+        await refreshUser();
+        handleClose();
       }
-
-      if (authResult.error === 'NO_CREDENTIAL') {
-        // No credential registered yet -> seamlessly switch to registration path
+    } catch (err: any) {
+      if (err.message && err.message.includes('No passkeys found')) {
         showLoading('Registering new passkey...');
-        const credential = await registerPasskey({
-          email,
-          displayName: email.split('@')[0]
-        });
-        if (credential) {
+        try {
+          await addPasskeyToAccount(email);
           const user = await getCurrentUser();
           if (user) {
             authLogin(user);
             await refreshUser();
             handleClose();
           }
+        } catch (registerErr: any) {
+          setError(registerErr.message || 'Passkey registration failed');
         }
-      } else if (authResult.error) {
-        setError(authResult.error === 'No passkey credentials found' ? 'No passkey registered for this account.' : authResult.error);
       } else {
-        setError('Passkey authentication failed');
+        setError(err?.message || 'Passkey authentication failed');
       }
-      
-    } catch (err: any) {
-      console.error('Passkey authentication error:', err);
-      setError(err.message || 'Passkey authentication failed');
     } finally {
       hideLoading();
     }
