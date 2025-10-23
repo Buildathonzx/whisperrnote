@@ -16,10 +16,10 @@ import { SubscriptionTab } from "./SubscriptionTab";
 type TabType = 'profile' | 'settings' | 'preferences' | 'integrations' | 'subscription';
 
 interface AuthMethods {
+  mfaEnabled: boolean;
   mfaFactors: {
-    totp?: boolean;
-    email?: boolean;
-    phone?: boolean;
+    totp: { enabled: boolean; verified: boolean };
+    email: { enabled: boolean; verified: boolean };
   } | null;
   passkeySupported: boolean;
   passkeyEnabled: boolean;
@@ -51,6 +51,7 @@ export default function SettingsPage() {
   const [isRemovingProfilePic, setIsRemovingProfilePic] = useState<boolean>(false);
   const [currentAIMode, setCurrentAIMode] = useState<AIMode>(AIMode.STANDARD);
   const [authMethods, setAuthMethods] = useState<AuthMethods>({
+    mfaEnabled: false,
     mfaFactors: null,
     passkeySupported: false,
     passkeyEnabled: false,
@@ -101,6 +102,7 @@ export default function SettingsPage() {
         try {
           const passkeySupported = await isPlatformAuthenticatorAvailable();
           const mfaFactors = await account.listMfaFactors();
+          const mfaStatus = await account.getMfaStatus();
           
           const identities = getUserIdentities(u);
           const walletConnected = hasWalletConnected(u);
@@ -113,8 +115,15 @@ export default function SettingsPage() {
             console.error('Failed to load passkeys:', err);
           }
           
+          const mfaEnabled = mfaStatus?.totp || mfaStatus?.email || false;
+          const mfaFactorsData = mfaFactors ? {
+            totp: { enabled: !!mfaStatus?.totp, verified: !!mfaFactors?.totp },
+            email: { enabled: !!mfaStatus?.email, verified: !!mfaFactors?.email }
+          } : null;
+          
           setAuthMethods({
-            mfaFactors,
+            mfaEnabled,
+            mfaFactors: mfaFactorsData,
             passkeySupported,
             passkeyEnabled: !!getUserField(u, 'passkeyCredentialId'),
             passkeys: userPasskeys,
