@@ -10,6 +10,7 @@ import AIModeSelect from "@/components/AIModeSelect";
 import { AIMode, getAIModeDisplayName, getAIModeDescription } from "@/types/ai";
 import { isPlatformAuthenticatorAvailable } from "@/lib/appwrite/auth/passkey";
 import { getUserProfilePicId, getUserWalletAddress, getUserField, getUserIdentities, hasWalletConnected } from '@/lib/utils';
+import { usePasskeyManagement } from '@/hooks/usePasskeyManagement';
 import { SubscriptionTab } from "./SubscriptionTab";
 
 type TabType = 'profile' | 'settings' | 'preferences' | 'integrations' | 'subscription';
@@ -22,6 +23,13 @@ interface AuthMethods {
   } | null;
   passkeySupported: boolean;
   passkeyEnabled: boolean;
+  passkeys: Array<{
+    id: string;
+    name: string;
+    createdAt: number;
+    lastUsedAt: number | null;
+    status: 'active' | 'disabled' | 'compromised';
+  }>;
   walletConnected: boolean;
   googleIdentity: boolean;
   githubIdentity: boolean;
@@ -46,6 +54,7 @@ export default function SettingsPage() {
     mfaFactors: null,
     passkeySupported: false,
     passkeyEnabled: false,
+    passkeys: [],
     walletConnected: false,
     googleIdentity: false,
     githubIdentity: false
@@ -91,17 +100,24 @@ export default function SettingsPage() {
         // Load authentication methods from backend
         try {
           const passkeySupported = await isPlatformAuthenticatorAvailable();
-          // Get MFA factors from backend instead of client storage
           const mfaFactors = await account.listMfaFactors();
           
-          // Get identities and wallet info
           const identities = getUserIdentities(u);
           const walletConnected = hasWalletConnected(u);
+          
+          // Load passkeys
+          let userPasskeys: any[] = [];
+          try {
+            userPasskeys = await loadPasskeys(u.email);
+          } catch (err) {
+            console.error('Failed to load passkeys:', err);
+          }
           
           setAuthMethods({
             mfaFactors,
             passkeySupported,
             passkeyEnabled: !!getUserField(u, 'passkeyCredentialId'),
+            passkeys: userPasskeys,
             walletConnected,
             googleIdentity: identities.google,
             githubIdentity: identities.github
@@ -655,8 +671,87 @@ const SettingsTab = ({
           ) : null}
 
           {/* Empty state */}
-          {!walletConnected && !authMethods.googleIdentity && !authMethods.githubIdentity && (
+          {!walletConnected && !authMethods.googleIdentity && !authMethods.githubIdentity && authMethods.passkeys.length === 0 && (
             <p className="text-xs text-foreground/60">No additional authentication methods connected yet.</p>
+          )}
+        </div>
+
+        {/* Passkeys Management */}
+        <div className="mt-6 p-4 bg-background rounded-xl border border-border">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-foreground">Passkeys</h3>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                // TODO: Implement add passkey modal
+              }}
+            >
+              Add Passkey
+            </Button>
+          </div>
+          
+          {authMethods.passkeys && authMethods.passkeys.length > 0 ? (
+            <div className="space-y-3">
+              {authMethods.passkeys.map((passkey) => (
+                <div key={passkey.id} className="p-3 bg-card rounded-lg border border-border flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{passkey.name}</p>
+                    <div className="text-xs text-foreground/60 mt-1">
+                      <p>Created: {new Date(passkey.createdAt).toLocaleDateString()}</p>
+                      {passkey.lastUsedAt && (
+                        <p>Last used: {new Date(passkey.lastUsedAt).toLocaleDateString()}</p>
+                      )}
+                      <p>Status: <span className={passkey.status === 'active' ? 'text-green-600' : 'text-yellow-600'}>{passkey.status}</span></p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {passkey.status === 'active' ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          // TODO: Implement disable passkey
+                        }}
+                      >
+                        Disable
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          // TODO: Implement enable passkey
+                        }}
+                      >
+                        Enable
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        // TODO: Implement rename passkey
+                      }}
+                    >
+                      Rename
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-600"
+                      onClick={() => {
+                        // TODO: Implement delete passkey
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-foreground/60">No passkeys added yet.</p>
           )}
         </div>
       </div>

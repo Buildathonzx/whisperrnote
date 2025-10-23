@@ -1,4 +1,4 @@
-import { Client, Users, ID, Query } from 'appwrite';
+import { Client, Users, ID, Query } from 'node-appwrite';
 import crypto from 'crypto';
 import * as SimpleWebAuthnServer from '@simplewebauthn/server';
 
