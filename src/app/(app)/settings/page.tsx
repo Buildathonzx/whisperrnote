@@ -577,234 +577,271 @@ const SettingsTab = ({
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-foreground">Authentication Methods</h2>
         
-         {/* Show current authentication method */}
-         <div className="p-4 bg-background rounded-xl border border-border">
-           <div className="flex items-center justify-between mb-4">
-             <div>
-               <p className="text-foreground text-sm">
-                 Current method: <span className="font-medium">{getUserAuthMethod(user) || 'Email'}</span>
-               </p>
-               {walletConnected && (
-                 <p className="text-foreground/70 text-xs">
-                   Wallet: {walletConnected?.slice(0, 6)}...{walletConnected?.slice(-4)}
-                 </p>
-               )}
-             </div>
-           </div>
-
-           {/* Wallet Management */}
-           <div className="space-y-3">
-             {walletConnected ? (
-               <div className="p-3 bg-card rounded-lg border border-border">
-                 <div className="flex items-center justify-between">
-                   <div>
-                     <p className="text-sm font-medium text-foreground flex items-center gap-2">
-                       <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                       Wallet Connected
-                     </p>
-                     <p className="text-xs text-foreground/60 mt-1">{walletConnected}</p>
-                   </div>
-                   <Button
-                     variant="secondary"
-                     size="sm"
-                     onClick={handleDisconnectWallet}
-                     disabled={isDisconnectingWallet}
-                     className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-                   >
-                     {isDisconnectingWallet ? 'Disconnecting...' : 'Disconnect'}
-                   </Button>
-                 </div>
-               </div>
-             ) : authMethods.walletAvailable ? (
-               <Button
-                 variant="secondary"
-                 size="sm"
-                 onClick={onConnectWallet}
-                 className="w-full flex items-center justify-center gap-2"
-               >
-                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                   <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                 </svg>
-                 Connect Wallet
-               </Button>
-             ) : null}
-           </div>
-         </div>
-
-        {/* Password Section */}
-        <div className="p-6 bg-background border border-border rounded-xl">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-lg font-medium text-foreground">Password</h3>
-              <p className="text-sm text-foreground/70">Manage your account password</p>
+        {/* Show connected authentication methods */}
+        <div className="p-4 bg-background rounded-xl border border-border">
+          <h3 className="text-sm font-medium text-foreground mb-4">Connected Methods</h3>
+          
+          {/* Wallet */}
+          {walletConnected ? (
+            <div className="p-3 bg-card rounded-lg border border-border mb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Web3 Wallet</p>
+                    <p className="text-xs text-foreground/60">{walletConnected.substring(0, 6)}...{walletConnected.substring(-4)}</p>
+                  </div>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleDisconnectWallet}
+                  disabled={isDisconnectingWallet}
+                  className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                >
+                  {isDisconnectingWallet ? 'Disconnecting...' : 'Disconnect'}
+                </Button>
+              </div>
             </div>
+          ) : (
+            <div className="p-3 bg-card rounded-lg border border-border mb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground/60">Web3 Wallet</p>
+                  <p className="text-xs text-foreground/50">Not connected</p>
+                </div>
+                {typeof window !== 'undefined' && (window as any).ethereum && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={onConnectWallet}
+                    disabled={walletLoading}
+                  >
+                    {walletLoading ? 'Connecting...' : 'Connect'}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Google OAuth */}
+          {authMethods.googleIdentity ? (
+            <div className="p-3 bg-card rounded-lg border border-border mb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Google</p>
+                    <p className="text-xs text-foreground/60">OAuth connected</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {/* GitHub OAuth */}
+          {authMethods.githubIdentity ? (
+            <div className="p-3 bg-card rounded-lg border border-border mb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">GitHub</p>
+                    <p className="text-xs text-foreground/60">OAuth connected</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {/* Empty state */}
+          {!walletConnected && !authMethods.googleIdentity && !authMethods.githubIdentity && (
+            <p className="text-xs text-foreground/60">No additional authentication methods connected yet.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Password Section */}
+      <div className="p-6 bg-background border border-border rounded-xl">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-medium text-foreground">Password</h3>
+            <p className="text-sm text-foreground/70">Manage your account password</p>
+          </div>
+        </div>
+        
+        <div className="p-3 bg-card rounded-lg border border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">Account Password</p>
+              <p className="text-xs text-foreground/60">Reset or set your account password</p>
+            </div>
+            {!showPasswordReset ? (
+              <Button 
+                variant="secondary" 
+                size="sm"
+                onClick={() => setShowPasswordReset(true)}
+              >
+                Reset
+              </Button>
+            ) : null}
           </div>
           
-          <div className="p-3 bg-card rounded-lg border border-border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Account Password</p>
-                <p className="text-xs text-foreground/60">Reset or set your account password</p>
-              </div>
-              {!showPasswordReset ? (
-                <Button 
-                  variant="secondary" 
-                  size="sm"
-                  onClick={() => setShowPasswordReset(true)}
-                >
-                  Reset
-                </Button>
-              ) : null}
-            </div>
-            
-            {/* Password Reset Flow */}
-            {showPasswordReset && (
-              <div className="mt-4 pt-4 border-t border-border">
-                {!resetEmailSent ? (
-                  <div className="space-y-3">
-                    <div className="p-3 bg-yellow-100/50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg">
-                      <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium mb-1">
-                        Send password reset link to:
-                      </p>
-                      <p className="text-sm text-accent font-medium">{user?.email}</p>
-                    </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button 
-                        variant="default" 
-                        size="sm"
-                        onClick={handlePasswordReset}
-                        className="flex-1"
-                      >
-                        Yes, Send Reset Link
-                      </Button>
-                      <Button 
-                        variant="secondary" 
-                        size="sm"
-                        onClick={handleCancelPasswordReset}
-                        className="flex-1"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
+          {/* Password Reset Flow */}
+          {showPasswordReset && (
+            <div className="mt-4 pt-4 border-t border-border">
+              {!resetEmailSent ? (
+                <div className="space-y-3">
+                  <div className="p-3 bg-yellow-100/50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium mb-1">
+                      Send password reset link to:
+                    </p>
+                    <p className="text-sm text-accent font-medium">{user?.email}</p>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="p-3 bg-green-100/50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
-                      <p className="text-sm text-green-800 dark:text-green-300">
-                        Password reset email sent! Check your inbox and follow the instructions.
-                      </p>
-                    </div>
-                    
+                  
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={handlePasswordReset}
+                      className="flex-1"
+                    >
+                      Yes, Send Reset Link
+                    </Button>
                     <Button 
                       variant="secondary" 
                       size="sm"
                       onClick={handleCancelPasswordReset}
-                      className="w-full"
+                      className="flex-1"
                     >
-                      Done
+                      Cancel
                     </Button>
                   </div>
-                )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="p-3 bg-green-100/50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
+                    <p className="text-sm text-green-800 dark:text-green-300">
+                      Password reset email sent! Check your inbox and follow the instructions.
+                    </p>
+                  </div>
+                  
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={handleCancelPasswordReset}
+                    className="w-full"
+                  >
+                    Done
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* MFA Factors from Backend */}
+      {authMethods.mfaFactors && (
+        <div className="p-6 bg-background border border-border rounded-xl">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-medium text-foreground">Multi-Factor Authentication</h3>
+              <p className="text-sm text-foreground/70">Additional security factors configured</p>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            {authMethods.mfaFactors.totp && (
+              <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Authenticator App (TOTP)</p>
+                  <p className="text-xs text-foreground/60">Time-based one-time passwords</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
+                    Enabled
+                  </span>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => onRemoveAuthMethod('totp')}
+                  >
+                    Remove
+                  </Button>
+                </div>
               </div>
+            )}
+            
+            {authMethods.mfaFactors.email && (
+              <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Email Verification</p>
+                  <p className="text-xs text-foreground/60">Codes sent to your email</p>
+                </div>
+                <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
+                  Enabled
+                </span>
+              </div>
+            )}
+            
+            {authMethods.mfaFactors.phone && (
+              <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                <div>
+                  <p className="text-sm font-medium text-foreground">SMS Verification</p>
+                  <p className="text-xs text-foreground/60">Codes sent to your phone</p>
+                </div>
+                <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
+                  Enabled
+                </span>
+              </div>
+            )}
+            
+            {!authMethods.mfaFactors.totp && !authMethods.mfaFactors.email && !authMethods.mfaFactors.phone && (
+              <p className="text-sm text-foreground/60">No additional authentication factors configured</p>
             )}
           </div>
         </div>
+      )}
 
-        {/* MFA Factors from Backend */}
-        {authMethods.mfaFactors && (
-          <div className="p-6 bg-background border border-border rounded-xl">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-medium text-foreground">Multi-Factor Authentication</h3>
-                <p className="text-sm text-foreground/70">Additional security factors configured</p>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              {authMethods.mfaFactors.totp && (
-                <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Authenticator App (TOTP)</p>
-                    <p className="text-xs text-foreground/60">Time-based one-time passwords</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                      Enabled
-                    </span>
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      onClick={() => onRemoveAuthMethod('totp')}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              )}
-              
-              {authMethods.mfaFactors.email && (
-                <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Email Verification</p>
-                    <p className="text-xs text-foreground/60">Codes sent to your email</p>
-                  </div>
-                  <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                    Enabled
-                  </span>
-                </div>
-              )}
-              
-              {authMethods.mfaFactors.phone && (
-                <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">SMS Verification</p>
-                    <p className="text-xs text-foreground/60">Codes sent to your phone</p>
-                  </div>
-                  <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                    Enabled
-                  </span>
-                </div>
-              )}
-              
-              {!authMethods.mfaFactors.totp && !authMethods.mfaFactors.email && !authMethods.mfaFactors.phone && (
-                <p className="text-sm text-foreground/60">No additional authentication factors configured</p>
+      {/* Platform Support Info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-4 bg-background border border-border rounded-xl">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-foreground">Passkey Authentication</h3>
+            <div className="text-xs px-2 py-1 rounded bg-background">
+              {authMethods.passkeySupported ? (
+                <span className="text-green-600 dark:text-green-400 font-medium">Available</span>
+              ) : (
+                <span className="text-foreground/60">Not Available</span>
               )}
             </div>
           </div>
-        )}
-
-        {/* Platform Support Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-background border border-border rounded-xl">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-foreground">Passkey Support</h3>
-              <div className="text-xs text-foreground/60">
-                {authMethods.passkeySupported ? 'Available' : 'Not Supported'}
-              </div>
+          <p className="text-xs text-foreground/70">
+            {authMethods.passkeySupported
+              ? 'Your device supports biometric authentication'
+              : 'Your device or browser does not support passkeys'
+            }
+          </p>
+        </div>
+        
+        <div className="p-4 bg-background border border-border rounded-xl">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-foreground">Web3 Wallet Provider</h3>
+            <div className="text-xs px-2 py-1 rounded bg-background">
+              {typeof window !== 'undefined' && (window as any).ethereum ? (
+                <span className="text-green-600 dark:text-green-400 font-medium">Detected</span>
+              ) : (
+                <span className="text-foreground/60">Not Found</span>
+              )}
             </div>
-            <p className="text-xs text-foreground/70">
-              {authMethods.passkeySupported 
-                ? 'Your device supports biometric authentication' 
-                : 'Your device does not support passkeys'
-              }
-            </p>
           </div>
-          
-          <div className="p-4 bg-background border border-border rounded-xl">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-foreground">Wallet Support</h3>
-              <div className="text-xs text-foreground/60">
-                {authMethods.walletAvailable ? 'Available' : 'Not Available'}
-              </div>
-            </div>
-            <p className="text-xs text-foreground/70">
-              {authMethods.walletAvailable 
-                ? 'Web3 wallet provider detected' 
-                : 'No Web3 wallet provider found'
-              }
-            </p>
-          </div>
+          <p className="text-xs text-foreground/70">
+            {typeof window !== 'undefined' && (window as any).ethereum
+              ? 'MetaMask or compatible wallet provider detected'
+              : 'Install MetaMask or another Web3 wallet extension'
+            }
+          </p>
         </div>
       </div>
 
